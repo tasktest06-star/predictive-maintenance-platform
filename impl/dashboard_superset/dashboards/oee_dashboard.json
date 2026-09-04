@@ -1,0 +1,429 @@
+{
+  "dashboard_title": "Plant OEE Dashboard",
+  "description": "Overall Equipment Effectiveness KPIs for plant managers: availability, performance, quality, downtime analysis, and maintenance metrics.",
+  "slug": "plant-oee",
+  "published": true,
+  "position_data": {
+    "DASHBOARD_VERSION_KEY": "v2",
+    "ROOT_ID": {
+      "type": "ROOT",
+      "id": "ROOT_ID",
+      "children": ["GRID_ID"]
+    },
+    "GRID_ID": {
+      "type": "GRID",
+      "id": "GRID_ID",
+      "children": [
+        "ROW_top_kpis",
+        "ROW_trends",
+        "ROW_pareto_reliability",
+        "ROW_operations"
+      ],
+      "meta": {}
+    },
+    "ROW_top_kpis": {
+      "type": "ROW",
+      "id": "ROW_top_kpis",
+      "children": [
+        "CHART_oee_gauge_line1",
+        "CHART_oee_gauge_line2",
+        "CHART_oee_gauge_line3",
+        "CHART_oee_gauge_line4"
+      ],
+      "meta": { "background": "BACKGROUND_TRANSPARENT" }
+    },
+    "ROW_trends": {
+      "type": "ROW",
+      "id": "ROW_trends",
+      "children": ["CHART_oee_trend", "CHART_active_alerts"],
+      "meta": { "background": "BACKGROUND_TRANSPARENT" }
+    },
+    "ROW_pareto_reliability": {
+      "type": "ROW",
+      "id": "ROW_pareto_reliability",
+      "children": [
+        "CHART_downtime_pareto",
+        "CHART_mtbf_bar",
+        "CHART_mttr_bar"
+      ],
+      "meta": { "background": "BACKGROUND_TRANSPARENT" }
+    },
+    "ROW_operations": {
+      "type": "ROW",
+      "id": "ROW_operations",
+      "children": ["CHART_work_order_pie", "CHART_maintenance_cost"],
+      "meta": { "background": "BACKGROUND_TRANSPARENT" }
+    },
+    "CHART_oee_gauge_line1": {
+      "type": "CHART",
+      "id": "CHART_oee_gauge_line1",
+      "children": [],
+      "meta": { "width": 3, "height": 4, "chartId": 101 }
+    },
+    "CHART_oee_gauge_line2": {
+      "type": "CHART",
+      "id": "CHART_oee_gauge_line2",
+      "children": [],
+      "meta": { "width": 3, "height": 4, "chartId": 102 }
+    },
+    "CHART_oee_gauge_line3": {
+      "type": "CHART",
+      "id": "CHART_oee_gauge_line3",
+      "children": [],
+      "meta": { "width": 3, "height": 4, "chartId": 103 }
+    },
+    "CHART_oee_gauge_line4": {
+      "type": "CHART",
+      "id": "CHART_oee_gauge_line4",
+      "children": [],
+      "meta": { "width": 3, "height": 4, "chartId": 104 }
+    },
+    "CHART_oee_trend": {
+      "type": "CHART",
+      "id": "CHART_oee_trend",
+      "children": [],
+      "meta": { "width": 8, "height": 6, "chartId": 105 }
+    },
+    "CHART_active_alerts": {
+      "type": "CHART",
+      "id": "CHART_active_alerts",
+      "children": [],
+      "meta": { "width": 4, "height": 6, "chartId": 106 }
+    },
+    "CHART_downtime_pareto": {
+      "type": "CHART",
+      "id": "CHART_downtime_pareto",
+      "children": [],
+      "meta": { "width": 5, "height": 6, "chartId": 107 }
+    },
+    "CHART_mtbf_bar": {
+      "type": "CHART",
+      "id": "CHART_mtbf_bar",
+      "children": [],
+      "meta": { "width": 4, "height": 6, "chartId": 108 }
+    },
+    "CHART_mttr_bar": {
+      "type": "CHART",
+      "id": "CHART_mttr_bar",
+      "children": [],
+      "meta": { "width": 3, "height": 6, "chartId": 109 }
+    },
+    "CHART_work_order_pie": {
+      "type": "CHART",
+      "id": "CHART_work_order_pie",
+      "children": [],
+      "meta": { "width": 4, "height": 5, "chartId": 110 }
+    },
+    "CHART_maintenance_cost": {
+      "type": "CHART",
+      "id": "CHART_maintenance_cost",
+      "children": [],
+      "meta": { "width": 8, "height": 5, "chartId": 111 }
+    }
+  },
+  "metadata": {
+    "color_scheme": "industrial_health",
+    "label_colors": {
+      "Completed": "#27AE60",
+      "In Progress": "#2980B9",
+      "Overdue": "#E74C3C",
+      "Pending": "#F39C12"
+    },
+    "native_filter_configuration": [
+      {
+        "id": "NATIVE_FILTER_site",
+        "name": "Site",
+        "filterType": "filter_select",
+        "targets": [
+          { "datasetId": "asset_oee", "column": { "name": "site" } }
+        ],
+        "defaultDataMask": { "filterState": { "value": null } },
+        "controlValues": { "multiSelect": true, "enableEmptyFilter": false },
+        "cascadeParentIds": [],
+        "scope": {
+          "rootPath": ["ROOT_ID"],
+          "excluded": []
+        }
+      },
+      {
+        "id": "NATIVE_FILTER_area",
+        "name": "Production Area",
+        "filterType": "filter_select",
+        "targets": [
+          { "datasetId": "asset_oee", "column": { "name": "production_line" } }
+        ],
+        "defaultDataMask": { "filterState": { "value": null } },
+        "controlValues": { "multiSelect": true, "enableEmptyFilter": false },
+        "cascadeParentIds": ["NATIVE_FILTER_site"],
+        "scope": {
+          "rootPath": ["ROOT_ID"],
+          "excluded": []
+        }
+      },
+      {
+        "id": "NATIVE_FILTER_daterange",
+        "name": "Date Range",
+        "filterType": "filter_time",
+        "targets": [{}],
+        "defaultDataMask": {
+          "extraFormData": { "time_range": "Last 90 days" },
+          "filterState": { "value": "Last 90 days" }
+        },
+        "controlValues": {},
+        "cascadeParentIds": [],
+        "scope": {
+          "rootPath": ["ROOT_ID"],
+          "excluded": []
+        }
+      }
+    ]
+  },
+  "charts": [
+    {
+      "id": 101,
+      "slice_name": "OEE % — Line 1",
+      "viz_type": "big_number",
+      "description": "Current OEE percentage for Production Line 1",
+      "datasource": "asset_oee",
+      "params": {
+        "metric": { "expressionType": "SIMPLE", "column": { "column_name": "oee_pct" }, "aggregate": "AVG", "label": "OEE %" },
+        "adhoc_filters": [
+          { "expressionType": "SIMPLE", "subject": "production_line", "operator": "==", "comparator": "Line 1" },
+          { "expressionType": "SIMPLE", "subject": "date", "operator": ">=", "comparator": "{{ (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d') }}" }
+        ],
+        "subheader": "7-day average",
+        "y_axis_format": ".1%",
+        "color_picker": { "r": 46, "g": 204, "b": 113, "a": 1 }
+      }
+    },
+    {
+      "id": 102,
+      "slice_name": "OEE % — Line 2",
+      "viz_type": "big_number",
+      "description": "Current OEE percentage for Production Line 2",
+      "datasource": "asset_oee",
+      "params": {
+        "metric": { "expressionType": "SIMPLE", "column": { "column_name": "oee_pct" }, "aggregate": "AVG", "label": "OEE %" },
+        "adhoc_filters": [
+          { "expressionType": "SIMPLE", "subject": "production_line", "operator": "==", "comparator": "Line 2" },
+          { "expressionType": "SIMPLE", "subject": "date", "operator": ">=", "comparator": "{{ (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d') }}" }
+        ],
+        "subheader": "7-day average",
+        "y_axis_format": ".1%"
+      }
+    },
+    {
+      "id": 103,
+      "slice_name": "OEE % — Line 3",
+      "viz_type": "big_number",
+      "description": "Current OEE percentage for Production Line 3",
+      "datasource": "asset_oee",
+      "params": {
+        "metric": { "expressionType": "SIMPLE", "column": { "column_name": "oee_pct" }, "aggregate": "AVG", "label": "OEE %" },
+        "adhoc_filters": [
+          { "expressionType": "SIMPLE", "subject": "production_line", "operator": "==", "comparator": "Line 3" }
+        ],
+        "subheader": "7-day average",
+        "y_axis_format": ".1%"
+      }
+    },
+    {
+      "id": 104,
+      "slice_name": "OEE % — Line 4",
+      "viz_type": "big_number",
+      "description": "Current OEE percentage for Production Line 4",
+      "datasource": "asset_oee",
+      "params": {
+        "metric": { "expressionType": "SIMPLE", "column": { "column_name": "oee_pct" }, "aggregate": "AVG", "label": "OEE %" },
+        "adhoc_filters": [
+          { "expressionType": "SIMPLE", "subject": "production_line", "operator": "==", "comparator": "Line 4" }
+        ],
+        "subheader": "7-day average",
+        "y_axis_format": ".1%"
+      }
+    },
+    {
+      "id": 105,
+      "slice_name": "OEE Trend — Last 90 Days by Shift",
+      "viz_type": "echarts_timeseries_line",
+      "description": "OEE % trend over the last 90 days, broken out by production shift",
+      "datasource": "asset_oee",
+      "params": {
+        "x_axis": "date",
+        "metrics": [
+          { "expressionType": "SIMPLE", "column": { "column_name": "oee_pct" }, "aggregate": "AVG", "label": "OEE %" },
+          { "expressionType": "SIMPLE", "column": { "column_name": "availability_pct" }, "aggregate": "AVG", "label": "Availability %" },
+          { "expressionType": "SIMPLE", "column": { "column_name": "performance_pct" }, "aggregate": "AVG", "label": "Performance %" },
+          { "expressionType": "SIMPLE", "column": { "column_name": "quality_pct" }, "aggregate": "AVG", "label": "Quality %" }
+        ],
+        "groupby": ["production_line"],
+        "time_grain_sqla": "P1D",
+        "color_scheme": "industrial_health",
+        "show_legend": true,
+        "rich_tooltip": true,
+        "tooltipTimeFormat": "%Y-%m-%d",
+        "y_axis_format": ".1%",
+        "y_axis_bounds": [0, 1],
+        "annotationLayers": [
+          {
+            "annotationType": "FORMULA",
+            "color": "#E74C3C",
+            "name": "World-class OEE target (85%)",
+            "opacity": "",
+            "style": "dashed",
+            "value": "0.85",
+            "width": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 106,
+      "slice_name": "Active Alerts",
+      "viz_type": "table",
+      "description": "Active unresolved alerts sorted by severity and age",
+      "datasource": "active_alerts",
+      "params": {
+        "columns": [
+          "asset_name",
+          "fault_type",
+          "severity_stage",
+          "confidence_pct",
+          "age_hours",
+          "assigned_to",
+          "status"
+        ],
+        "metrics": [],
+        "order_by_cols": ["[severity_stage, false]", "[age_hours, false]"],
+        "row_limit": 50,
+        "table_filter": true,
+        "conditional_formatting": [
+          {
+            "column": "severity_stage",
+            "operator": ">=",
+            "targetValue": 3,
+            "colorScheme": "#E74C3C",
+            "column_config": {}
+          },
+          {
+            "column": "severity_stage",
+            "operator": "==",
+            "targetValue": 2,
+            "colorScheme": "#F39C12",
+            "column_config": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": 107,
+      "slice_name": "Downtime Pareto — Top Assets",
+      "viz_type": "bar",
+      "description": "Assets responsible for most downtime hours (sorted descending — Pareto principle)",
+      "datasource": "asset_oee",
+      "params": {
+        "metrics": [
+          {
+            "expressionType": "SQL",
+            "sqlExpression": "SUM((1 - availability_pct) * 24)",
+            "label": "Downtime Hours"
+          }
+        ],
+        "groupby": ["asset_name"],
+        "order_by_cols": ["[Downtime Hours, false]"],
+        "row_limit": 20,
+        "color_scheme": "industrial_health",
+        "show_legend": false,
+        "x_axis_label": "Asset",
+        "y_axis_label": "Downtime Hours",
+        "y_axis_format": ".1f",
+        "bar_stacked": false,
+        "show_bar_value": true
+      }
+    },
+    {
+      "id": 108,
+      "slice_name": "MTBF by Asset Class",
+      "viz_type": "bar",
+      "description": "Mean Time Between Failures (hours) by asset class — higher is better",
+      "datasource": "asset_mtbf_mttr",
+      "params": {
+        "metrics": [
+          { "expressionType": "SIMPLE", "column": { "column_name": "mtbf_hours" }, "aggregate": "AVG", "label": "MTBF (hours)" }
+        ],
+        "groupby": ["asset_class"],
+        "order_by_cols": ["[MTBF (hours), true]"],
+        "color_scheme": "industrial_health",
+        "show_legend": false,
+        "x_axis_label": "Asset Class",
+        "y_axis_label": "MTBF (hours)",
+        "y_axis_format": ".0f",
+        "show_bar_value": true
+      }
+    },
+    {
+      "id": 109,
+      "slice_name": "MTTR by Maintenance Team",
+      "viz_type": "bar",
+      "description": "Mean Time To Repair (hours) by maintenance team — lower is better",
+      "datasource": "work_order_status",
+      "params": {
+        "metrics": [
+          { "expressionType": "SIMPLE", "column": { "column_name": "labor_hours" }, "aggregate": "AVG", "label": "MTTR (hours)" }
+        ],
+        "groupby": ["assigned_team"],
+        "adhoc_filters": [
+          { "expressionType": "SIMPLE", "subject": "status", "operator": "==", "comparator": "completed" }
+        ],
+        "order_by_cols": ["[MTTR (hours), true]"],
+        "color_scheme": "industrial_health",
+        "show_legend": false,
+        "x_axis_label": "Team",
+        "y_axis_label": "MTTR (hours)",
+        "y_axis_format": ".1f",
+        "show_bar_value": true
+      }
+    },
+    {
+      "id": 110,
+      "slice_name": "Work Order Completion Rate",
+      "viz_type": "pie",
+      "description": "Work order status breakdown: completed vs overdue vs in-progress (last 90 days)",
+      "datasource": "work_order_status",
+      "params": {
+        "metric": { "expressionType": "SIMPLE", "column": { "column_name": "work_order_id" }, "aggregate": "COUNT", "label": "Count" },
+        "groupby": ["completion_status"],
+        "color_scheme": "maintenance_status",
+        "show_legend": true,
+        "donut": true,
+        "inner_radius": 30,
+        "show_labels": true,
+        "label_type": "key_percent",
+        "label_line": true
+      }
+    },
+    {
+      "id": 111,
+      "slice_name": "Maintenance Cost Trend",
+      "viz_type": "echarts_timeseries_bar",
+      "description": "Monthly maintenance cost trend: labor vs parts cost stacked",
+      "datasource": "maintenance_cost_monthly",
+      "params": {
+        "x_axis": "month",
+        "metrics": [
+          { "expressionType": "SIMPLE", "column": { "column_name": "labor_cost_usd" }, "aggregate": "SUM", "label": "Labor Cost ($)" },
+          { "expressionType": "SIMPLE", "column": { "column_name": "parts_cost_usd" }, "aggregate": "SUM", "label": "Parts Cost ($)" }
+        ],
+        "groupby": ["site"],
+        "time_grain_sqla": "P1M",
+        "color_scheme": "industrial_health",
+        "show_legend": true,
+        "bar_stacked": true,
+        "y_axis_label": "Cost (USD)",
+        "y_axis_format": "$,.0f",
+        "rich_tooltip": true,
+        "tooltipTimeFormat": "%b %Y"
+      }
+    }
+  ]
+}

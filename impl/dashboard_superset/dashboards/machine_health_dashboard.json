@@ -1,0 +1,451 @@
+{
+  "dashboard_title": "Machine Health & Reliability",
+  "description": "Reliability engineer view: asset health heatmap, fault distribution, sensor RMS and kurtosis trends, bearing defect frequencies, and alert analytics.",
+  "slug": "machine-health",
+  "published": true,
+  "position_data": {
+    "DASHBOARD_VERSION_KEY": "v2",
+    "ROOT_ID": {
+      "type": "ROOT",
+      "id": "ROOT_ID",
+      "children": ["GRID_ID"]
+    },
+    "GRID_ID": {
+      "type": "GRID",
+      "id": "GRID_ID",
+      "children": [
+        "ROW_health_overview",
+        "ROW_sensor_trends",
+        "ROW_alert_analysis",
+        "ROW_bearing_freq"
+      ],
+      "meta": {}
+    },
+    "ROW_health_overview": {
+      "type": "ROW",
+      "id": "ROW_health_overview",
+      "children": ["CHART_health_heatmap", "CHART_fault_donut"],
+      "meta": { "background": "BACKGROUND_TRANSPARENT" }
+    },
+    "ROW_sensor_trends": {
+      "type": "ROW",
+      "id": "ROW_sensor_trends",
+      "children": ["CHART_rms_trend", "CHART_kurtosis_trend"],
+      "meta": { "background": "BACKGROUND_TRANSPARENT" }
+    },
+    "ROW_alert_analysis": {
+      "type": "ROW",
+      "id": "ROW_alert_analysis",
+      "children": [
+        "CHART_alert_severity_hist",
+        "CHART_top_alerted_assets",
+        "CHART_health_score_big_number"
+      ],
+      "meta": { "background": "BACKGROUND_TRANSPARENT" }
+    },
+    "ROW_bearing_freq": {
+      "type": "ROW",
+      "id": "ROW_bearing_freq",
+      "children": ["CHART_bearing_defect_trend"],
+      "meta": { "background": "BACKGROUND_TRANSPARENT" }
+    },
+    "CHART_health_heatmap": {
+      "type": "CHART",
+      "id": "CHART_health_heatmap",
+      "children": [],
+      "meta": { "width": 8, "height": 8, "chartId": 201 }
+    },
+    "CHART_fault_donut": {
+      "type": "CHART",
+      "id": "CHART_fault_donut",
+      "children": [],
+      "meta": { "width": 4, "height": 8, "chartId": 202 }
+    },
+    "CHART_rms_trend": {
+      "type": "CHART",
+      "id": "CHART_rms_trend",
+      "children": [],
+      "meta": { "width": 6, "height": 6, "chartId": 203 }
+    },
+    "CHART_kurtosis_trend": {
+      "type": "CHART",
+      "id": "CHART_kurtosis_trend",
+      "children": [],
+      "meta": { "width": 6, "height": 6, "chartId": 204 }
+    },
+    "CHART_alert_severity_hist": {
+      "type": "CHART",
+      "id": "CHART_alert_severity_hist",
+      "children": [],
+      "meta": { "width": 4, "height": 6, "chartId": 205 }
+    },
+    "CHART_top_alerted_assets": {
+      "type": "CHART",
+      "id": "CHART_top_alerted_assets",
+      "children": [],
+      "meta": { "width": 5, "height": 6, "chartId": 206 }
+    },
+    "CHART_health_score_big_number": {
+      "type": "CHART",
+      "id": "CHART_health_score_big_number",
+      "children": [],
+      "meta": { "width": 3, "height": 6, "chartId": 207 }
+    },
+    "CHART_bearing_defect_trend": {
+      "type": "CHART",
+      "id": "CHART_bearing_defect_trend",
+      "children": [],
+      "meta": { "width": 12, "height": 6, "chartId": 208 }
+    }
+  },
+  "metadata": {
+    "color_scheme": "industrial_health",
+    "label_colors": {
+      "Stage 1": "#2ECC71",
+      "Stage 2": "#F1C40F",
+      "Stage 3": "#E67E22",
+      "Stage 4": "#E74C3C",
+      "Bearing Fault": "#E74C3C",
+      "Imbalance": "#F39C12",
+      "Misalignment": "#E67E22",
+      "Looseness": "#9B59B6",
+      "Cavitation": "#3498DB",
+      "Electrical": "#1ABC9C"
+    },
+    "native_filter_configuration": [
+      {
+        "id": "NATIVE_FILTER_site_health",
+        "name": "Site",
+        "filterType": "filter_select",
+        "targets": [
+          { "datasetId": "fault_distribution", "column": { "name": "site" } }
+        ],
+        "defaultDataMask": { "filterState": { "value": null } },
+        "controlValues": { "multiSelect": true, "enableEmptyFilter": false },
+        "cascadeParentIds": [],
+        "scope": { "rootPath": ["ROOT_ID"], "excluded": [] }
+      },
+      {
+        "id": "NATIVE_FILTER_asset_type",
+        "name": "Asset Type",
+        "filterType": "filter_select",
+        "targets": [
+          { "datasetId": "fault_distribution", "column": { "name": "asset_class" } }
+        ],
+        "defaultDataMask": { "filterState": { "value": null } },
+        "controlValues": { "multiSelect": true, "enableEmptyFilter": false },
+        "cascadeParentIds": ["NATIVE_FILTER_site_health"],
+        "scope": { "rootPath": ["ROOT_ID"], "excluded": [] }
+      },
+      {
+        "id": "NATIVE_FILTER_daterange_health",
+        "name": "Date Range",
+        "filterType": "filter_time",
+        "targets": [{}],
+        "defaultDataMask": {
+          "extraFormData": { "time_range": "Last 30 days" },
+          "filterState": { "value": "Last 30 days" }
+        },
+        "controlValues": {},
+        "cascadeParentIds": [],
+        "scope": { "rootPath": ["ROOT_ID"], "excluded": [] }
+      }
+    ]
+  },
+  "charts": [
+    {
+      "id": 201,
+      "slice_name": "Asset Health Score Heatmap",
+      "viz_type": "heatmap",
+      "description": "Assets (rows) vs weeks (columns) — cell color by health score 0-100. Red = fault, green = healthy.",
+      "datasource": "sensor_health_daily",
+      "params": {
+        "all_columns_x": "date",
+        "all_columns_y": "device_id",
+        "metric": {
+          "expressionType": "SQL",
+          "sqlExpression": "100 - (AVG(max_kurtosis) / 20.0 * 100)",
+          "label": "Health Score"
+        },
+        "time_grain_sqla": "P1W",
+        "xscale_interval": 1,
+        "yscale_interval": 1,
+        "canvas_image_rendering": "pixelated",
+        "normalized": true,
+        "color_scheme": "health_score",
+        "left_margin": "auto",
+        "bottom_margin": "auto",
+        "y_axis_label": "Asset (Device ID)",
+        "x_axis_label": "Week",
+        "legend_position": "right",
+        "show_values": false,
+        "show_legend": true
+      }
+    },
+    {
+      "id": 202,
+      "slice_name": "Fault Distribution",
+      "viz_type": "pie",
+      "description": "Percentage breakdown of fault types across the monitored fleet (last 30 days)",
+      "datasource": "fault_distribution",
+      "params": {
+        "metric": {
+          "expressionType": "SIMPLE",
+          "column": { "column_name": "alert_count" },
+          "aggregate": "SUM",
+          "label": "Alert Count"
+        },
+        "groupby": ["fault_type"],
+        "color_scheme": "industrial_health",
+        "show_legend": true,
+        "donut": true,
+        "inner_radius": 40,
+        "show_labels": true,
+        "label_type": "key_percent",
+        "label_line": true,
+        "sort_by_metric": true
+      }
+    },
+    {
+      "id": 203,
+      "slice_name": "Sensor RMS Trend — Selected Asset",
+      "viz_type": "echarts_timeseries_line",
+      "description": "RMS vibration trend for the selected asset over the last 30 days — X, Y, Z axes displayed as separate series.",
+      "datasource": "sensor_rms_hourly",
+      "params": {
+        "x_axis": "timestamp",
+        "metrics": [
+          { "expressionType": "SIMPLE", "column": { "column_name": "rms_x_avg" }, "aggregate": "AVG", "label": "RMS X (g)" },
+          { "expressionType": "SIMPLE", "column": { "column_name": "rms_y_avg" }, "aggregate": "AVG", "label": "RMS Y (g)" },
+          { "expressionType": "SIMPLE", "column": { "column_name": "rms_z_avg" }, "aggregate": "AVG", "label": "RMS Z (g)" }
+        ],
+        "groupby": [],
+        "time_grain_sqla": "PT1H",
+        "color_scheme": "industrial_health",
+        "show_legend": true,
+        "rich_tooltip": true,
+        "tooltipTimeFormat": "%Y-%m-%d %H:%M",
+        "y_axis_label": "RMS Acceleration (g)",
+        "x_axis_label": "Time",
+        "zoomable": true,
+        "annotationLayers": [
+          {
+            "annotationType": "FORMULA",
+            "color": "#F39C12",
+            "name": "Warning threshold",
+            "style": "dashed",
+            "value": "0.7",
+            "width": 1
+          },
+          {
+            "annotationType": "FORMULA",
+            "color": "#E74C3C",
+            "name": "Critical threshold",
+            "style": "dashed",
+            "value": "1.5",
+            "width": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 204,
+      "slice_name": "Kurtosis Trend — Anomaly Indicator",
+      "viz_type": "echarts_timeseries_line",
+      "description": "Kurtosis over time — values > 3 indicate impulsive fault events (bearing defects, pitting). High kurtosis = impulsive content in signal.",
+      "datasource": "sensor_health_daily",
+      "params": {
+        "x_axis": "date",
+        "metrics": [
+          {
+            "expressionType": "SIMPLE",
+            "column": { "column_name": "max_kurtosis" },
+            "aggregate": "MAX",
+            "label": "Peak Kurtosis"
+          },
+          {
+            "expressionType": "SIMPLE",
+            "column": { "column_name": "max_kurtosis" },
+            "aggregate": "AVG",
+            "label": "Mean Kurtosis"
+          }
+        ],
+        "groupby": ["device_id"],
+        "time_grain_sqla": "P1D",
+        "color_scheme": "industrial_health",
+        "show_legend": true,
+        "rich_tooltip": true,
+        "y_axis_label": "Kurtosis",
+        "zoomable": true,
+        "annotationLayers": [
+          {
+            "annotationType": "FORMULA",
+            "color": "#3498DB",
+            "name": "Gaussian baseline (kurtosis = 3)",
+            "style": "solid",
+            "value": "3",
+            "width": 1,
+            "opacity": "0.5"
+          },
+          {
+            "annotationType": "FORMULA",
+            "color": "#F39C12",
+            "name": "Warning (kurtosis = 10)",
+            "style": "dashed",
+            "value": "10",
+            "width": 1
+          },
+          {
+            "annotationType": "FORMULA",
+            "color": "#E74C3C",
+            "name": "Critical (kurtosis = 25)",
+            "style": "dashed",
+            "value": "25",
+            "width": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": 205,
+      "slice_name": "Alert Severity Histogram",
+      "viz_type": "bar",
+      "description": "Count of alerts by severity stage for the selected date range — stages 1-4 following ISO 13374 fault progression.",
+      "datasource": "active_alerts",
+      "params": {
+        "metrics": [
+          {
+            "expressionType": "SIMPLE",
+            "column": { "column_name": "alert_id" },
+            "aggregate": "COUNT",
+            "label": "Alert Count"
+          }
+        ],
+        "groupby": ["severity_stage"],
+        "order_by_cols": ["[severity_stage, true]"],
+        "color_scheme": "industrial_health",
+        "show_legend": false,
+        "x_axis_label": "Severity Stage",
+        "y_axis_label": "Alert Count",
+        "show_bar_value": true,
+        "label_colors": {
+          "1": "#2ECC71",
+          "2": "#F1C40F",
+          "3": "#E67E22",
+          "4": "#E74C3C"
+        }
+      }
+    },
+    {
+      "id": 206,
+      "slice_name": "Top 10 Most-Alerted Assets",
+      "viz_type": "table",
+      "description": "Assets with the most active alerts, sorted by alert count descending.",
+      "datasource": "active_alerts",
+      "params": {
+        "groupby": ["asset_name", "asset_class", "site"],
+        "metrics": [
+          {
+            "expressionType": "SIMPLE",
+            "column": { "column_name": "alert_id" },
+            "aggregate": "COUNT",
+            "label": "Active Alerts"
+          },
+          {
+            "expressionType": "SIMPLE",
+            "column": { "column_name": "severity_stage" },
+            "aggregate": "MAX",
+            "label": "Max Severity"
+          },
+          {
+            "expressionType": "SIMPLE",
+            "column": { "column_name": "age_hours" },
+            "aggregate": "MAX",
+            "label": "Oldest Alert (h)"
+          }
+        ],
+        "order_by_cols": ["[Active Alerts, false]"],
+        "row_limit": 10,
+        "table_filter": true,
+        "conditional_formatting": [
+          {
+            "column": "Max Severity",
+            "operator": ">=",
+            "targetValue": 3,
+            "colorScheme": "#E74C3C"
+          }
+        ]
+      }
+    },
+    {
+      "id": 207,
+      "slice_name": "Fleet Average Health Score",
+      "viz_type": "big_number",
+      "description": "Average health score across all monitored assets",
+      "datasource": "sensor_health_daily",
+      "params": {
+        "metric": {
+          "expressionType": "SQL",
+          "sqlExpression": "ROUND(AVG(100 - LEAST(max_kurtosis / 20.0 * 100, 100)), 1)",
+          "label": "Avg Health Score"
+        },
+        "subheader": "Fleet average (last 7 days)",
+        "y_axis_format": ".0f",
+        "adhoc_filters": [
+          {
+            "expressionType": "SIMPLE",
+            "subject": "date",
+            "operator": ">=",
+            "comparator": "{{ (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d') }}"
+          }
+        ]
+      }
+    },
+    {
+      "id": 208,
+      "slice_name": "Bearing Defect Frequency Trend (BPFO / BPFI)",
+      "viz_type": "echarts_timeseries_line",
+      "description": "BPFO and BPFI spectral magnitudes over time. Rising magnitude at these frequencies indicates developing bearing defects.",
+      "datasource": "bearing_defect_frequencies",
+      "params": {
+        "x_axis": "timestamp",
+        "metrics": [
+          {
+            "expressionType": "SIMPLE",
+            "column": { "column_name": "bpfo_magnitude" },
+            "aggregate": "AVG",
+            "label": "BPFO Magnitude (dB)"
+          },
+          {
+            "expressionType": "SIMPLE",
+            "column": { "column_name": "bpfi_magnitude" },
+            "aggregate": "AVG",
+            "label": "BPFI Magnitude (dB)"
+          },
+          {
+            "expressionType": "SIMPLE",
+            "column": { "column_name": "bsf_magnitude" },
+            "aggregate": "AVG",
+            "label": "BSF Magnitude (dB)"
+          },
+          {
+            "expressionType": "SIMPLE",
+            "column": { "column_name": "ftf_magnitude" },
+            "aggregate": "AVG",
+            "label": "FTF Magnitude (dB)"
+          }
+        ],
+        "groupby": ["device_id"],
+        "time_grain_sqla": "P1D",
+        "color_scheme": "industrial_health",
+        "show_legend": true,
+        "rich_tooltip": true,
+        "tooltipTimeFormat": "%Y-%m-%d",
+        "y_axis_label": "Spectral Magnitude (dB)",
+        "x_axis_label": "Date",
+        "zoomable": true,
+        "annotation_note": "BPFO = Ball Pass Frequency Outer Race; BPFI = Ball Pass Frequency Inner Race; BSF = Ball Spin Frequency; FTF = Fundamental Train Frequency"
+      }
+    }
+  ]
+}
