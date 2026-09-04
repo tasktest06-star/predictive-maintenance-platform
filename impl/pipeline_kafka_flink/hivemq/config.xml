@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  HiveMQ CE Configuration — PDM Platform
+  Handles 50,000+ concurrent MQTT sensor connections.
+  Bridges all messages to the Kafka event bus via hivemq-kafka-extension.
+-->
+<hivemq xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="hivemq-config.xsd">
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       Listeners
+       ════════════════════════════════════════════════════════════════════ -->
+  <listeners>
+
+    <!-- Plaintext MQTT — for local dev and internal trusted network only.
+         Disable in production (use TLS listener exclusively). -->
+    <tcp-listener>
+      <port>1883</port>
+      <bind-address>0.0.0.0</bind-address>
+      <name>mqtt-plaintext</name>
+    </tcp-listener>
+
+    <!-- TLS MQTT — mutual TLS for production sensor connections -->
+    <tls-tcp-listener>
+      <port>8883</port>
+      <bind-address>0.0.0.0</bind-address>
+      <name>mqtt-tls</name>
+      <tls>
+        <keystore>
+          <path>/opt/hivemq/conf/tls/server.keystore</path>
+          <password>${env:HIVEMQ_KEYSTORE_PASSWORD}</password>
+          <private-key-password>${env:HIVEMQ_KEY_PASSWORD}</private-key-password>
+        </keystore>
+        <truststore>
+          <path>/opt/hivemq/conf/tls/server.truststore</path>
+          <password>${env:HIVEMQ_TRUSTSTORE_PASSWORD}</password>
+        </truststore>
+        <!-- Require client certificate for mutual TLS -->
+        <client-auth-mode>REQUIRED</client-auth-mode>
+        <protocols>
+          <protocol>TLSv1.3</protocol>
+          <protocol>TLSv1.2</protocol>
+        </protocols>
+        <cipher-suites>
+          <cipher-suite>TLS_AES_256_GCM_SHA384</cipher-suite>
+          <cipher-suite>TLS_CHACHA20_POLY1305_SHA256</cipher-suite>
+          <cipher-suite>TLS_AES_128_GCM_SHA256</cipher-suite>
+          <cipher-suite>TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384</cipher-suite>
+        </cipher-suites>
+      </tls>
+    </tls-tcp-listener>
+
+    <!-- WebSocket listener (optional — for browser-based debugging dashboards) -->
+    <websocket-listener>
+      <port>8000</port>
+      <bind-address>0.0.0.0</bind-address>
+      <name>mqtt-websocket</name>
+      <path>/mqtt</path>
+      <allow-extensions>true</allow-extensions>
+    </websocket-listener>
+
+  </listeners>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       MQTT Configuration
+       ════════════════════════════════════════════════════════════════════ -->
+  <mqtt>
+    <session-expiry>
+      <!-- Devices retain sessions for 24 hours after disconnect -->
+      <max-interval>86400</max-interval>
+    </session-expiry>
+
+    <message-expiry>
+      <!-- Messages expire after 1 hour if not delivered -->
+      <max-interval>3600</max-interval>
+    </message-expiry>
+
+    <packets>
+      <!-- 256 KB max packet size — accommodates raw waveform bursts -->
+      <max-packet-size>262144</max-packet-size>
+    </packets>
+
+    <receive-maximum>
+      <!-- Max in-flight QoS 1/2 messages per client -->
+      <server-receive-maximum>100</server-receive-maximum>
+    </receive-maximum>
+
+    <keep-alive>
+      <!-- Sensor nodes send PINGREQ every 60 seconds -->
+      <max-keep-alive>300</max-keep-alive>
+      <!-- Allow devices to request no keep-alive (use with caution) -->
+      <allow-unlimited>false</allow-unlimited>
+    </keep-alive>
+
+    <topic-alias>
+      <enabled>true</enabled>
+      <max-per-client>16</max-per-client>
+    </topic-alias>
+
+    <subscription-identifier>
+      <enabled>true</enabled>
+    </subscription-identifier>
+
+    <wildcard-subscriptions>
+      <!-- Allow ops team to subscribe to sensors/# for debugging -->
+      <enabled>true</enabled>
+    </wildcard-subscriptions>
+
+    <shared-subscriptions>
+      <!-- Enable $share/group/topic for load-balanced consumers -->
+      <enabled>true</enabled>
+    </shared-subscriptions>
+
+    <retained-messages>
+      <!-- Retain last status message per device for new subscribers -->
+      <enabled>true</enabled>
+    </retained-messages>
+
+    <queued-messages>
+      <!-- Buffer 1000 messages per offline session (QoS 1/2 only) -->
+      <max-queue-size>1000</max-queue-size>
+      <strategy>discard-oldest</strategy>
+    </queued-messages>
+  </mqtt>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       MQTT-Kafka Extension Bridge
+       Maps MQTT topic patterns to Kafka topics.
+       Uses hivemq-kafka-extension (bundled with HiveMQ CE >= 2022.1)
+       Full config lives in extensions/hivemq-kafka-extension/conf/kafka-configuration.xml
+       ════════════════════════════════════════════════════════════════════ -->
+  <!--
+    MQTT Topic → Kafka Topic mapping (defined in extension config):
+
+    sensors/+/telemetry    → sensor.telemetry    (key = device_id extracted from topic)
+    sensors/+/alerts       → sensor.alerts       (key = device_id)
+    sensors/+/raw_waveform → sensor.waveforms    (key = device_id)
+
+    The '+' wildcard matches the device_id segment.
+    The extension extracts device_id and sets it as the Kafka record key for
+    partition assignment, ensuring per-device message ordering.
+  -->
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       Cluster Configuration (for multi-node HiveMQ CE deployment)
+       ════════════════════════════════════════════════════════════════════ -->
+  <cluster>
+    <enabled>true</enabled>
+    <transport>
+      <tcp>
+        <bind-address>0.0.0.0</bind-address>
+        <bind-port>7800</bind-port>
+      </tcp>
+    </transport>
+    <discovery>
+      <!-- DNS discovery for Kubernetes/Docker Swarm; replace with static peers for bare-metal -->
+      <extension>
+        <reload-interval>60</reload-interval>
+      </extension>
+    </discovery>
+  </cluster>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       Persistence
+       ════════════════════════════════════════════════════════════════════ -->
+  <persistence>
+    <mode>in-memory</mode>
+    <!-- For production: switch to "file" and configure data directory -->
+    <!--
+    <mode>file</mode>
+    <data-directory>/opt/hivemq/data</data-directory>
+    -->
+  </persistence>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       Security
+       ════════════════════════════════════════════════════════════════════ -->
+  <security>
+    <!-- Sensor nodes authenticate via client certificate (mTLS) CN = device_id -->
+    <!-- The auth extension validates CN against device registry in PostgreSQL -->
+    <allow-empty-client-id>
+      <enabled>false</enabled>
+    </allow-empty-client-id>
+    <payload-format-validation>
+      <enabled>false</enabled>
+    </payload-format-validation>
+    <utf8-validation>
+      <enabled>true</enabled>
+    </utf8-validation>
+  </security>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       REST API (metrics + management)
+       ════════════════════════════════════════════════════════════════════ -->
+  <api>
+    <enabled>true</enabled>
+    <port>8080</port>
+    <bind-address>0.0.0.0</bind-address>
+    <auth>
+      <!-- Protect management API with basic auth in production -->
+      <enabled>false</enabled>
+    </auth>
+    <cors>
+      <enabled>true</enabled>
+    </cors>
+  </api>
+
+</hivemq>

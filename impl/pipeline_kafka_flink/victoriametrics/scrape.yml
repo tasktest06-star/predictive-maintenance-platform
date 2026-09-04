@@ -1,0 +1,166 @@
+# VictoriaMetrics / Prometheus scrape configuration
+# Scrapes pipeline health metrics from all components.
+# Mounted at /etc/victoriametrics/scrape.yml inside the victoriametrics container.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    environment: "local-dev"
+    cluster: "pdm-local"
+
+scrape_configs:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # VictoriaMetrics self-metrics
+  # ─────────────────────────────────────────────────────────────────────────
+  - job_name: "victoriametrics"
+    static_configs:
+      - targets: ["localhost:8428"]
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Kafka Exporter (danielqsj/kafka-exporter)
+  # Exposes consumer group lag, broker availability, topic partition counts.
+  # Key metrics:
+  #   kafka_consumergroup_lag{consumergroup, topic, partition}
+  #   kafka_brokers
+  #   kafka_topic_partitions{topic}
+  # ─────────────────────────────────────────────────────────────────────────
+  - job_name: "kafka-exporter"
+    static_configs:
+      - targets: ["kafka-exporter:9308"]
+    metrics_path: /metrics
+    scrape_interval: 15s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: "kafka-cluster"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Kafka JMX Metrics — Broker 1
+  # Requires jmx_exporter sidecar or JMX Prometheus agent on each broker.
+  # Key metrics:
+  #   kafka_server_brokertopicmetrics_messagesin_total{topic}
+  #   kafka_server_replicamanager_underreplicatedpartitions
+  #   kafka_controller_activecontrollercount
+  #   kafka_network_requestmetrics_totaltimems{request="Produce"}
+  # ─────────────────────────────────────────────────────────────────────────
+  - job_name: "kafka-broker-1-jmx"
+    static_configs:
+      - targets: ["kafka-1:9997"]
+        labels:
+          broker_id: "1"
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: "kafka-broker-2-jmx"
+    static_configs:
+      - targets: ["kafka-2:9998"]
+        labels:
+          broker_id: "2"
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  - job_name: "kafka-broker-3-jmx"
+    static_configs:
+      - targets: ["kafka-3:9999"]
+        labels:
+          broker_id: "3"
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Apache Flink — Prometheus Metrics Reporter
+  # Configured via FLINK_PROPERTIES: metrics.reporter.prom.*
+  # JobManager exposes cluster-level metrics; TaskManagers expose task metrics.
+  # Key metrics:
+  #   flink_jobmanager_numRunningJobs
+  #   flink_taskmanager_job_task_numRecordsInPerSecond
+  #   flink_taskmanager_job_task_currentInputWatermark
+  #   flink_taskmanager_Status_JVM_Memory_Heap_Used
+  #   flink_jobmanager_job_lastCheckpointDuration
+  #   flink_jobmanager_job_numberOfCompletedCheckpoints
+  # ─────────────────────────────────────────────────────────────────────────
+  - job_name: "flink-jobmanager"
+    static_configs:
+      - targets: ["flink-jobmanager:9249"]
+        labels:
+          flink_role: "jobmanager"
+    metrics_path: /
+    scrape_interval: 15s
+    honor_labels: true
+
+  - job_name: "flink-taskmanager-1"
+    static_configs:
+      - targets: ["flink-taskmanager-1:9249"]
+        labels:
+          flink_role: "taskmanager"
+          tm_id: "1"
+    metrics_path: /
+    scrape_interval: 15s
+    honor_labels: true
+
+  - job_name: "flink-taskmanager-2"
+    static_configs:
+      - targets: ["flink-taskmanager-2:9249"]
+        labels:
+          flink_role: "taskmanager"
+          tm_id: "2"
+    metrics_path: /
+    scrape_interval: 15s
+    honor_labels: true
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # HiveMQ CE — REST API Metrics (via /api/v1/metrics)
+  # HiveMQ CE exposes Prometheus-compatible metrics at the REST API endpoint.
+  # Key metrics:
+  #   hivemq_messages_incoming_total
+  #   hivemq_messages_outgoing_total
+  #   hivemq_network_connections_current
+  #   hivemq_sessions_overall_current
+  #   hivemq_subscriptions_current
+  #   hivemq_publish_queue_size
+  # ─────────────────────────────────────────────────────────────────────────
+  - job_name: "hivemq"
+    static_configs:
+      - targets: ["hivemq:8080"]
+    metrics_path: /api/v1/prometheus/metrics
+    scrape_interval: 15s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: "hivemq-broker"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # PostgreSQL — postgres_exporter
+  # Key metrics:
+  #   pg_up
+  #   pg_database_size_bytes{datname="pdm"}
+  #   pg_stat_user_tables_n_live_tup{relname="alerts"}
+  #   pg_stat_activity_count{state="active"}
+  # ─────────────────────────────────────────────────────────────────────────
+  - job_name: "postgresql"
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ZooKeeper
+  # ─────────────────────────────────────────────────────────────────────────
+  - job_name: "zookeeper"
+    static_configs:
+      - targets: ["zookeeper:7070"]
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Kafka UI (Provectus) — optional application metrics
+  # ─────────────────────────────────────────────────────────────────────────
+  - job_name: "kafka-ui"
+    static_configs:
+      - targets: ["kafka-ui:8080"]
+    metrics_path: /actuator/prometheus
+    scrape_interval: 60s
