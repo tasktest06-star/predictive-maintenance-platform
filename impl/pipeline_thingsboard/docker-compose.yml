@@ -1,0 +1,194 @@
+version: "3.9"
+
+# ThingsBoard CE all-in-one IoT stack for predictive maintenance
+# Suitable for development and single-site deployments (<5,000 sensors)
+#
+# Services:
+#   postgres        — ThingsBoard metadata, alarm history, device registry
+#   redis           — ThingsBoard session cache
+#   thingsboard     — IoT platform (MQTT + HTTP + rule engine + dashboards)
+#   victoria-metrics— Long-term time-series storage (PromQL API)
+#   grafana         — Advanced analytics dashboard (queries VictoriaMetrics)
+#
+# Ports exposed on host:
+#   8080  — ThingsBoard HTTP UI / REST API
+#   1883  — MQTT (plaintext, dev only — use 8883 with TLS in production)
+#   7070  — CoAP (IoT lightweight protocol)
+#   8428  — VictoriaMetrics HTTP API (PromQL / remote-write)
+#   3000  — Grafana dashboards
+
+networks:
+  tb-net:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  tb-data:
+  tb-logs:
+  victoria-data:
+  grafana-data:
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL — ThingsBoard metadata store
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: tb-postgres
+    restart: unless-stopped
+    networks: [tb-net]
+    environment:
+      POSTGRES_DB: thingsboard
+      POSTGRES_USER: thingsboard
+      POSTGRES_PASSWORD: thingsboard_secret
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U thingsboard -d thingsboard"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # ---------------------------------------------------------------------------
+  # Redis — ThingsBoard session store and distributed cache
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: tb-redis
+    restart: unless-stopped
+    networks: [tb-net]
+    command: redis-server --requirepass redis_secret --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis_secret", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # ThingsBoard CE 3.6 — MQTT ingestion + rule engine + dashboards
+  # ---------------------------------------------------------------------------
+  thingsboard:
+    image: thingsboard/tb-postgres:3.6.4
+    container_name: thingsboard
+    restart: unless-stopped
+    networks: [tb-net]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:9090"   # HTTP UI and REST API
+      - "1883:1883"   # MQTT plaintext (dev only)
+      - "8883:8883"   # MQTT TLS (production)
+      - "7070:7070"   # CoAP
+    environment:
+      # Queue type — use in-memory for dev; switch to Kafka for production
+      TB_QUEUE_TYPE: in-memory
+
+      # Database
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/thingsboard
+      SPRING_DATASOURCE_USERNAME: thingsboard
+      SPRING_DATASOURCE_PASSWORD: thingsboard_secret
+
+      # Redis cache
+      CACHE_TYPE: redis
+      REDIS_CONNECTION_TYPE: standalone
+      REDIS_STANDALONE_HOST: redis
+      REDIS_STANDALONE_PORT: 6379
+      REDIS_PASSWORD: redis_secret
+
+      # MQTT broker settings
+      MQTT_ENABLED: "true"
+      MQTT_BIND_PORT: 1883
+      MQTT_SSL_ENABLED: "false"   # set to true + provide certs for production
+
+      # CoAP
+      COAP_ENABLED: "true"
+      COAP_BIND_PORT: 7070
+
+      # HTTP transport
+      HTTP_ENABLED: "true"
+
+      # JVM heap (adjust for your host — minimum 2 GB for ThingsBoard)
+      JAVA_OPTS: >-
+        -Xms512m
+        -Xmx2048m
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=200
+        -XX:+HeapDumpOnOutOfMemoryError
+        -XX:HeapDumpPath=/var/log/thingsboard/heapdump.hprof
+
+      # Logging
+      LOGGING_LEVEL_ORG_THINGSBOARD: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: WARN
+    volumes:
+      - tb-data:/data
+      - tb-logs:/var/log/thingsboard
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9090/login"]
+      interval: 20s
+      timeout: 10s
+      retries: 15
+      start_period: 90s
+
+  # ---------------------------------------------------------------------------
+  # VictoriaMetrics — Long-term time-series storage
+  # Receives telemetry via the victoria_exporter sidecar (remote-write)
+  # PromQL API available at http://localhost:8428
+  # ---------------------------------------------------------------------------
+  victoria-metrics:
+    image: victoriametrics/victoria-metrics:v1.100.1
+    container_name: victoria-metrics
+    restart: unless-stopped
+    networks: [tb-net]
+    ports:
+      - "8428:8428"
+    command:
+      - --storageDataPath=/victoria-data
+      - --retentionPeriod=365d          # 1 year hot retention
+      - --httpListenAddr=:8428
+      - --selfScrapeInterval=15s        # internal metrics
+      - --maxLabelsPerTimeseries=50
+    volumes:
+      - victoria-data:/victoria-data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8428/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Grafana — Advanced dashboards querying VictoriaMetrics
+  # Access: http://localhost:3000  admin / admin
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: grafana
+    restart: unless-stopped
+    networks: [tb-net]
+    depends_on:
+      victoria-metrics:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      # Pre-configure VictoriaMetrics as the default datasource
+      GF_DATASOURCES_DEFAULT_NAME: VictoriaMetrics
+    volumes:
+      - grafana-data:/var/lib/grafana
+      # Datasource provisioning — auto-wire VictoriaMetrics on first boot
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s

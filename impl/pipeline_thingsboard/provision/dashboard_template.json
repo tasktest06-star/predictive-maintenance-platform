@@ -1,0 +1,290 @@
+{
+  "title": "Machine Health",
+  "description": "Predictive maintenance dashboard — vibration RMS, kurtosis, temperature, RPM, and active alarms. Bind to an asset using the entity alias below.",
+  "configuration": {
+    "entityAliases": {
+      "machine-alias": {
+        "id": "machine-alias",
+        "alias": "Selected Machine",
+        "filter": {
+          "type": "entityType",
+          "resolveMultiple": false,
+          "singleEntity": null,
+          "entityType": "ASSET"
+        }
+      },
+      "sensors-alias": {
+        "id": "sensors-alias",
+        "alias": "Machine Sensors",
+        "filter": {
+          "type": "relationsQuery",
+          "resolveMultiple": true,
+          "rootStateEntity": true,
+          "stateEntityParamName": "entityId",
+          "direction": "FROM",
+          "filters": [{"relationType": "Contains", "entityTypes": ["DEVICE"]}],
+          "maxLevel": 1
+        }
+      }
+    },
+    "timewindow": {
+      "history": {
+        "historyType": 1,
+        "timewindowMs": 604800000
+      },
+      "aggregation": {
+        "type": "AVG",
+        "limit": 25000
+      }
+    },
+    "settings": {
+      "stateControllerId": "entity",
+      "showTitle": true,
+      "backgroundColor": "#eeeeee",
+      "color": "rgba(0,0,0,0.87)",
+      "padding": "8px",
+      "margin": "0px",
+      "updateEntityOnPageNavigation": true
+    }
+  },
+  "widgets": [
+
+    {
+      "id": "widget-health-gauge",
+      "typeFullFqn": "system.cards.simple_card",
+      "type": "latest",
+      "sizeX": 3,
+      "sizeY": 3,
+      "row": 0,
+      "col": 0,
+      "config": {
+        "title": "Health Score",
+        "datasources": [
+          {
+            "type": "entity",
+            "entityAliasId": "sensors-alias",
+            "dataKeys": [
+              {
+                "name": "health_score",
+                "type": "timeseries",
+                "label": "Health Score",
+                "color": "#4CAF50",
+                "settings": {}
+              }
+            ]
+          }
+        ],
+        "settings": {
+          "showTitle": true,
+          "backgroundColor": "#fff",
+          "labelPosition": "bottom",
+          "units": "/100",
+          "decimals": 1,
+          "showLastUpdateTime": true,
+          "cardButtons": ["fullscreen"]
+        },
+        "color": {
+          "ranges": [
+            {"from": 0,  "to": 40, "color": "#F44336"},
+            {"from": 40, "to": 70, "color": "#FF9800"},
+            {"from": 70, "to": 100, "color": "#4CAF50"}
+          ]
+        }
+      }
+    },
+
+    {
+      "id": "widget-rms-trend",
+      "typeFullFqn": "system.charts.basic_timeseries",
+      "type": "timeseries",
+      "sizeX": 9,
+      "sizeY": 4,
+      "row": 0,
+      "col": 3,
+      "config": {
+        "title": "RMS Velocity — Last 7 Days  (mm/s, ISO 10816)",
+        "datasources": [
+          {
+            "type": "entity",
+            "entityAliasId": "sensors-alias",
+            "dataKeys": [
+              {
+                "name": "rms",
+                "type": "timeseries",
+                "label": "RMS (mm/s)",
+                "color": "#2196F3",
+                "settings": {"showLines": true, "fillLines": false}
+              }
+            ]
+          }
+        ],
+        "settings": {
+          "showLegend": true,
+          "smoothLines": false,
+          "stack": false,
+          "yaxis": {
+            "min": 0,
+            "showLabels": true,
+            "title": "mm/s"
+          },
+          "thresholds": [
+            {"value": 4.5,  "color": "#FF9800", "lineWidth": 1, "label": "Zone B/C — WARNING"},
+            {"value": 7.1,  "color": "#FF5722", "lineWidth": 1, "label": "Zone C mid — MAJOR"},
+            {"value": 11.2, "color": "#F44336", "lineWidth": 2, "label": "Zone D — CRITICAL"}
+          ]
+        }
+      }
+    },
+
+    {
+      "id": "widget-kurtosis-trend",
+      "typeFullFqn": "system.charts.basic_timeseries",
+      "type": "timeseries",
+      "sizeX": 6,
+      "sizeY": 4,
+      "row": 4,
+      "col": 0,
+      "config": {
+        "title": "Kurtosis Trend — Bearing Impulsiveness Indicator",
+        "datasources": [
+          {
+            "type": "entity",
+            "entityAliasId": "sensors-alias",
+            "dataKeys": [
+              {
+                "name": "kurtosis",
+                "type": "timeseries",
+                "label": "Kurtosis",
+                "color": "#9C27B0",
+                "settings": {"showLines": true}
+              },
+              {
+                "name": "crest_factor",
+                "type": "timeseries",
+                "label": "Crest Factor",
+                "color": "#E91E63",
+                "settings": {"showLines": true}
+              }
+            ]
+          }
+        ],
+        "settings": {
+          "showLegend": true,
+          "yaxis": {"min": 0, "title": "dimensionless"},
+          "thresholds": [
+            {"value": 3.0, "color": "#FF9800", "lineWidth": 1, "label": "Normal upper bound"},
+            {"value": 6.0, "color": "#F44336", "lineWidth": 1, "label": "Fault indicator"}
+          ]
+        }
+      }
+    },
+
+    {
+      "id": "widget-active-alarms",
+      "typeFullFqn": "system.alarm.alarms_table",
+      "type": "alarm",
+      "sizeX": 6,
+      "sizeY": 4,
+      "row": 4,
+      "col": 6,
+      "config": {
+        "title": "Active Alarms",
+        "datasources": [
+          {
+            "type": "entity",
+            "entityAliasId": "machine-alias",
+            "dataKeys": []
+          }
+        ],
+        "settings": {
+          "alarmsTitle": "Active Alarms",
+          "enableSearch": true,
+          "enableSelectColumnDisplay": true,
+          "enableFilter": true,
+          "statusList": ["ACTIVE_ACK", "ACTIVE_UNACK"],
+          "defaultPageSize": 10,
+          "columns": [
+            {"key": "createdTime",     "title": "Created",  "sortable": true, "order": 0},
+            {"key": "severity",        "title": "Severity", "sortable": true, "order": 1},
+            {"key": "type",            "title": "Type",     "sortable": false, "order": 2},
+            {"key": "originatorName",  "title": "Device",   "sortable": false, "order": 3},
+            {"key": "details.rms_mms", "title": "RMS (mm/s)", "sortable": true, "order": 4},
+            {"key": "details.iso_zone","title": "ISO Zone", "sortable": false, "order": 5},
+            {"key": "status",          "title": "Status",   "sortable": true, "order": 6}
+          ],
+          "alarmSeverityColorFunction": "if (alarm.severity === 'CRITICAL') return '#F44336';\nif (alarm.severity === 'MAJOR')    return '#FF5722';\nif (alarm.severity === 'WARNING')  return '#FF9800';\nreturn '#2196F3';"
+        }
+      }
+    },
+
+    {
+      "id": "widget-temperature",
+      "typeFullFqn": "system.charts.basic_timeseries",
+      "type": "timeseries",
+      "sizeX": 6,
+      "sizeY": 3,
+      "row": 8,
+      "col": 0,
+      "config": {
+        "title": "Bearing Temperature — Last 7 Days",
+        "datasources": [
+          {
+            "type": "entity",
+            "entityAliasId": "sensors-alias",
+            "dataKeys": [
+              {
+                "name": "temperature",
+                "type": "timeseries",
+                "label": "Temperature (°C)",
+                "color": "#FF5722",
+                "settings": {"showLines": true, "fillLines": false}
+              }
+            ]
+          }
+        ],
+        "settings": {
+          "showLegend": true,
+          "yaxis": {"min": 0, "title": "°C"},
+          "thresholds": [
+            {"value": 80.0, "color": "#FF9800", "lineWidth": 1, "label": "Elevated — check lubrication"},
+            {"value": 100.0, "color": "#F44336", "lineWidth": 2, "label": "High — bearing at risk"}
+          ]
+        }
+      }
+    },
+
+    {
+      "id": "widget-rpm",
+      "typeFullFqn": "system.charts.basic_timeseries",
+      "type": "timeseries",
+      "sizeX": 6,
+      "sizeY": 3,
+      "row": 8,
+      "col": 6,
+      "config": {
+        "title": "Shaft Speed (RPM) — Last 7 Days",
+        "datasources": [
+          {
+            "type": "entity",
+            "entityAliasId": "sensors-alias",
+            "dataKeys": [
+              {
+                "name": "rpm",
+                "type": "timeseries",
+                "label": "RPM",
+                "color": "#00BCD4",
+                "settings": {"showLines": true, "fillLines": false}
+              }
+            ]
+          }
+        ],
+        "settings": {
+          "showLegend": true,
+          "yaxis": {"min": 0, "title": "RPM"},
+          "thresholds": []
+        }
+      }
+    }
+
+  ]
+}

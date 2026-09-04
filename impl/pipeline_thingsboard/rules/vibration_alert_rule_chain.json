@@ -1,0 +1,328 @@
+{
+  "ruleChain": {
+    "name": "Vibration Alert Rule Chain",
+    "type": "CORE",
+    "firstRuleNodeId": {
+      "id": "node-filter-sensor-type",
+      "entityType": "RULE_NODE"
+    },
+    "root": false,
+    "debugMode": false,
+    "configuration": null,
+    "additionalInfo": {
+      "description": "Processes vibration sensor telemetry: filters, computes derived features, evaluates ISO 10816 thresholds, creates staged alarms, enriches with asset metadata, routes notifications by severity, and forwards to ML engine for fault classification."
+    }
+  },
+  "metadata": {
+    "nodes": [
+
+      {
+        "id": "node-filter-sensor-type",
+        "type": "org.thingsboard.rule.engine.filter.TbMsgTypeFilterNode",
+        "name": "Filter: Vibration Sensors Only",
+        "debugMode": false,
+        "configuration": {
+          "messageTypes": ["POST_TELEMETRY_REQUEST"],
+          "scriptLang": "JS",
+          "jsScript": "return msg.sensor_type === 'vibration' || metadata.sensor_type === 'vibration';",
+          "nodeType": "filter"
+        },
+        "additionalInfo": {
+          "description": "Pass only telemetry messages from sensors with sensor_type == 'vibration'. All other message types fall through to the 'Other' chain.",
+          "layoutX": 100,
+          "layoutY": 200
+        }
+      },
+
+      {
+        "id": "node-compute-features",
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "Script: Compute RMS & Crest Factor",
+        "debugMode": false,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "// Compute derived vibration features from raw telemetry payload.\n// Input fields: peak_g (array or scalar), rms (optional pre-computed), temperature, rpm\n// Output: enriched message with rms_mms, crest_factor, kurtosis, iso_zone\n\nvar rms_mms = msg.rms !== undefined ? msg.rms : 0.0;\nvar peak    = msg.peak_g !== undefined ? Math.abs(msg.peak_g) : 0.0;\nvar kurt    = msg.kurtosis !== undefined ? msg.kurtosis : 0.0;\nvar temp_c  = msg.temperature !== undefined ? msg.temperature : 0.0;\nvar rpm     = msg.rpm !== undefined ? msg.rpm : 0.0;\n\n// Crest Factor = peak / RMS  (values >6 indicate impulsive fault)\nvar crest_factor = rms_mms > 0 ? (peak / rms_mms) : 0.0;\n\n// ISO 10816-3 severity zones for machines 15–300 kW:\n//   Zone A: rms <= 2.3  mm/s  (new or just repaired)\n//   Zone B: rms <= 4.5  mm/s  (acceptable for long-term operation)\n//   Zone C: rms <= 11.2 mm/s  (alarm — investigate soon)\n//   Zone D: rms >  11.2 mm/s  (danger — shut down)\nvar iso_zone;\nif      (rms_mms <= 2.3)  { iso_zone = 'A'; }\nelse if (rms_mms <= 4.5)  { iso_zone = 'B'; }\nelse if (rms_mms <= 11.2) { iso_zone = 'C'; }\nelse                      { iso_zone = 'D'; }\n\n// Health score 0–100 (linear interpolation across zones)\nvar health_score = Math.max(0, Math.min(100, 100 - (rms_mms / 11.2) * 70));\n\nmsg.rms_mms       = parseFloat(rms_mms.toFixed(3));\nmsg.crest_factor  = parseFloat(crest_factor.toFixed(3));\nmsg.kurtosis      = parseFloat(kurt.toFixed(3));\nmsg.iso_zone      = iso_zone;\nmsg.health_score  = parseFloat(health_score.toFixed(1));\nmsg.temperature   = temp_c;\nmsg.rpm           = rpm;\nmsg.bpfo_magnitude = msg.bpfo_magnitude !== undefined ? msg.bpfo_magnitude : 0.0;\n\nreturn {msg: msg, metadata: metadata, msgType: msgType};"
+        },
+        "additionalInfo": {
+          "description": "Enriches telemetry with RMS mm/s, crest factor, ISO 10816 zone classification, and a 0-100 health score.",
+          "layoutX": 300,
+          "layoutY": 200
+        }
+      },
+
+      {
+        "id": "node-threshold-warning",
+        "type": "org.thingsboard.rule.engine.filter.TbMsgTypeSwitchNode",
+        "name": "Threshold: Stage 1 WARNING (rms > 4.5 mm/s)",
+        "debugMode": false,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "// WARNING: Zone C entry — rms > 4.5 mm/s (ISO 10816 Zone B/C boundary)\nif (msg.rms_mms > 4.5 && msg.rms_mms <= 7.1) { return 'True'; }\nreturn 'False';",
+          "nodeType": "filter"
+        },
+        "additionalInfo": {
+          "description": "Stage 1 — borderline condition. Investigate at next scheduled maintenance window.",
+          "layoutX": 500,
+          "layoutY": 100
+        }
+      },
+
+      {
+        "id": "node-threshold-major",
+        "type": "org.thingsboard.rule.engine.filter.TbMsgTypeSwitchNode",
+        "name": "Threshold: Stage 2 MAJOR (rms > 7.1 mm/s)",
+        "debugMode": false,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "// MAJOR: Mid Zone C — rms > 7.1 mm/s\nif (msg.rms_mms > 7.1 && msg.rms_mms <= 11.2) { return 'True'; }\nreturn 'False';",
+          "nodeType": "filter"
+        },
+        "additionalInfo": {
+          "description": "Stage 2 — schedule corrective maintenance within 2 weeks.",
+          "layoutX": 500,
+          "layoutY": 200
+        }
+      },
+
+      {
+        "id": "node-threshold-critical",
+        "type": "org.thingsboard.rule.engine.filter.TbMsgTypeSwitchNode",
+        "name": "Threshold: Stage 3-4 CRITICAL (rms > 11.2 mm/s)",
+        "debugMode": false,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "// CRITICAL: Zone D — rms > 11.2 mm/s OR kurtosis > 8 (impulsive bearing fault)\nif (msg.rms_mms > 11.2 || msg.kurtosis > 8.0) { return 'True'; }\nreturn 'False';",
+          "nodeType": "filter"
+        },
+        "additionalInfo": {
+          "description": "Stage 3/4 — immediate action required. Machine shutdown may be necessary.",
+          "layoutX": 500,
+          "layoutY": 300
+        }
+      },
+
+      {
+        "id": "node-create-alarm-warning",
+        "type": "org.thingsboard.rule.engine.action.TbCreateAlarmNode",
+        "name": "Create Alarm: WARNING",
+        "debugMode": false,
+        "configuration": {
+          "alarmType": "VIBRATION_HIGH",
+          "alarmSeverity": "WARNING",
+          "alarmStatus": "ACTIVE_UNACK",
+          "scriptLang": "JS",
+          "alarmDetailsBuildJs": "var details = {};\ndetails.rms_mms       = msg.rms_mms;\ndetails.crest_factor  = msg.crest_factor;\ndetails.kurtosis      = msg.kurtosis;\ndetails.iso_zone      = msg.iso_zone;\ndetails.health_score  = msg.health_score;\ndetails.rpm           = msg.rpm;\ndetails.temperature   = msg.temperature;\ndetails.threshold_mms = 4.5;\ndetails.iso_standard  = 'ISO 10816-3 Zone B/C boundary';\ndetails.stage         = 1;\ndetails.action        = 'Inspect at next scheduled maintenance';\nreturn details;",
+          "propagate": true,
+          "propagateRelationTypes": ["Contains"]
+        },
+        "additionalInfo": {
+          "description": "Stage 1 alarm — rms 4.5–7.1 mm/s. Yellow status in dashboard.",
+          "layoutX": 700,
+          "layoutY": 100
+        }
+      },
+
+      {
+        "id": "node-create-alarm-major",
+        "type": "org.thingsboard.rule.engine.action.TbCreateAlarmNode",
+        "name": "Create Alarm: MAJOR",
+        "debugMode": false,
+        "configuration": {
+          "alarmType": "VIBRATION_HIGH",
+          "alarmSeverity": "MAJOR",
+          "alarmStatus": "ACTIVE_UNACK",
+          "scriptLang": "JS",
+          "alarmDetailsBuildJs": "var details = {};\ndetails.rms_mms       = msg.rms_mms;\ndetails.crest_factor  = msg.crest_factor;\ndetails.kurtosis      = msg.kurtosis;\ndetails.iso_zone      = msg.iso_zone;\ndetails.health_score  = msg.health_score;\ndetails.rpm           = msg.rpm;\ndetails.temperature   = msg.temperature;\ndetails.threshold_mms = 7.1;\ndetails.iso_standard  = 'ISO 10816-3 Zone C (mid)';\ndetails.stage         = 2;\ndetails.action        = 'Schedule corrective maintenance within 2 weeks';\nreturn details;",
+          "propagate": true,
+          "propagateRelationTypes": ["Contains"]
+        },
+        "additionalInfo": {
+          "description": "Stage 2 alarm — rms 7.1–11.2 mm/s. Orange status in dashboard.",
+          "layoutX": 700,
+          "layoutY": 200
+        }
+      },
+
+      {
+        "id": "node-create-alarm-critical",
+        "type": "org.thingsboard.rule.engine.action.TbCreateAlarmNode",
+        "name": "Create Alarm: CRITICAL",
+        "debugMode": false,
+        "configuration": {
+          "alarmType": "VIBRATION_CRITICAL",
+          "alarmSeverity": "CRITICAL",
+          "alarmStatus": "ACTIVE_UNACK",
+          "scriptLang": "JS",
+          "alarmDetailsBuildJs": "var details = {};\ndetails.rms_mms       = msg.rms_mms;\ndetails.crest_factor  = msg.crest_factor;\ndetails.kurtosis      = msg.kurtosis;\ndetails.iso_zone      = msg.iso_zone;\ndetails.health_score  = msg.health_score;\ndetails.rpm           = msg.rpm;\ndetails.temperature   = msg.temperature;\ndetails.bpfo_magnitude= msg.bpfo_magnitude;\ndetails.threshold_mms = 11.2;\ndetails.iso_standard  = 'ISO 10816-3 Zone D';\ndetails.stage         = '3-4';\ndetails.action        = 'Immediate inspection. Consider emergency shutdown.';\nreturn details;",
+          "propagate": true,
+          "propagateRelationTypes": ["Contains"]
+        },
+        "additionalInfo": {
+          "description": "Stage 3/4 alarm — rms >11.2 mm/s or kurtosis >8. Red status. Immediate action.",
+          "layoutX": 700,
+          "layoutY": 300
+        }
+      },
+
+      {
+        "id": "node-enrich-asset-metadata",
+        "type": "org.thingsboard.rule.engine.enrichment.TbGetRelatedAttributeNode",
+        "name": "Enrich: Asset Metadata",
+        "debugMode": false,
+        "configuration": {
+          "relationsQuery": {
+            "direction": "FROM",
+            "maxLevel": 2,
+            "filters": [{"relationType": "Contains", "entityTypes": ["ASSET"]}]
+          },
+          "attrMapping": {
+            "bearing_type":       "asset_bearing_type",
+            "criticality":        "asset_criticality",
+            "nominal_rpm":        "asset_nominal_rpm",
+            "machine_model":      "asset_machine_model",
+            "installation_date":  "asset_installation_date",
+            "production_line":    "asset_production_line"
+          },
+          "telemetryAttributesMap": {}
+        },
+        "additionalInfo": {
+          "description": "Looks up the parent Machine asset's attributes (bearing type, criticality, nominal RPM) and adds them to the alarm message metadata for downstream routing decisions.",
+          "layoutX": 900,
+          "layoutY": 200
+        }
+      },
+
+      {
+        "id": "node-webhook-ml-engine",
+        "type": "org.thingsboard.rule.engine.rest.TbRestApiCallNode",
+        "name": "Webhook: ML Fault Classification",
+        "debugMode": false,
+        "configuration": {
+          "restEndpointUrlPattern": "http://ml-engine:8000/api/v1/classify",
+          "requestMethod": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Source": "thingsboard-rule-engine"
+          },
+          "useSimpleClientHttpFactory": false,
+          "readTimeoutMs": 5000,
+          "enableProxy": false,
+          "trimQueue": false,
+          "maxParallelRequestsCount": 50,
+          "bodyTemplate": "{\n  \"device_id\": \"${metadata.deviceId}\",\n  \"device_name\": \"${metadata.deviceName}\",\n  \"timestamp\": \"${metadata.ts}\",\n  \"rms_mms\": ${msg.rms_mms},\n  \"crest_factor\": ${msg.crest_factor},\n  \"kurtosis\": ${msg.kurtosis},\n  \"bpfo_magnitude\": ${msg.bpfo_magnitude},\n  \"rpm\": ${msg.rpm},\n  \"temperature\": ${msg.temperature},\n  \"iso_zone\": \"${msg.iso_zone}\",\n  \"bearing_type\": \"${metadata.asset_bearing_type}\",\n  \"criticality\": \"${metadata.asset_criticality}\"\n}"
+        },
+        "additionalInfo": {
+          "description": "POSTs alarm context + vibration features to the ML engine for fault-type classification (imbalance / misalignment / bearing outer-race / looseness). Response is logged but not synchronously awaited in the rule chain to avoid latency.",
+          "layoutX": 1100,
+          "layoutY": 200
+        }
+      },
+
+      {
+        "id": "node-route-by-severity",
+        "type": "org.thingsboard.rule.engine.filter.TbMsgTypeSwitchNode",
+        "name": "Route: By Severity",
+        "debugMode": false,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "return metadata.alarmSeverity || 'WARNING';"
+        },
+        "additionalInfo": {
+          "description": "Routes alarm messages to the appropriate notification node based on severity.",
+          "layoutX": 1100,
+          "layoutY": 350
+        }
+      },
+
+      {
+        "id": "node-notify-email",
+        "type": "org.thingsboard.rule.engine.mail.TbSendEmailNode",
+        "name": "Notify: Email (WARNING / MAJOR)",
+        "debugMode": false,
+        "configuration": {
+          "fromTemplate": "noreply@predictive-maintenance.local",
+          "toTemplate": "${metadata.maintainer_email}",
+          "subjectTemplate": "[${metadata.alarmSeverity}] Vibration alarm — ${metadata.deviceName}",
+          "bodyTemplate": "A ${metadata.alarmSeverity} vibration alarm was triggered.\n\nDevice: ${metadata.deviceName}\nTimestamp: ${metadata.ts}\nRMS velocity: ${msg.rms_mms} mm/s  (ISO 10816 Zone ${msg.iso_zone})\nCrest factor: ${msg.crest_factor}\nKurtosis: ${msg.kurtosis}\nHealth score: ${msg.health_score}/100\n\nRecommended action: ${metadata.alarm_action}\n\nOpen ThingsBoard: http://thingsboard:8080\n"
+        },
+        "additionalInfo": {
+          "description": "Sends email notification for WARNING and MAJOR severity alarms to the assigned maintainer.",
+          "layoutX": 1300,
+          "layoutY": 150
+        }
+      },
+
+      {
+        "id": "node-notify-sms",
+        "type": "org.thingsboard.rule.engine.rest.TbRestApiCallNode",
+        "name": "Notify: SMS / PagerDuty (CRITICAL)",
+        "debugMode": false,
+        "configuration": {
+          "restEndpointUrlPattern": "http://notification-gateway:9000/api/v1/critical-alert",
+          "requestMethod": "POST",
+          "headers": {"Content-Type": "application/json"},
+          "readTimeoutMs": 3000,
+          "bodyTemplate": "{\n  \"channel\": \"sms+pagerduty\",\n  \"device\": \"${metadata.deviceName}\",\n  \"severity\": \"${metadata.alarmSeverity}\",\n  \"rms_mms\": ${msg.rms_mms},\n  \"iso_zone\": \"${msg.iso_zone}\",\n  \"health_score\": ${msg.health_score},\n  \"action\": \"Immediate inspection required\"\n}"
+        },
+        "additionalInfo": {
+          "description": "Triggers SMS and PagerDuty notification for CRITICAL alarms via an external notification gateway.",
+          "layoutX": 1300,
+          "layoutY": 350
+        }
+      },
+
+      {
+        "id": "node-save-to-db",
+        "type": "org.thingsboard.rule.engine.action.TbSaveToCustomCassandraTableNode",
+        "name": "Save: Alarm to PostgreSQL",
+        "debugMode": false,
+        "configuration": {
+          "tableName": "alarm_events",
+          "fieldsMapping": {
+            "device_id":      "metadata.deviceId",
+            "device_name":    "metadata.deviceName",
+            "alarm_type":     "metadata.alarmType",
+            "severity":       "metadata.alarmSeverity",
+            "rms_mms":        "msg.rms_mms",
+            "crest_factor":   "msg.crest_factor",
+            "kurtosis":       "msg.kurtosis",
+            "iso_zone":       "msg.iso_zone",
+            "health_score":   "msg.health_score",
+            "temperature":    "msg.temperature",
+            "rpm":            "msg.rpm",
+            "bearing_type":   "metadata.asset_bearing_type",
+            "criticality":    "metadata.asset_criticality",
+            "ts":             "metadata.ts"
+          }
+        },
+        "additionalInfo": {
+          "description": "Persists alarm event with full vibration feature context to PostgreSQL for historical analysis and CMMS integration.",
+          "layoutX": 1300,
+          "layoutY": 500
+        }
+      }
+
+    ],
+
+    "connections": [
+      {"fromIndex": 0, "toIndex": 1,  "type": "True",     "fromId": "node-filter-sensor-type",     "toId": "node-compute-features"},
+      {"fromIndex": 1, "toIndex": 2,  "type": "Success",  "fromId": "node-compute-features",        "toId": "node-threshold-warning"},
+      {"fromIndex": 1, "toIndex": 3,  "type": "Success",  "fromId": "node-compute-features",        "toId": "node-threshold-major"},
+      {"fromIndex": 1, "toIndex": 4,  "type": "Success",  "fromId": "node-compute-features",        "toId": "node-threshold-critical"},
+      {"fromIndex": 2, "toIndex": 5,  "type": "True",     "fromId": "node-threshold-warning",       "toId": "node-create-alarm-warning"},
+      {"fromIndex": 3, "toIndex": 6,  "type": "True",     "fromId": "node-threshold-major",         "toId": "node-create-alarm-major"},
+      {"fromIndex": 4, "toIndex": 7,  "type": "True",     "fromId": "node-threshold-critical",      "toId": "node-create-alarm-critical"},
+      {"fromIndex": 5, "toIndex": 8,  "type": "Created",  "fromId": "node-create-alarm-warning",    "toId": "node-enrich-asset-metadata"},
+      {"fromIndex": 6, "toIndex": 8,  "type": "Created",  "fromId": "node-create-alarm-major",      "toId": "node-enrich-asset-metadata"},
+      {"fromIndex": 7, "toIndex": 8,  "type": "Created",  "fromId": "node-create-alarm-critical",   "toId": "node-enrich-asset-metadata"},
+      {"fromIndex": 8, "toIndex": 9,  "type": "Success",  "fromId": "node-enrich-asset-metadata",   "toId": "node-webhook-ml-engine"},
+      {"fromIndex": 8, "toIndex": 10, "type": "Success",  "fromId": "node-enrich-asset-metadata",   "toId": "node-route-by-severity"},
+      {"fromIndex": 10,"toIndex": 11, "type": "WARNING",  "fromId": "node-route-by-severity",        "toId": "node-notify-email"},
+      {"fromIndex": 10,"toIndex": 11, "type": "MAJOR",    "fromId": "node-route-by-severity",        "toId": "node-notify-email"},
+      {"fromIndex": 10,"toIndex": 12, "type": "CRITICAL", "fromId": "node-route-by-severity",        "toId": "node-notify-sms"},
+      {"fromIndex": 8, "toIndex": 13, "type": "Success",  "fromId": "node-enrich-asset-metadata",   "toId": "node-save-to-db"}
+    ],
+
+    "ruleChainConnections": []
+  }
+}
