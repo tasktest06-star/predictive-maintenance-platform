@@ -1,0 +1,30 @@
+# VAE Anomaly Detection — Python dependencies
+# Install: pip install -r requirements.txt
+#
+# Note: torch is CPU-only by default.  For GPU, replace with the appropriate
+# CUDA wheel:
+#   pip install torch==2.3.0+cu121 --index-url https://download.pytorch.org/whl/cu121
+
+# --- Deep learning ---
+torch==2.3.0
+torchvision==0.18.0
+
+# --- Numerical & scientific ---
+numpy==1.26.4
+scipy==1.13.0
+
+# --- Data processing & features ---
+pandas==2.2.2
+scikit-learn==1.4.2
+
+# --- Experiment tracking ---
+mlflow==2.13.0
+
+# --- REST API serving ---
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+pydantic==2.7.1
+
+# --- Utilities ---
+tqdm==4.66.4
+python-dotenv==1.0.1

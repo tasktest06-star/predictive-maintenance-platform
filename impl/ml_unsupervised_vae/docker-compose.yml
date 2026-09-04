@@ -1,0 +1,184 @@
+version: "3.9"
+
+# ---------------------------------------------------------------------------
+# VAE Anomaly Detection — Training + Serving Stack
+#
+# Services
+# --------
+#   mlflow     : experiment tracking server (SQLite backend)
+#   ml-trainer : one-shot training job (train.py) — exits when done
+#   ml-server  : FastAPI inference server (infer.py)
+#
+# Volumes
+# -------
+#   datasets        : input CSV files (bind-mount from host)
+#   models          : saved .pt checkpoints (shared between trainer & server)
+#   mlflow-artifacts: MLflow artefacts
+#
+# Quick start
+# -----------
+#   # 1. Set the path to your dataset on the host
+#   export DATASET_DIR=/path/to/cwru/features
+#
+#   # 2. Run MLflow + training
+#   docker compose up mlflow ml-trainer
+#
+#   # 3. After training completes, start the inference server
+#   docker compose up ml-server
+#
+#   # 4. Score a sample
+#   curl -s -X POST http://localhost:8080/score \
+#        -H "Content-Type: application/json" \
+#        -d '{"features": [0.1, 0.2, ...]}' | jq .
+# ---------------------------------------------------------------------------
+
+services:
+
+  # ---- MLflow tracking server -------------------------------------------
+  mlflow:
+    image: python:3.11-slim
+    container_name: vae-mlflow
+    command: >
+      bash -c "pip install --quiet mlflow==2.13.0 &&
+               mlflow server
+                 --backend-store-uri sqlite:////mlflow/mlruns.db
+                 --default-artifact-root /mlflow/artifacts
+                 --host 0.0.0.0
+                 --port 5000"
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow-artifacts:/mlflow
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - vae-net
+    restart: unless-stopped
+
+  # ---- Training job -------------------------------------------------------
+  ml-trainer:
+    image: pytorch/pytorch:2.3.0-cuda12.1-cudnn8-runtime
+    container_name: vae-trainer
+    # Override DATASET_FILE to point to your CSV inside the /datasets volume
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - DATASET_FILE=${DATASET_FILE:-/datasets/cwru_features.csv}
+      - INPUT_DIM=${INPUT_DIM:-1024}
+      - LATENT_DIM=${LATENT_DIM:-64}
+      - BETA=${BETA:-1.0}
+      - EPOCHS=${EPOCHS:-100}
+      - BATCH_SIZE=${BATCH_SIZE:-256}
+    command: >
+      bash -c "pip install --quiet
+                  mlflow==2.13.0
+                  scikit-learn==1.4.2
+                  pandas==2.2.2
+                  scipy==1.13.0 &&
+               python /app/train.py
+                 --data $$DATASET_FILE
+                 --output /models/vae_checkpoint.pt
+                 --input-dim $$INPUT_DIM
+                 --latent-dim $$LATENT_DIM
+                 --beta $$BETA
+                 --epochs $$EPOCHS
+                 --batch-size $$BATCH_SIZE
+                 --mlflow-uri $$MLFLOW_TRACKING_URI"
+    volumes:
+      - ./:/app:ro                     # mount source code read-only
+      - datasets:/datasets             # input data
+      - models:/models                 # output checkpoint
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    networks:
+      - vae-net
+    # Trainer is a one-shot job — do not restart automatically
+    restart: "no"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # ---- Inference server ---------------------------------------------------
+  ml-server:
+    image: pytorch/pytorch:2.3.0-cuda12.1-cudnn8-runtime
+    container_name: vae-server
+    environment:
+      - MODEL_CHECKPOINT=/models/vae_checkpoint.pt
+      - WORKERS=${SERVER_WORKERS:-2}
+    command: >
+      bash -c "pip install --quiet
+                  fastapi==0.111.0
+                  uvicorn==0.29.0
+                  scikit-learn==1.4.2
+                  pandas==2.2.2
+                  scipy==1.13.0 &&
+               uvicorn infer:app
+                 --host 0.0.0.0
+                 --port 8080
+                 --workers $$WORKERS"
+    working_dir: /app
+    volumes:
+      - ./:/app:ro                     # source code
+      - models:/models:ro              # trained checkpoint (read-only)
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ml-trainer
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - vae-net
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+
+
+# ---------------------------------------------------------------------------
+# Volumes
+# ---------------------------------------------------------------------------
+
+volumes:
+  datasets:
+    # Bind-mount your dataset directory by setting DATASET_DIR:
+    #   docker compose up -v datasets:/path/to/data
+    # Or override in a .env file: DATASET_DIR=/path/to/data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATASET_DIR:-./data}
+
+  models:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${MODELS_DIR:-./models}
+
+  mlflow-artifacts:
+    driver: local
+
+
+# ---------------------------------------------------------------------------
+# Networks
+# ---------------------------------------------------------------------------
+
+networks:
+  vae-net:
+    driver: bridge
