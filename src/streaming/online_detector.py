@@ -60,18 +60,20 @@ class OnlineAnomalyDetector:
             self._temp_mean = features.temp_mean
             self._rms_var = 1e-6
             self._temp_var = 1e-6
-        else:
-            self._rms_mean, self._rms_var = self._update_ewma(
-                self._rms_mean, self._rms_var, features.rms
-            )
-            self._temp_mean, self._temp_var = self._update_ewma(
-                self._temp_mean, self._temp_var, features.temp_mean
-            )
+            self._n += 1
+            return False, 0.0
 
-        self._n += 1
-
+        # Score against the pre-update baseline, then update.
         rms_score = self._anomaly_score(features.rms, self._rms_mean, self._rms_var)
         temp_score = self._anomaly_score(features.temp_mean, self._temp_mean, self._temp_var)
+
+        self._rms_mean, self._rms_var = self._update_ewma(
+            self._rms_mean, self._rms_var, features.rms
+        )
+        self._temp_mean, self._temp_var = self._update_ewma(
+            self._temp_mean, self._temp_var, features.temp_mean
+        )
+        self._n += 1
         rpm_score = min(1.0, features.rpm_cv * 10.0)  # RPM CV > 0.1 → anomalous
 
         # Weighted combination; vibration is most reliable signal

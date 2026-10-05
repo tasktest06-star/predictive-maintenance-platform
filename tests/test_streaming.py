@@ -196,7 +196,6 @@ async def test_pipeline_stats():
 
 @pytest.mark.asyncio
 async def test_api_ingest():
-    import httpx
     from fastapi.testclient import TestClient
     from src.streaming.api import app
 
