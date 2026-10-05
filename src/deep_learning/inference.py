@@ -18,12 +18,11 @@ _WINDOW_SIZE = 2048
 
 
 def _severity_from(confidence: float, anomaly_score: float, threshold: float) -> Severity:
+    # NORMAL fault_type override is applied by the caller; this covers non-normal faults only.
     normalized_anomaly = min(anomaly_score / max(threshold, 1e-8), 3.0)
-    if confidence > 0.9 and normalized_anomaly < 1.0:
-        return Severity.NORMAL if _FAULT_TYPES[0] == FaultType.NORMAL else Severity.WARNING
-    if confidence > 0.7 or normalized_anomaly > 2.0:
+    if confidence > 0.85 or normalized_anomaly > 2.0:
         return Severity.CRITICAL
-    if confidence > 0.5 or normalized_anomaly > 1.5:
+    if confidence > 0.65 or normalized_anomaly > 1.5:
         return Severity.ALERT
     return Severity.WARNING
 
