@@ -44,7 +44,8 @@ class SignalProcessor:
             spectral_entropy = 0.0
 
         dominant_freq = float(freqs[np.argmax(psd)])
-        base_freq = reading.rpm / 60.0
+        # Guard against zero RPM to avoid DC-component aliasing in harmonic bins
+        base_freq = max(reading.rpm, 1.0) / 60.0
 
         harmonics = {
             "1x": self._harmonic_power(freqs, psd, base_freq),

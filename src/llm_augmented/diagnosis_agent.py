@@ -5,7 +5,6 @@ import json
 import logging
 import os
 import re
-import time
 from typing import Optional
 
 from src.common.models import FaultDiagnosis, FaultType, Severity, SensorReading
@@ -15,7 +14,6 @@ from .work_order import WorkOrder, WorkOrderPriority, fallback_work_order
 
 logger = logging.getLogger(__name__)
 
-_SEVERITY_MAP: dict[tuple[FaultType, bool], Severity] = {}
 
 def _classify_severity(fault: FaultType, confidence: float, rms: float) -> Severity:
     if fault == FaultType.NORMAL:
@@ -110,7 +108,10 @@ Respond ONLY with a valid JSON object (no markdown, no explanation outside JSON)
             match = re.search(r"\{.*\}", text, re.DOTALL)
             if not match:
                 raise ValueError(f"No JSON found in LLM response: {text[:200]}")
-            data = json.loads(match.group())
+            try:
+                data = json.loads(match.group())
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"Malformed JSON in LLM response: {exc}") from exc
 
         # Normalise priority
         raw_priority = str(data.get("priority", "routine")).lower()
@@ -121,7 +122,8 @@ Respond ONLY with a valid JSON object (no markdown, no explanation outside JSON)
         return data
 
     def _call_llm_sync(self, prompt: str) -> str:
-        assert self._client is not None
+        if self._client is None:
+            raise RuntimeError("LLM client not initialized")
         import anthropic
         response = self._client.messages.create(
             model=self._model,
