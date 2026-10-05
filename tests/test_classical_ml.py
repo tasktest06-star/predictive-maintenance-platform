@@ -10,6 +10,8 @@ from fastapi.testclient import TestClient
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from sklearn.model_selection import train_test_split
+
 from src.classical_ml.feature_extraction import FeatureExtractor
 from src.classical_ml.model import PredictiveMaintenanceClassifier
 from src.common.data_generator import SensorDataGenerator
@@ -55,9 +57,10 @@ def test_feature_extraction_fault_separability(
 
 def test_classifier_train_predict(generator: SensorDataGenerator) -> None:
     readings, labels = generator.generate_dataset(n_per_class=50)
-    split = int(len(readings) * 0.8)
-    train_r, test_r = readings[:split], readings[split:]
-    train_l, test_l = labels[:split], labels[split:]
+    # Sequential split would leave NORMAL entirely in test — use stratified split
+    train_r, test_r, train_l, test_l = train_test_split(
+        readings, labels, test_size=0.2, stratify=labels, random_state=42
+    )
 
     clf = PredictiveMaintenanceClassifier()
     clf.fit(train_r, train_l)

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from typing import List
 import numpy as np
-from scipy import stats, signal as sp_signal
+from scipy import stats
 
 from src.common.models import SensorReading
 
