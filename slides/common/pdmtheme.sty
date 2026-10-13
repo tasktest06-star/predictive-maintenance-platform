@@ -1,0 +1,170 @@
+% pdmtheme -- shared beamer theme for the predictive-maintenance platform decks.
+%
+% Built on beamer's `default` theme rather than metropolis or any other
+% contributed theme, on purpose: the decks have to compile on a bare TeX Live
+% installation and in CI without a package manager. Everything here uses only
+% packages present in texlive-latex-recommended + pgf.
+%
+% Colours match the project's data-viz palette (see slides/figures/make_figures.py)
+% so a TikZ block diagram and an included matplotlib figure sit on the same
+% surface with the same ink.
+%
+% Usage:
+%   \documentclass[aspectratio=169,10pt]{beamer}
+%   \usepackage{../common/pdmtheme}
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{pdmtheme}[2026/10/13 PdM platform beamer theme]
+
+\RequirePackage[T1]{fontenc}
+\RequirePackage{helvet}
+\RequirePackage{microtype}
+\RequirePackage{xcolor}
+\RequirePackage{amsmath}
+\RequirePackage{booktabs}
+\RequirePackage{colortbl}
+\RequirePackage{listings}
+\RequirePackage{tikz}
+\RequirePackage{pgfplots}
+\RequirePackage{caption}
+\usetikzlibrary{positioning,calc,shapes.geometric,fit,backgrounds,arrows,%
+                decorations.pathreplacing,patterns}
+\pgfplotsset{compat=1.18}
+
+\usetheme{default}
+\usefonttheme{professionalfonts}
+\renewcommand{\familydefault}{\sfdefault}
+
+% ---------------------------------------------------------------- palette ---
+\definecolor{pdmsurface}{HTML}{FCFCFB}
+\definecolor{pdmink}{HTML}{0B0B0B}
+\definecolor{pdmink2}{HTML}{52514E}
+\definecolor{pdmmuted}{HTML}{898781}
+\definecolor{pdmgrid}{HTML}{E1E0D9}
+\definecolor{pdmrule}{HTML}{C3C2B7}
+% categorical slots 1-3 (validated all-pairs in both modes)
+\definecolor{pdmblue}{HTML}{2A78D6}
+\definecolor{pdmorange}{HTML}{EB6834}
+\definecolor{pdmaqua}{HTML}{1BAF7A}
+% status -- reserved, never used as a series colour
+\definecolor{pdmgood}{HTML}{0CA30C}
+\definecolor{pdmwarn}{HTML}{FAB219}
+\definecolor{pdmcrit}{HTML}{D03B3B}
+
+\setbeamercolor{normal text}{fg=pdmink,bg=pdmsurface}
+\setbeamercolor{structure}{fg=pdmblue}
+\setbeamercolor{frametitle}{fg=pdmink,bg=pdmsurface}
+\setbeamercolor{title}{fg=pdmink}
+\setbeamercolor{author}{fg=pdmink2}
+\setbeamercolor{date}{fg=pdmmuted}
+\setbeamercolor{institute}{fg=pdmink2}
+\setbeamercolor{alerted text}{fg=pdmcrit}
+\setbeamercolor{example text}{fg=pdmaqua}
+\setbeamercolor{itemize item}{fg=pdmblue}
+\setbeamercolor{itemize subitem}{fg=pdmmuted}
+\setbeamercolor{enumerate item}{fg=pdmblue}
+\setbeamercolor{block title}{fg=pdmink,bg=pdmgrid}
+\setbeamercolor{block body}{fg=pdmink,bg=pdmsurface}
+\setbeamercolor{section in toc}{fg=pdmink}
+\setbeamercolor{caption name}{fg=pdmmuted}
+
+% ----------------------------------------------------------------- layout ---
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize items}[circle]
+\setbeamertemplate{caption}[numbered]
+\captionsetup{font=scriptsize,labelfont={scriptsize,bf}}
+\setbeamersize{text margin left=7mm,text margin right=7mm}
+
+% Frame title with a hairline underneath -- a recessive separator rather than a
+% coloured banner, so the figures remain the most saturated thing on the slide.
+\setbeamertemplate{frametitle}{%
+  \vspace{2.5mm}%
+  \usebeamerfont{frametitle}\usebeamercolor[fg]{frametitle}%
+  \raggedright\large\bfseries\insertframetitle\par
+  \ifx\insertframesubtitle\@empty\else
+    {\normalsize\mdseries\color{pdmink2}\insertframesubtitle\par}%
+  \fi
+  \vspace{-1mm}\noindent{\color{pdmrule}\rule{\textwidth}{0.4pt}}\par\vspace{1mm}%
+}
+
+\setbeamertemplate{footline}{%
+  \hbox{%
+    \begin{beamercolorbox}[wd=.72\paperwidth,ht=3.2ex,dp=1.4ex,leftskip=7mm]{}%
+      {\scriptsize\color{pdmmuted}\insertshorttitle}%
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.28\paperwidth,ht=3.2ex,dp=1.4ex,rightskip=7mm]{}%
+      \hfill{\scriptsize\color{pdmmuted}\insertframenumber/\inserttotalframenumber}%
+    \end{beamercolorbox}%
+  }%
+}
+
+% ------------------------------------------------------------------ blocks ---
+% Block styles for TikZ architecture diagrams. Deliberately flat: fills are a
+% 12 % tint so black label text keeps its contrast.
+\tikzset{
+  pdmblk/.style   = {draw=pdmrule, line width=0.5pt, rounded corners=1.5pt,
+                     fill=pdmblue!12, align=center, inner sep=2pt,
+                     minimum height=6.5mm, font=\scriptsize},
+  pdmblk2/.style  = {pdmblk, fill=pdmorange!14},
+  pdmblk3/.style  = {pdmblk, fill=pdmaqua!14},
+  pdmblkoff/.style= {pdmblk, fill=pdmgrid},
+  pdmarrow/.style = {->, >=stealth, line width=0.7pt, draw=pdmink2},
+  pdmarrowalt/.style = {pdmarrow, dashed},
+  pdmgroup/.style = {draw=pdmmuted, dashed, line width=0.4pt, rounded corners=2pt,
+                     inner sep=2.5mm},
+  pdmnote/.style  = {font=\tiny, color=pdmink2, align=left},
+}
+
+% ----------------------------------------------------------------- listings --
+\lstdefinestyle{pdm}{
+  basicstyle=\ttfamily\tiny\color{pdmink},
+  keywordstyle=\color{pdmblue}\bfseries,
+  commentstyle=\color{pdmmuted}\itshape,
+  stringstyle=\color{pdmaqua},
+  numberstyle=\ttfamily\tiny\color{pdmmuted},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{pdmgrid},
+  framesep=3pt,
+  backgroundcolor=\color{pdmsurface},
+  tabsize=2,
+  columns=fullflexible,
+  keepspaces=true,
+}
+\lstset{style=pdm}
+
+% ------------------------------------------------------------------ macros ---
+% \kv{key}{value} -- a compact two-column fact.
+\newcommand{\kv}[2]{{\color{pdmmuted}\scriptsize #1}\quad{\color{pdmink}#2}}
+% \hero{number}{label} -- the single-number stat tile.
+\newcommand{\hero}[2]{%
+  \begin{minipage}{\linewidth}\centering
+    {\fontsize{26}{28}\selectfont\bfseries\color{pdmblue}#1}\\[1mm]
+    {\scriptsize\color{pdmink2}#2}
+  \end{minipage}%
+}
+% \srcnote{...} -- provenance line at the bottom of a slide.
+\newcommand{\srcnote}[1]{\par\vspace{1mm}{\tiny\color{pdmmuted}#1}}
+% \arx{id} -- a linked arXiv id.
+\RequirePackage{hyperref}
+\hypersetup{colorlinks=true, urlcolor=pdmblue, linkcolor=pdmblue,
+            citecolor=pdmblue, pdfborder={0 0 0}}
+\newcommand{\arx}[1]{\href{https://arxiv.org/abs/#1}{\texttt{#1}}}
+% \gh{owner/repo} -- a linked GitHub repository.
+% \nolinkurl rather than \texttt: repository names contain underscores, and an
+% underscore inside \texttt is a math-mode error. \nolinkurl typesets the string
+% verbatim in \ttfamily with URL catcodes, which is exactly what is wanted.
+\newcommand{\gh}[1]{\href{https://github.com/#1}{\nolinkurl{#1}}}
+% \ghs{owner/repo}{shortened display} -- for names too long for a table cell.
+\newcommand{\ghs}[2]{\href{https://github.com/#1}{\nolinkurl{#2}}}
+% Takeaway box: the one sentence the slide exists for.
+\newcommand{\takeaway}[1]{%
+  \par\vspace{1.5mm}%
+  \noindent\begin{minipage}{\linewidth}%
+    \noindent{\color{pdmrule}\rule{\linewidth}{0.4pt}}\par\vspace{1mm}%
+    \noindent{\scriptsize\textbf{So what:} #1}%
+  \end{minipage}\par
+}
+
+\endinput

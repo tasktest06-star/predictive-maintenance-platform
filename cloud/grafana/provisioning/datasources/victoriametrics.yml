@@ -1,0 +1,14 @@
+apiVersion: 1
+datasources:
+  - name: VictoriaMetrics
+    type: prometheus
+    access: proxy
+    url: http://victoriametrics:8428
+    isDefault: true
+    jsonData:
+      httpMethod: POST
+      # VictoriaMetrics is Prometheus-compatible; declaring the version keeps
+      # Grafana from offering query features the backend does not implement.
+      prometheusType: Prometheus
+      prometheusVersion: 2.40.0
+      timeInterval: 1h

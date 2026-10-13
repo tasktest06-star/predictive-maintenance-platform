@@ -1,0 +1,6 @@
+watch	27.3
+alarm	54.6
+critical	66.7
+first_dx	25.3
+kurt_peak_day	84.9
+kurt_moves_day	62.7

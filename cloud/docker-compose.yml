@@ -1,0 +1,132 @@
+# Predictive-maintenance platform: local/edge-complete stack.
+#
+#   docker compose up -d
+#   docker compose logs -f ingest
+#   open http://localhost:3000   (Grafana, admin/admin on first run)
+#
+# This is the whole server side in one file on purpose: a customer pilot often
+# starts as "run it on the gateway in the plant room" before anything is allowed
+# near a cloud account, and a stack that only exists as Terraform cannot do that.
+# The same images run on a Raspberry Pi 5 and on an EC2 instance.
+#
+# Not in this file, deliberately: Kafka. The ingest path here is MQTT -> service
+# -> VictoriaMetrics, which handles a few thousand sensors on one node. Kafka
+# earns its operational cost at the point where ingest must be replayable and
+# multi-consumer (see docs/00_architecture.md § when to add Kafka); adding it on
+# day one buys a ZooKeeper-shaped problem and no capability.
+
+name: pdm-platform
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    restart: unless-stopped
+    ports:
+      - "1883:1883"      # plain MQTT, LAN only
+      - "8883:8883"      # MQTT over TLS, for anything off-premises
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-t", "$$SYS/#", "-C", "1", "-i", "healthcheck", "-W", "3"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:v1.102.0
+    restart: unless-stopped
+    command:
+      - "--storageDataPath=/storage"
+      # 2 years: long enough to see a full seasonal cycle plus a bearing life,
+      # which is the minimum useful history for a trend-based alarm threshold.
+      - "--retentionPeriod=24"
+      - "--httpListenAddr=:8428"
+      - "--maxLabelsPerTimeseries=40"
+      # Deduplicate replayed store-and-forward writes with identical timestamps.
+      - "--dedup.minScrapeInterval=1ms"
+    ports:
+      - "8428:8428"
+    volumes:
+      - vm_data:/storage
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8428/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pdm
+      POSTGRES_USER: pdm
+      # Overridden by .env in any real deployment; see cloud/README.md.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pdm_dev_only}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pdm -d pdm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ingest:
+    build:
+      context: ..
+      dockerfile: cloud/ingest/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      victoriametrics:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      MQTT_HOST: mosquitto
+      MQTT_PORT: "1883"
+      MQTT_TOPIC: "pdm/+/telemetry"
+      VM_URL: "http://victoriametrics:8428"
+      PGHOST: postgres
+      PGUSER: pdm
+      PGDATABASE: pdm
+      PGPASSWORD: ${POSTGRES_PASSWORD:-pdm_dev_only}
+      LOG_LEVEL: INFO
+    command: ["--mqtt"]
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8080/healthz')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    restart: unless-stopped
+    depends_on:
+      victoriametrics:
+        condition: service_healthy
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: ""
+      GF_FEATURE_TOGGLES_ENABLE: ""
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+volumes:
+  mosquitto_data:
+  mosquitto_log:
+  vm_data:
+  pg_data:
+  grafana_data:

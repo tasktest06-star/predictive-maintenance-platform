@@ -15,3 +15,7 @@ dist/
 *.toc
 *.vrb
 *.synctex.gz
+# C build artefacts
+*.o
+*.a
+cdsp/tests/test_cdsp

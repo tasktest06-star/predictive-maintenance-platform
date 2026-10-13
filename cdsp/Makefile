@@ -1,0 +1,64 @@
+# Portable C99 DSP library + native cross-check against the Python reference.
+#
+# `make test` compiles for the build host and runs the golden-vector comparison,
+# so the firmware maths is verified on every commit with no hardware attached.
+# `make lib` produces the static library the firmware builds link against.
+#
+# Strict by default: -Werror with the pedantic set, because this code runs
+# unattended for years on a battery and a warning here is a field failure later.
+
+CC      ?= cc
+PY      ?= python3
+CFLAGS  ?= -std=c99 -O2 -g
+WARN     = -Wall -Wextra -Werror -Wpedantic -Wshadow -Wconversion \
+           -Wdouble-promotion -Wstrict-prototypes -Wmissing-prototypes \
+           -Wpointer-arith -Wcast-align -Wundef
+# The test harness deliberately mixes double accumulators with float data (the
+# reference is float64, the library is float32), so -Wdouble-promotion is noise
+# there. It stays on for the library itself, where an accidental promotion means
+# software float emulation on the target.
+TESTWARN = $(filter-out -Wdouble-promotion,$(WARN))
+INCLUDE  = -Iinclude
+LDLIBS   = -lm
+
+SRC      = $(wildcard src/*.c)
+OBJ      = $(SRC:.c=.o)
+LIB      = libpdmdsp.a
+GOLDEN   = tests/golden.h
+TESTBIN  = tests/test_cdsp
+
+.PHONY: all lib test golden clean size
+all: lib
+
+lib: $(LIB)
+
+$(LIB): $(OBJ)
+	$(AR) rcs $@ $^
+
+src/%.o: src/%.c include/pdm_dsp.h
+	$(CC) $(CFLAGS) $(WARN) $(INCLUDE) -c $< -o $@
+
+# Golden vectors come from the Python reference. Regenerate whenever pdmcore.dsp
+# changes -- a diff here means the two implementations have diverged.
+golden:
+	$(PY) tools/gen_golden.py --out $(GOLDEN)
+
+$(GOLDEN):
+	$(PY) tools/gen_golden.py --out $(GOLDEN)
+
+$(TESTBIN): tests/test_cdsp.c $(GOLDEN) $(LIB)
+	$(CC) $(CFLAGS) $(TESTWARN) $(INCLUDE) -Itests tests/test_cdsp.c $(LIB) $(LDLIBS) -o $@
+
+test: $(TESTBIN)
+	./$(TESTBIN)
+
+# Code size per object, the number that decides whether this fits in flash
+# alongside the vendor SDK.
+size: $(OBJ)
+	@$(SIZE) -t $(OBJ) 2>/dev/null || size -t $(OBJ)
+
+clean:
+	rm -f $(OBJ) $(LIB) $(TESTBIN)
+
+distclean: clean
+	rm -f $(GOLDEN)
