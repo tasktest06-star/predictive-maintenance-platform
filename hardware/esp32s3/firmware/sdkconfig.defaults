@@ -1,0 +1,62 @@
+# ESP-IDF defaults for this node. Each line here is a decision, not a default.
+
+CONFIG_IDF_TARGET="esp32s3"
+
+# --- PSRAM --------------------------------------------------------------
+# The 4096-sample acquisition buffer lives in PSRAM; the FFT working set stays
+# in internal SRAM, because a 4096-point transform out of PSRAM is ~3x slower.
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_SPIRAM_USE_MALLOC=y
+# Do NOT let the heap hand out PSRAM for small allocations: the Wi-Fi stack's
+# buffers end up there and its throughput collapses.
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=16384
+
+# --- CPU ----------------------------------------------------------------
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+# Both cores. The acquisition loop must not be preempted by the Wi-Fi task for
+# tens of milliseconds, which is what happens on a single core -- the ADXL355
+# FIFO is 96 samples (24 ms at 4 kHz) and a Wi-Fi stall overruns it. Pinning
+# acquisition to core 1 and the network stack to core 0 is the fix.
+CONFIG_FREERTOS_UNICORE=n
+
+# --- power --------------------------------------------------------------
+CONFIG_PM_ENABLE=y
+CONFIG_PM_DFS_INIT_AUTO=y
+# Deep sleep retains RTC slow memory, where the sequence number and wall clock
+# live. Without this every wake restarts the sequence at zero and the ingest
+# service deduplicates away real data.
+CONFIG_ESP_SLEEP_POWER_DOWN_FLASH=y
+
+# --- Wi-Fi --------------------------------------------------------------
+# Association is 240 mA.s, three orders of magnitude above sensing and compute
+# combined. Minimise the number of associations, not the bytes per association.
+CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM=6
+CONFIG_ESP_WIFI_DYNAMIC_RX_BUFFER_NUM=16
+CONFIG_ESP_WIFI_TX_BUFFER_TYPE=1
+CONFIG_ESP_WIFI_STATIC_TX_BUFFER_NUM=8
+# 11b-only fallback is slower per byte but associates in worse RF, which in a
+# plant room with a VFD is the common case.
+CONFIG_ESP_WIFI_ENABLE_WPA3_SAE=y
+
+# --- TLS ----------------------------------------------------------------
+# Per-device client certificates, not a shared PSK: an extracted sensor must not
+# compromise the fleet, and extracting a sensor from a plant wall is not a
+# sophisticated attack. See docs/04_security.md.
+CONFIG_ESP_TLS_USING_MBEDTLS=y
+CONFIG_MBEDTLS_HARDWARE_AES=y
+CONFIG_MBEDTLS_HARDWARE_SHA=y
+
+# --- watchdog -----------------------------------------------------------
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=30
+# 30 s, not the 5 s default: one acquisition is 1.024 s and one Wi-Fi
+# association attempt can take 10 s in poor RF.
+
+# --- partitions ---------------------------------------------------------
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+# A/B OTA plus a 1.5 MB NVS partition for the store-and-forward queue
+# (4096 frames x 300 B = 1.2 MB). See docs/04_security.md for the rollback
+# requirement: a node that cannot be recovered without a ladder must be able to
+# revert a bad image itself.
