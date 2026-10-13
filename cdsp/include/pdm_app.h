@@ -85,6 +85,12 @@ pdm_app_result pdm_app_step(uint64_t now_ms);
 uint32_t pdm_app_next_sleep_ms(void);
 
 void pdm_app_set_config(uint32_t interval_s, float threshold);
+
+/* Restore counters after a sleep mode that loses SRAM (ESP32-S3 deep sleep).
+ * The sequence number is not optional: the ingest service deduplicates on
+ * (device_id, sequence), so a node that restarts its counter at zero has every
+ * frame after the first wake discarded as a duplicate. */
+void pdm_app_restore_sequence(uint16_t sequence, uint32_t cycles);
 const pdm_board_info *pdm_app_board(void);
 const pdm_app_state  *pdm_app_state_get(void);
 

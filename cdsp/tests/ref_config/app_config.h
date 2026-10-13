@@ -55,7 +55,7 @@
  * threshold accordingly, which would have burned 99 mA.s per cycle instead of
  * 0.30 -- a 20x increase in total node energy, and a battery life of weeks
  * instead of years. Caught by
- * hardware/*/tests/test_kit.py::test_sensor_keepalive_crossover_is_consistent_with_the_energy_model,
+ * hardware/<kit>/tests/test_kit.py::test_sensor_keepalive_crossover_is_consistent_with_the_energy_model,
  * which recomputes the crossover from tools/power_budget.py rather than
  * trusting the constant.
  *

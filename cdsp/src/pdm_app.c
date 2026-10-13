@@ -85,6 +85,25 @@ const pdm_app_state *pdm_app_state_get(void)
     return &s_state;
 }
 
+void pdm_app_restore_sequence(uint16_t sequence, uint32_t cycles)
+{
+    /* For kits whose sleep mode loses RAM. The ESP32-S3 uses deep sleep
+     * (7 uA against light sleep's 240 uA, which at a 6-hour interval is 40x the
+     * entire acquisition budget), and deep sleep restarts from app_main with
+     * SRAM gone. Only RTC slow memory survives.
+     *
+     * The sequence number MUST be restored. Without it every wake restarts at
+     * zero, and the ingest service -- which deduplicates on
+     * (device_id, sequence) precisely so that store-and-forward replays are
+     * idempotent -- silently discards every frame after the first wake as a
+     * duplicate. The device would look healthy and transmit nothing.
+     *
+     * `cycles` is restored so the first-cycle sensor-power path and the
+     * diagnostics stay coherent across the sleep. */
+    s_state.sequence = sequence;
+    s_state.cycles = cycles;
+}
+
 void pdm_app_set_config(uint32_t interval_s, float threshold)
 {
     /* Clamped rather than trusted. A downlink that sets the interval to zero
