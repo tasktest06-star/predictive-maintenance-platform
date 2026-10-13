@@ -1,0 +1,39 @@
+/*
+ * Device-tree overlay: IIS3DWB on SPI3, battery divider on AIN0.
+ *
+ * SPI3 rather than SPI2: on the nRF9160 DK, SPI2 shares pins with the Arduino
+ * header that the shield uses for the ADXL362, and the two cannot be driven
+ * independently without cutting a trace.
+ */
+
+&spi3 {
+    status = "okay";
+    cs-gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
+    pinctrl-0 = <&spi3_default>;
+    pinctrl-1 = <&spi3_sleep>;
+    pinctrl-names = "default", "sleep";
+
+    iis3dwb: iis3dwb@0 {
+        compatible = "vnd,spi-device";
+        reg = <0>;
+        /* 8 MHz. The DK plus a shield plus jumper leads is the limiting
+         * factor, not the part (which accepts 10 MHz). */
+        spi-max-frequency = <8000000>;
+        label = "IIS3DWB";
+    };
+};
+
+&adc {
+    status = "okay";
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    channel@0 {
+        reg = <0>;
+        zephyr,gain = "ADC_GAIN_1_6";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,input-positive = <NRF_SAADC_AIN0>;
+        zephyr,resolution = <12>;
+    };
+};
