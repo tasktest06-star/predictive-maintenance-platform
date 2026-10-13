@@ -76,8 +76,19 @@
  * where they are not within an AA's -- the cell size is driven by pulse current,
  * not by capacity. A 3.0 V nominal chemistry also sits comfortably above the
  * nRF9160's 3.0 V minimum for the whole discharge curve. */
-#define APP_BATT_LOW_MV         3000u
-#define APP_BATT_CRITICAL_MV    2900u
+/* The nRF9160's absolute minimum VDD is 3.0 V (PS v2.1, Table 'Recommended
+ * operating conditions'). The first version of this file set the critical
+ * threshold to 2900 mV, reasoning from the LiSOCl2 cell's discharge curve and
+ * forgetting the part's own limit -- the node would have kept acquiring and
+ * transmitting below the voltage at which the modem's behaviour is undefined.
+ * Caught by hardware/<kit>/tests/test_kit.py::test_battery_thresholds_are_ordered,
+ * which asserts a 3000 mV floor for exactly this reason.
+ *
+ * 3200/3050 leaves 50 mV of margin above the part minimum and still uses most
+ * of the cell: a LiSOCl2 D-cell holds ~3.3 V under a 250 mA pulse for the great
+ * majority of its discharge and only falls through 3.2 V near the end. */
+#define APP_BATT_LOW_MV         3200u
+#define APP_BATT_CRITICAL_MV    3050u
 
 #define APP_DEFAULT_INTERVAL_S  3600u
 /* 1024 frames at hourly = 42 days. Deeper than the BLE kits because a cellular
