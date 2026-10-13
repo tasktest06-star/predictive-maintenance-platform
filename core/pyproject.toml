@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pdmcore"
+version = "0.3.0"
+description = "Production core for a wireless condition-monitoring platform: DSP, machine simulation, diagnostics, prognostics, edge model export"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Predictive Maintenance Platform" }]
+keywords = ["predictive-maintenance", "condition-monitoring", "vibration", "dsp", "tinyml"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Manufacturing",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3.9",
+  "Topic :: Scientific/Engineering",
+]
+dependencies = [
+  "numpy>=1.21",
+  "scipy>=1.7",
+]
+
+[project.optional-dependencies]
+# Classical models, calibration and the evaluation harness.
+ml = ["scikit-learn>=1.0"]
+# Deep models. Optional on purpose: the whole core runs without torch so it can
+# be installed on a gateway or a CI runner with no wheels available.
+deep = ["torch>=2.0", "onnx>=1.14", "onnxruntime>=1.16"]
+# Field tooling: MQTT publishing, Parquet archiving, plots.
+field = ["paho-mqtt>=1.6", "pyarrow>=12", "matplotlib>=3.5"]
+dev = ["pytest>=7", "pytest-cov>=4", "ruff>=0.1"]
+all = ["pdmcore[ml,deep,field,dev]"]
+
+[project.scripts]
+pdm = "pdmcore.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["pdmcore*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["error::RuntimeWarning"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "C4", "SIM"]
+ignore = ["E741"]

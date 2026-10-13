@@ -1,0 +1,44 @@
+name: core-ci
+
+on:
+  push:
+    branches: ["platform/**", "hw/**", "research/**"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.9 is the floor because gateway images (Raspberry Pi OS bookworm,
+        # JetPack 6) ship old interpreters; 3.12 catches deprecations early.
+        python-version: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install core (no torch -- the core must work without it)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "core[ml,dev]"
+      - name: Verify the core imports with only numpy and scipy present
+        run: python -c "import pdmcore, pdmcore.dsp, pdmcore.health, pdmcore.io; print(pdmcore.__version__)"
+      - name: Tests
+        run: python -m pytest core/tests -q
+      - name: CLI smoke test
+        run: |
+          pdm payload
+          pdm simulate --fault bearing_outer --severity 0.4 --out /tmp/run.npz
+          pdm diagnose /tmp/run.npz --baseline-n 20
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check core/pdmcore
