@@ -149,3 +149,53 @@ float pdm_harmonic_snr(const float *spec, uint16_t n_bins, float df_hz,
      * real detection. Same statistic as the Python reference. */
     return (float)(snr_sum / (double)tested);
 }
+
+float pdm_sideband_ratio(const float *spec, uint16_t n_bins, float df_hz,
+                         float carrier_hz, float modulation_hz,
+                         uint8_t n_sidebands, float rel_tol)
+{
+    if (spec == NULL || n_bins < 4u || df_hz <= 0.0f
+        || carrier_hz <= 0.0f || modulation_hz <= 0.0f) {
+        return 0.0f;
+    }
+    const float f_max = (float)(n_bins - 1u) * df_hz;
+    const float min_tol = 1.5f * df_hz;
+
+    float tol_c = rel_tol * carrier_hz;
+    if (tol_c < min_tol) {
+        tol_c = min_tol;
+    }
+    const float carrier = peak_near(spec, n_bins, df_hz, carrier_hz, tol_c);
+    const float floor_c = local_floor(spec, n_bins, df_hz, carrier_hz, 120.0f, tol_c);
+    if (floor_c <= 0.0f) {
+        return 0.0f;
+    }
+    /* Guard the division. With no carrier present the ratio of two noise
+     * samples is unbounded and happily reports 6.0 -- which reads as "strongly
+     * modulated" on a perfectly healthy machine. Below an SNR of 3 there is no
+     * carrier to modulate and the only honest answer is zero. */
+    if (carrier / floor_c < 3.0f) {
+        return 0.0f;
+    }
+
+    float side = 0.0f;
+    for (uint8_t k = 1u; k <= n_sidebands; ++k) {
+        for (int sign = -1; sign <= 1; sign += 2) {
+            const float f = carrier_hz + (float)sign * (float)k * modulation_hz;
+            if (f <= 0.0f || f > f_max) {
+                continue;
+            }
+            float tol = rel_tol * f;
+            if (tol < min_tol) {
+                tol = min_tol;
+            }
+            const float a = peak_near(spec, n_bins, df_hz, f, tol);
+            const float fl = local_floor(spec, n_bins, df_hz, f, 120.0f, tol);
+            /* Only count a sideband that is itself above the noise. */
+            if (fl > 0.0f && a >= 2.5f * fl) {
+                side += a;
+            }
+        }
+    }
+    return (carrier > 0.0f) ? (side / carrier) : 0.0f;
+}

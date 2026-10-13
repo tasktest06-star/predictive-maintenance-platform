@@ -35,7 +35,7 @@ from . import FEATURE_SPEC_VERSION
 from .dsp.bearing import BEARING_CATALOG, BearingGeometry, bearing_evidence, fault_frequencies
 from .dsp.envelope import DemodBand, envelope_spectrum, select_demodulation_band
 from .dsp.features import TIME_FEATURE_NAMES, time_features
-from .dsp.integrate import velocity_rms_mm_s
+from .dsp.integrate import integrate_spectrum
 from .dsp.iso import iso_zone
 from .dsp.spectrum import Spectrum, band_rms, spectral_shape_features, spectrum
 
@@ -271,7 +271,24 @@ class FeatureExtractor:
             shape = spectral_shape_features(spec)
             values.extend(float(shape[n]) for n in _SHAPE_NAMES)
 
-        vrms = velocity_rms_mm_s(x, fs, band_hz=cfg.velocity_band_hz, n_fft=cfg.n_fft)
+        # Integrate the spectrum we already have rather than calling
+        # velocity_rms_mm_s, which runs its own forward and inverse transform.
+        # Two reasons, and the second is the important one:
+        #
+        #   1. It is free -- the FFT is already paid for.
+        #   2. It is *exactly* what the firmware does (pdm_velocity_rms_mm_s),
+        #      so the feature agrees between edge and cloud. The two methods
+        #      differ by ~0.9 % because velocity_rms_mm_s applies a smooth
+        #      half-octave high-pass taper and transforms twice; 0.9 % is small
+        #      against the +-10-20 % that sensor mounting contributes, but an
+        #      unexplained 0.9 % step at the boundary between a live frame and a
+        #      recomputed snapshot is exactly the kind of artefact that costs
+        #      days to track down.
+        #
+        # velocity_rms_mm_s remains the reference ISO method and is what
+        # pdmcore.dsp exposes for reporting; this is the feature definition.
+        vel_spec = integrate_spectrum(spec, order=1, hp_hz=cfg.velocity_band_hz[0])
+        vrms = vel_spec.rms_in_band(cfg.velocity_band_hz[0], cfg.velocity_band_hz[1])
         zone = iso_zone(vrms, cfg.iso_class)
         values.append(float(vrms))
         values.append(float("ABCD".index(zone)))

@@ -261,6 +261,72 @@ def main(argv: Sequence[str] | None = None) -> int:
     w(c_float_array("gold_model_features", feats))
     w(f"#define GOLD_MODEL_SCORE   {score:.9e}f")
     w("")
+    # ------------------------------------------------- full feature vector
+    # The strongest available edge/cloud agreement check: one acquisition, the
+    # Python extractor's complete 63-float vector, and the C pipeline's. The
+    # bearing block is excluded from the numeric comparison because the device
+    # deliberately uses a different envelope (see cdsp/README.md); it is checked
+    # by property in test_pipeline.c instead.
+    from pdmcore.features import FeatureConfig, FeatureExtractor  # noqa: E402
+
+    fs_kit = 26667.0
+    n_kit = 8192           # 307 ms: set by the envelope stage, see app_config.h
+    n_fft_kit = 4096
+    shaft_hz = 29.6667
+    kit_cfg = FeatureConfig(
+        fs_hz=fs_kit,
+        n_fft=n_fft_kit,
+        window_name="hann",
+        n_bands=12,
+        band_f_lo_hz=5.0,
+        velocity_band_hz=(10.0, 1000.0),
+        iso_class="group2_rigid",
+        bearing=geom,
+        n_bearing_harmonics=5,
+        demod_band_hz=(2500.0, 6000.0),
+        envelope_n_fft=1024,
+        envelope_decimate_to_hz=2500.0,
+    )
+    kit_fx = FeatureExtractor(kit_cfg)
+
+    # A realistic acquisition: healthy baseline plus a BPFO impulse train, so
+    # the comparison exercises both the spectral and the impulsive paths.
+    krng = np.random.default_rng(2026)
+    tk = np.arange(n_kit) / fs_kit
+    acq = (
+        0.022 * np.sin(2 * np.pi * shaft_hz * tk)
+        + 0.010 * np.sin(2 * np.pi * 2 * shaft_hz * tk + 0.4)
+        + 0.004 * np.sin(2 * np.pi * 4 * 29.6667 * tk)
+        + 0.012 * krng.standard_normal(n_kit)
+    )
+    ff_kit = fault_frequencies(geom, shaft_hz)
+    ir_n = 220
+    t_ir2 = np.arange(ir_n) / fs_kit
+    ring = np.exp(-2 * np.pi * 0.03 * 3600.0 * t_ir2) * np.sin(2 * np.pi * 3600.0 * t_ir2)
+    period = fs_kit / ff_kit.bpfo_hz
+    pos = 50.0
+    while pos < n_kit - ir_n:
+        i0 = int(pos)
+        acq[i0 : i0 + ir_n] += 0.35 * ring
+        pos += period * (1.0 + 0.015 * krng.standard_normal())
+    acq = acq.astype(np.float64)
+
+    frame = kit_fx.extract(acq, shaft_hz)
+    w("/* --- one full acquisition and the Python extractor's feature vector --- */")
+    w(f"#define GOLD_KIT_FS      {fs_kit:.1f}f")
+    w(f"#define GOLD_KIT_NFFT    {n_fft_kit}")
+    w(f"#define GOLD_KIT_NACQ    {n_kit}")
+    w(f"#define GOLD_KIT_SHAFT   {shaft_hz:.9e}f")
+    w(f"#define GOLD_KIT_NFEAT   {frame.n_features}")
+    w(c_float_array("gold_kit_accel", acq))
+    w(c_float_array("gold_kit_features", frame.vector))
+    w("/* Index of the first bearing feature: everything from here on uses the")
+    w(" * device's rectify-and-low-pass envelope rather than the analytic one,")
+    w(" * so it is compared by property, not by value. */")
+    w(f"#define GOLD_KIT_BEARING_IDX {list(frame.names).index('bearing.outer_race.ratio')}")
+    w(f"#define GOLD_KIT_BPFO    {ff_kit.bpfo_hz:.9e}f")
+    w("")
+
     w("#endif /* PDM_GOLDEN_H */")
 
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)

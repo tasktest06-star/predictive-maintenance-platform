@@ -21,13 +21,18 @@ TESTWARN = $(filter-out -Wdouble-promotion,$(WARN))
 INCLUDE  = -Iinclude
 LDLIBS   = -lm
 
-SRC      = $(wildcard src/*.c)
+# pdm_pipeline.c is excluded from the library on purpose: it needs the kit's
+# app_config.h and exported pdm_detector.h on the include path, so it is
+# compiled per kit (and, for the host test, against tests/ref_config/).
+SRC      = $(filter-out src/pdm_pipeline.c,$(wildcard src/*.c))
 OBJ      = $(SRC:.c=.o)
 LIB      = libpdmdsp.a
 GOLDEN   = tests/golden.h
+LAYOUT   = include/pdm_features_layout.h
 TESTBIN  = tests/test_cdsp
+PIPEBIN  = tests/test_pipeline
 
-.PHONY: all lib test golden clean size
+.PHONY: all lib test test-pipeline golden layout clean size
 all: lib
 
 lib: $(LIB)
@@ -43,14 +48,31 @@ src/%.o: src/%.c include/pdm_dsp.h
 golden:
 	$(PY) tools/gen_golden.py --out $(GOLDEN)
 
+# The feature layout is generated from pdmcore.features so the C and Python
+# sides of the contract cannot drift.
+layout:
+	$(PY) tools/gen_feature_layout.py --out $(LAYOUT)
+
 $(GOLDEN):
 	$(PY) tools/gen_golden.py --out $(GOLDEN)
 
 $(TESTBIN): tests/test_cdsp.c $(GOLDEN) $(LIB)
 	$(CC) $(CFLAGS) $(TESTWARN) $(INCLUDE) -Itests tests/test_cdsp.c $(LIB) $(LDLIBS) -o $@
 
-test: $(TESTBIN)
+# The shared pipeline, compiled against the host reference config and the
+# exported reference model. Proves edge/cloud feature agreement.
+$(PIPEBIN): tests/test_pipeline.c src/pdm_pipeline.c $(GOLDEN) $(LIB) \
+            tests/ref_config/app_config.h tests/ref_config/pdm_detector.h
+	$(CC) $(CFLAGS) $(TESTWARN) $(INCLUDE) -Itests -Itests/ref_config \
+	    tests/test_pipeline.c src/pdm_pipeline.c $(LIB) $(LDLIBS) -o $@
+
+test: $(TESTBIN) $(PIPEBIN)
 	./$(TESTBIN)
+	@echo
+	./$(PIPEBIN)
+
+test-pipeline: $(PIPEBIN)
+	./$(PIPEBIN)
 
 # Code size per object, the number that decides whether this fits in flash
 # alongside the vendor SDK.
@@ -58,7 +80,7 @@ size: $(OBJ)
 	@$(SIZE) -t $(OBJ) 2>/dev/null || size -t $(OBJ)
 
 clean:
-	rm -f $(OBJ) $(LIB) $(TESTBIN)
+	rm -f $(OBJ) $(LIB) $(TESTBIN) $(PIPEBIN)
 
 distclean: clean
 	rm -f $(GOLDEN)

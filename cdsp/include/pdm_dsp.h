@@ -296,6 +296,20 @@ float pdm_harmonic_snr(const float *spec, uint16_t n_bins, float df_hz,
                        float f0_hz, uint8_t n_harmonics, float rel_tol,
                        float floor_width_hz, uint8_t *n_matched);
 
+/* Energy in carrier +- k*modulation relative to the carrier.
+ *
+ * High for inner-race defects (modulation = shaft rate) and rolling-element
+ * defects (modulation = cage rate); low for outer-race defects. The sideband
+ * pattern -- not the centre frequency -- is what distinguishes the modes.
+ *
+ * Returns 0.0 when the carrier does not stand clear of its local floor, because
+ * the ratio of two noise samples is unbounded and reports ~6 on a healthy
+ * machine. "Not modulated" and "no carrier to modulate" are both 0 here; the
+ * cloud distinguishes them via the carrier SNR, which it has. */
+float pdm_sideband_ratio(const float *spec, uint16_t n_bins, float df_hz,
+                         float carrier_hz, float modulation_hz,
+                         uint8_t n_sidebands, float rel_tol);
+
 /* --------------------------------------------------------- ISO 20816-3 -- */
 typedef enum {
     PDM_ISO_GROUP2_RIGID = 0,   /* 15-300 kW, rigid support  : 1.4/2.8/4.5 */
