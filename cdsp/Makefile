@@ -21,18 +21,20 @@ TESTWARN = $(filter-out -Wdouble-promotion,$(WARN))
 INCLUDE  = -Iinclude
 LDLIBS   = -lm
 
-# pdm_pipeline.c is excluded from the library on purpose: it needs the kit's
-# app_config.h and exported pdm_detector.h on the include path, so it is
-# compiled per kit (and, for the host test, against tests/ref_config/).
-SRC      = $(filter-out src/pdm_pipeline.c,$(wildcard src/*.c))
+# pdm_pipeline.c and pdm_app.c are excluded from the library on purpose: they
+# need the kit's app_config.h and exported pdm_detector.h on the include path,
+# so they are compiled per kit (and, for the host tests, against
+# tests/ref_config/).
+SRC      = $(filter-out src/pdm_pipeline.c src/pdm_app.c,$(wildcard src/*.c))
 OBJ      = $(SRC:.c=.o)
 LIB      = libpdmdsp.a
 GOLDEN   = tests/golden.h
 LAYOUT   = include/pdm_features_layout.h
 TESTBIN  = tests/test_cdsp
 PIPEBIN  = tests/test_pipeline
+VDEVBIN  = tests/virtual_device
 
-.PHONY: all lib test test-pipeline golden layout clean size
+.PHONY: all lib test test-pipeline virtual-device golden layout clean size
 all: lib
 
 lib: $(LIB)
@@ -66,7 +68,18 @@ $(PIPEBIN): tests/test_pipeline.c src/pdm_pipeline.c $(GOLDEN) $(LIB) \
 	$(CC) $(CFLAGS) $(TESTWARN) $(INCLUDE) -Itests -Itests/ref_config \
 	    tests/test_pipeline.c src/pdm_pipeline.c $(LIB) $(LDLIBS) -o $@
 
-test: $(TESTBIN) $(PIPEBIN)
+# The real firmware driven from a file of samples: same pdm_app.c, pipeline and
+# wire encoder a microcontroller runs, emitting real frames on stdout. Used by
+# core/tests/test_virtual_device.py to close the loop from C to cloud.
+$(VDEVBIN): tests/virtual_device.c tests/board_host.c src/pdm_app.c src/pdm_pipeline.c \
+            $(LIB) tests/ref_config/app_config.h tests/ref_config/pdm_detector.h
+	$(CC) $(CFLAGS) $(TESTWARN) $(INCLUDE) -Itests -Itests/ref_config \
+	    tests/virtual_device.c tests/board_host.c src/pdm_app.c src/pdm_pipeline.c \
+	    $(LIB) $(LDLIBS) -o $@
+
+virtual-device: $(VDEVBIN)
+
+test: $(TESTBIN) $(PIPEBIN) $(VDEVBIN)
 	./$(TESTBIN)
 	@echo
 	./$(PIPEBIN)
@@ -80,7 +93,7 @@ size: $(OBJ)
 	@$(SIZE) -t $(OBJ) 2>/dev/null || size -t $(OBJ)
 
 clean:
-	rm -f $(OBJ) $(LIB) $(TESTBIN) $(PIPEBIN)
+	rm -f $(OBJ) $(LIB) $(TESTBIN) $(PIPEBIN) $(VDEVBIN)
 
 distclean: clean
 	rm -f $(GOLDEN)

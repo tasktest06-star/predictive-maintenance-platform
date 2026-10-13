@@ -327,6 +327,48 @@ def main(argv: Sequence[str] | None = None) -> int:
     w(f"#define GOLD_KIT_BPFO    {ff_kit.bpfo_hz:.9e}f")
     w("")
 
+    # --------------------------------------------------- wire format
+    # Byte-for-byte golden frame. The C encoder must reproduce these exact
+    # bytes: a wire format that differs by one byte between the device and the
+    # ingest service is undecodable, and the failure looks like a CRC storm.
+    import zlib
+
+    from pdmcore.io.payload import FrameFlags, TelemetryFrame, encode_frame  # noqa: E402
+
+    wire_feats = np.array([i * 0.5 - 7.0 for i in range(63)], dtype=np.float64)
+    wire = TelemetryFrame(
+        device_id=0x0123456789ABCDEF,
+        timestamp_ms=1_760_000_000_000,
+        features=wire_feats,
+        shaft_hz=29.67,
+        temperature_c=48.5,
+        battery_mv=3612,
+        rssi_dbm=-97,
+        uptime_s=864_000,
+        sequence=4242,
+        flags=FrameFlags.SPEED_ESTIMATED,
+    )
+    raw = encode_frame(wire)
+    w("/* --- golden wire frame: the C encoder must match these bytes --- */")
+    w(f"#define GOLD_WIRE_LEN      {len(raw)}")
+    w(f"#define GOLD_WIRE_NFEAT    63")
+    w(f"#define GOLD_WIRE_DEVICE   0x0123456789ABCDEFULL")
+    w(f"#define GOLD_WIRE_TS_MS    1760000000000ULL")
+    w(f"#define GOLD_WIRE_UPTIME   864000u")
+    w(f"#define GOLD_WIRE_BATT     3612u")
+    w(f"#define GOLD_WIRE_RSSI     (-97)")
+    w(f"#define GOLD_WIRE_SHAFT    2.967000008e+01f")
+    w(f"#define GOLD_WIRE_TEMP     4.850000000e+01f")
+    w(f"#define GOLD_WIRE_FLAGS    0x{int(FrameFlags.SPEED_ESTIMATED):04x}u")
+    w(f"#define GOLD_WIRE_SEQ      4242u")
+    w(c_float_array("gold_wire_features", wire_feats))
+    w(c_int_array("gold_wire_bytes", list(raw), ctype="uint8_t", per_line=16))
+    # CRC-32 standard test vectors, so a broken CRC is diagnosed as such rather
+    # than as a payload layout problem.
+    w(f"#define GOLD_CRC_QBF       0x{zlib.crc32(b'The quick brown fox jumps over the lazy dog') & 0xffffffff:08x}u")
+    w(f"#define GOLD_CRC_123456789 0x{zlib.crc32(b'123456789') & 0xffffffff:08x}u")
+    w("")
+
     w("#endif /* PDM_GOLDEN_H */")
 
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)

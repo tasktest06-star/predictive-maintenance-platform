@@ -10,6 +10,7 @@
  */
 
 #include "pdm_dsp.h"
+#include "pdm_payload.h"
 #include "golden.h"
 
 #include <math.h>
@@ -524,6 +525,82 @@ static void test_error_paths(void)
 }
 
 /* ------------------------------------------------------------------------- */
+static void test_payload(void)
+{
+    section("wire format");
+    /* Standard CRC-32 test vectors first: if these fail, the CRC is broken and
+     * the frame comparison below would be misdiagnosed as a layout problem. */
+    ++g_checks;
+    if (pdm_crc32((const uint8_t *)"The quick brown fox jumps over the lazy dog", 43u)
+        != GOLD_CRC_QBF) {
+        printf("  FAIL CRC-32 of the standard test string\n");
+        ++g_fail;
+    }
+    ++g_checks;
+    if (pdm_crc32((const uint8_t *)"123456789", 9u) != GOLD_CRC_123456789) {
+        printf("  FAIL CRC-32 of \"123456789\"\n");
+        ++g_fail;
+    }
+
+    pdm_payload_meta meta;
+    memset(&meta, 0, sizeof(meta));
+    meta.device_id = GOLD_WIRE_DEVICE;
+    meta.timestamp_ms = GOLD_WIRE_TS_MS;
+    meta.uptime_s = GOLD_WIRE_UPTIME;
+    meta.battery_mv = GOLD_WIRE_BATT;
+    meta.rssi_dbm = GOLD_WIRE_RSSI;
+    meta.shaft_hz = GOLD_WIRE_SHAFT;
+    meta.temperature_c = GOLD_WIRE_TEMP;
+    meta.flags = GOLD_WIRE_FLAGS;
+    meta.sequence = GOLD_WIRE_SEQ;
+
+    static uint8_t buf[1024];
+    size_t written = 0;
+    ++g_checks;
+    if (pdm_payload_encode(&meta, gold_wire_features, GOLD_WIRE_NFEAT,
+                           buf, sizeof(buf), &written) != PDM_OK) {
+        printf("  FAIL pdm_payload_encode\n");
+        ++g_fail;
+        return;
+    }
+    ++g_checks;
+    if (written != (size_t)GOLD_WIRE_LEN) {
+        printf("  FAIL frame length: got %zu, want %d\n", written, GOLD_WIRE_LEN);
+        ++g_fail;
+    }
+    /* Byte-for-byte. A wire format that differs by one byte between device and
+     * ingest is undecodable, and the symptom is a CRC storm that looks like a
+     * hardware fault. */
+    int diffs = 0;
+    for (size_t i = 0; i < written && i < (size_t)GOLD_WIRE_LEN; ++i) {
+        if (buf[i] != gold_wire_bytes[i]) {
+            if (diffs < 4) {
+                printf("  FAIL byte %zu: got 0x%02x, want 0x%02x\n",
+                       i, buf[i], gold_wire_bytes[i]);
+            }
+            ++diffs;
+        }
+    }
+    ++g_checks;
+    if (diffs) {
+        printf("  FAIL %d of %zu bytes differ from the Python encoder\n", diffs, written);
+        ++g_fail;
+    }
+    /* Capacity must be checked, not trusted. */
+    ++g_checks;
+    if (pdm_payload_encode(&meta, gold_wire_features, GOLD_WIRE_NFEAT,
+                           buf, 32u, &written) != PDM_ERR_SIZE) {
+        printf("  FAIL encoder wrote past a short buffer\n");
+        ++g_fail;
+    }
+    ++g_checks;
+    if (pdm_payload_size(63u) != 300u) {
+        printf("  FAIL pdm_payload_size(63) != 300\n");
+        ++g_fail;
+    }
+}
+
+/* ------------------------------------------------------------------------- */
 int main(void)
 {
     printf("cdsp cross-check against the pdmcore reference\n");
@@ -535,6 +612,7 @@ int main(void)
     test_bearing();
     test_iso();
     test_model();
+    test_payload();
     test_filters();
     test_error_paths();
     printf("==============================================\n");
