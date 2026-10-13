@@ -43,7 +43,27 @@
 #define APP_SPEC_OVERLAP_NUM    1u            /* 50 % overlap: step = n_fft/2 */
 #define APP_SPEC_OVERLAP_DEN    2u
 #define APP_SENSOR_SETTLE_MS    100u
-#define APP_SENSOR_KEEPALIVE_THRESHOLD_S  90u
+/* Sensor power policy: ALWAYS power down between acquisitions.
+ *
+ * The crossover is not where intuition puts it. Settling costs
+ * 3.0 mA x 100 ms = 0.30 mA.s once per cycle. Keeping the IIS3DWB powered costs
+ * its 1.1 mA operating current continuously, so staying alive is cheaper only
+ * for intervals below 0.30 / 1.1 = 0.27 SECONDS. At any realistic acquisition
+ * interval, powering down wins by two to three orders of magnitude.
+ *
+ * An earlier version of this file claimed a ~90 s crossover and set the
+ * threshold accordingly, which would have burned 99 mA.s per cycle instead of
+ * 0.30 -- a 20x increase in total node energy, and a battery life of weeks
+ * instead of years. Caught by
+ * hardware/*/tests/test_kit.py::test_sensor_keepalive_crossover_is_consistent_with_the_energy_model,
+ * which recomputes the crossover from tools/power_budget.py rather than
+ * trusting the constant.
+ *
+ * Kept as a parameter rather than deleted because a kit whose sensor has a much
+ * longer settling time or a much lower standing current could legitimately
+ * change the answer -- the ADXL355 on the ESP32-S3 branch draws 200 uA, which
+ * moves the crossover to 1.5 s. Still not 90. */
+#define APP_SENSOR_KEEPALIVE_THRESHOLD_S  1u
 
 #define APP_DEMOD_LO_HZ         2500.0f
 #define APP_DEMOD_HI_HZ         6000.0f

@@ -177,10 +177,12 @@ KITS: Dict[str, Kit] = {
             "ISM330BX DS14387: 0.55 mA combo mode",
             "STWIN.box UM3027: 480 mAh battery",
         ],
-        notes=("The 100 ms IIS3DWB settling time costs 0.30 mA.s per cycle -- more than "
-               "the 5.7 ms of compute. Keeping the accelerometer powered between "
-               "acquisitions is worse below ~90 s intervals and better above it; the "
-               "firmware switches strategy at that crossover."),
+        notes=("The 307 ms acquisition window is 85 % of the budget -- not the radio "
+               "(6 %) and not the DSP (2.5 %). Most published vibration-node designs "
+               "optimise the latter two. Separately: the 480 mAh LiPo's 3 %/month "
+               "self-discharge is 20 uA, MORE than the circuit's 15 uA average draw, so "
+               "battery life saturates at ~1.6 years regardless of interval. A LiSOCl2 "
+               "AA takes it to 15 years with no firmware change."),
     ),
     "esp32s3": Kit(
         key="esp32s3",
@@ -462,12 +464,30 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap.add_argument("--payload-bytes", type=int, default=FRAME_BYTES)
     ap.add_argument("--sweep", action="store_true")
     ap.add_argument("--json", action="store_true")
+    # Cell overrides, so a "what if we used a different battery" claim in a
+    # README is reproducible rather than hand-computed. This matters more than
+    # it looks: on several kits the cell's self-discharge exceeds the circuit's
+    # draw, which means the firmware cannot improve battery life at all and the
+    # only lever is chemistry.
+    ap.add_argument("--battery-mah", type=float, default=None)
+    ap.add_argument("--self-discharge-pct-month", type=float, default=None)
+    ap.add_argument("--battery-name", default=None)
     args = ap.parse_args(argv)
 
     keys = [args.kit] if args.kit else list(KITS)
     for k in keys:
         if k not in KITS:
             raise SystemExit(f"unknown kit {k!r}; choose from {', '.join(KITS)}")
+    if args.battery_mah or args.self_discharge_pct_month is not None or args.battery_name:
+        if args.kit is None:
+            raise SystemExit("--battery-* overrides require --kit")
+        kit = KITS[args.kit]
+        if args.battery_mah:
+            kit.battery_mah = args.battery_mah
+        if args.self_discharge_pct_month is not None:
+            kit.self_discharge_pct_month = args.self_discharge_pct_month
+        kit.battery_name = args.battery_name or (
+            f"{kit.battery_mah:.0f} mAh, {kit.self_discharge_pct_month:g} %/month (override)")
 
     if args.json:
         print(json.dumps([KITS[k].as_dict(args.interval_s) for k in keys], indent=2))
