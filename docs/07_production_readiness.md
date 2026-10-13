@@ -21,7 +21,7 @@ only** · **❌ not started**
 | Rule-based diagnosis | ✅ | Correct mode on all 4 bearing modes |
 | Particle-filter RUL | ✅ | Abstains until detectable; intervals behave |
 | Wire payload + CRC | ✅ | 20 tests incl. bit-flip and version rejection |
-| int8 quantisation + C export | 🟡 | Inference path pinned by golden vectors; the **export tool** is not written |
+| int8 quantisation + C export | ✅ | `tools/export_model.py`; round trip verified against the compiled C path to 1e-7 |
 | MQTT transport | 🟡 | Code present, no broker exercised here |
 | CLI | ✅ | `simulate / features / diagnose / demo / payload` |
 
@@ -59,7 +59,7 @@ only** · **❌ not started**
 | Public measured (CWRU/MFPT/MIMII/DCASE) | ❌ | **No model has passed this.** Gate before any work order |
 | Pilot (20–50 sensors, multi-month) | ❌ | The only stage that tests the real deployment; no public dataset substitutes |
 
-## The five things to do next, in order
+## The four things to do next, in order
 
 1. **Cross-compile in CI.** ~20 lines per kit. Until the firmware compiles for
    its target, "the firmware is complete" is a claim about structure, not about
@@ -67,11 +67,7 @@ only** · **❌ not started**
 2. **Validate on CWRU and MFPT with bearing-wise partitioning.** Until this is
    done, every detection number in this repository is a number about a
    simulator. It is also cheap — the data is public and the harness exists.
-3. **Write the int8 export tool.** The inference path is pinned by golden
-   vectors but there is nothing that turns a trained `DeepSVDDDetector` into the
-   C arrays `pdm_model_i8` expects. That is the missing link between training and
-   the device.
-4. **Wire the ingest service to Postgres.** The schema is complete and the
+3. **Wire the ingest service to Postgres.** The schema is complete and the
    service holds work orders in memory. Without the transactional write there is
    no audit trail, and the audit trail is the thing that makes a disputed work
    order resolvable.

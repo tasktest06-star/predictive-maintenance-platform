@@ -242,6 +242,73 @@ the machine", not total seizure.
 
 ---
 
+## int8 export and quantisation
+
+`tools/export_model.py` turns a trained `DeepSVDDDetector` into a C header that
+populates a `pdm_model_i8`, plus a JSON sidecar for the registry. The round trip
+is verified against the real firmware path by
+`core/tests/test_export_c_roundtrip.py`, which compiles `cdsp/src/pdm_model.c`
+and compares — agreement is 1e-7 relative, i.e. exact within float32.
+
+| | |
+|---|---|
+| Scheme | Symmetric per-tensor int8 weights, per-layer calibrated activation scales |
+| Flash | 2 431 B (vs 7 815 B float32, **3.2×**) |
+| Compute | 1 800 MACs |
+| Score error vs float | mean 17 %, p95 43 %, max 64 % |
+| Decision flips at the operating threshold | **0 / 81** |
+
+### Two defects found while building this, both of which would have shipped
+
+**A fixed input scale saturates on faults.** The first implementation quantised
+every layer's input at a fixed 1/16, giving a representable range of ±8. That
+covers a healthy standardised feature and clips exactly the activations that
+carry a fault: **36 % mean and 95 % max score error**. Detection survived with
+zero decision flips — saturation only reduces an already-large score — which is
+precisely why it would have shipped. What broke silently was the score as a
+*magnitude*, and the health trend, the RUL input and any on-device threshold all
+depend on that. Fixed with per-layer scales calibrated from the 99.9th
+percentile of observed activations (not the maximum: one outlier would set the
+scale and cost everything else its resolution).
+
+**The threshold was derived from training scores.** `threshold_at_fpr()` uses
+the *training* distribution. Deep SVDD with 1 800 parameters fitted on 60
+commissioning frames drives its training samples almost onto the hypersphere
+centre, so that threshold came out at 0.26 while held-out healthy frames scored
+around 4.0 — **15× lower**, meaning it would have alarmed on every healthy
+acquisition. `AnomalyDetector.calibrate(X_holdout, fpr)` is now the supported
+path, and `threshold_at_fpr` carries a warning. The low-capacity detectors do
+not have this problem, which is exactly what makes it easy to introduce.
+
+Both are pinned by tests. The second has a dedicated one
+(`test_holdout_threshold_differs_from_train_threshold`) whose failure means
+either the model stopped overfitting or the calibration stopped using the
+holdout.
+
+### The residual 17 % score error
+
+Honest accounting: 17 % mean score error is fine for *detection* (0 decision
+flips, AUC unchanged) and too coarse for *trending*. Consequences, accepted
+deliberately:
+
+- The device's own score is used for **alarming**, not for the trended health
+  index. The index is computed in the cloud from the full feature vector.
+- The RUL model consumes `band.10_rms`, a float32 feature, not the model score.
+
+If on-device trending becomes a requirement, the fix is int16 activations — a
+change to `pdm_model_score` and the exporter, not to the architecture.
+
+### Why not per-channel quantisation
+
+Per-channel is strictly more accurate and is what TFLite and CMSIS-NN prefer. It
+is not used here because the C path would need a scale vector per layer and a
+per-output rescale, and the measured accuracy difference on a 63-24-12 MLP is
+below the noise of the detector's own threshold. Recorded as a decision rather
+than an oversight; if a future model needs it, the C side changes and the
+exporter grows a flag.
+
+---
+
 ## Approval gate
 
 Before a model version may create work orders:

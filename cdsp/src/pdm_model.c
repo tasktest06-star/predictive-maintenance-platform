@@ -17,8 +17,8 @@
  * accelerate, so this reference implementation can be swapped for either
  * without the surrounding code moving.
  *
- * Measured on the reference 63-24-12 model: 2 052 MACs, ~26 us at 160 MHz with
- * this plain C loop, ~9 us with CMSIS-NN on an M33, ~2 us on an Ethos-U55.
+ * Measured on the reference 63-24-12 model: 1 800 MACs, ~23 us at 160 MHz with
+ * this plain C loop, ~8 us with CMSIS-NN on an M33, ~2 us on an Ethos-U55.
  * Compared against a 1.1 ms FFT, model inference is not the bottleneck -- which
  * is why there is no urgency to reach for the NPU on most of the kits.
  */
@@ -76,20 +76,23 @@ pdm_status pdm_model_score(const pdm_model_i8 *m, const float *features,
              * would not match the row-major convention every training framework
              * uses, and a silent transpose is a much worse bug than a cache
              * miss on a part with no cache. */
+            const float inv_in_scale = (layer->in_scale > 0.0f) ? (1.0f / layer->in_scale) : 1.0f;
             for (uint16_t i = 0; i < layer->n_in; ++i) {
                 /* Inputs are float at this point; quantise on the fly to int8
-                 * with a fixed input scale of 1/16 (range +-8 robust sigma,
-                 * which the scaler's clipping guarantees). */
-                float xi = cur[i] * 16.0f;
+                 * using this layer's calibrated scale. Round half away from
+                 * zero -- the exporter's bit-exact simulation does the same, and
+                 * numpy's default round-half-even would disagree on exactly the
+                 * values that sit on a quantisation boundary. */
+                float xi = cur[i] * inv_in_scale;
                 if (xi > 127.0f) {
                     xi = 127.0f;
-                } else if (xi < -128.0f) {
-                    xi = -128.0f;
+                } else if (xi < -127.0f) {
+                    xi = -127.0f;
                 }
                 acc += (int32_t)(int8_t)(xi >= 0.0f ? (xi + 0.5f) : (xi - 0.5f))
                      * (int32_t)layer->w[(size_t)i * layer->n_out + o];
             }
-            float y = (float)acc * layer->w_scale / 16.0f;
+            float y = (float)acc * layer->w_scale * layer->in_scale;
             if (!last && y < 0.0f) {
                 y *= m->leak;
             }

@@ -94,10 +94,17 @@ def roc_curve(y_true: Sequence, scores: Sequence) -> Tuple[np.ndarray, np.ndarra
     )
 
 
+# numpy renamed trapz -> trapezoid in 2.0 and deprecated the old name. Bind once
+# rather than catching a DeprecationWarning at every call: the test suite runs
+# with `filterwarnings = error::RuntimeWarning` and a deprecation in a hot path
+# is noise that hides real warnings.
+_trapezoid = getattr(np, "trapezoid", None) or np.trapz
+
+
 def auc(y_true: Sequence, scores: Sequence) -> float:
     """Area under the ROC curve (trapezoidal)."""
     fpr, tpr, _ = roc_curve(y_true, scores)
-    return float(np.trapz(tpr, fpr))
+    return float(_trapezoid(tpr, fpr))
 
 
 def partial_auc(y_true: Sequence, scores: Sequence, max_fpr: float = 0.1, *, standardise: bool = True) -> float:
@@ -115,7 +122,7 @@ def partial_auc(y_true: Sequence, scores: Sequence, max_fpr: float = 0.1, *, sta
     stop = np.searchsorted(fpr, max_fpr, side="right")
     f = np.r_[fpr[:stop], max_fpr]
     t = np.r_[tpr[:stop], np.interp(max_fpr, fpr, tpr)]
-    area = float(np.trapz(t, f))
+    area = float(_trapezoid(t, f))
     if not standardise:
         return area
     min_area = 0.5 * max_fpr * max_fpr

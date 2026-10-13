@@ -334,10 +334,12 @@ static void test_model(void)
     m.layers[0].n_out = GOLD_MODEL_H1;
     m.layers[0].w = gold_model_w1;
     m.layers[0].w_scale = GOLD_MODEL_S1;
+    m.layers[0].in_scale = GOLD_MODEL_A1;
     m.layers[1].n_in = GOLD_MODEL_H1;
     m.layers[1].n_out = GOLD_MODEL_H2;
     m.layers[1].w = gold_model_w2;
     m.layers[1].w_scale = GOLD_MODEL_S2;
+    m.layers[1].in_scale = GOLD_MODEL_A2;
     m.centre = gold_model_centre;
     m.in_centre = gold_model_in_centre;
     m.in_scale = gold_model_in_scale;

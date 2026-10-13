@@ -70,6 +70,7 @@ class StandardScaler:
     centre: np.ndarray = field(default_factory=lambda: np.zeros(0))
     scale: np.ndarray = field(default_factory=lambda: np.ones(0))
     use_log: Optional[np.ndarray] = None
+    clip_sigma: float = 20.0
 
     #: MAD -> sigma for a normal distribution.
     MAD_TO_SIGMA = 1.4826
@@ -106,12 +107,33 @@ class StandardScaler:
         return Xt
 
     def transform(self, X: np.ndarray) -> np.ndarray:
+        """Standardise and clip to ``+-clip_sigma``.
+
+        The clip is not defensive padding, it is a modelling decision with two
+        separate justifications:
+
+        * **Statistically**, beyond ~20 robust sigmas the Gaussian model is not
+          merely wrong, it is meaningless: the exact value carries no additional
+          information, only the fact of being far outside the healthy range.
+        * **Numerically**, it is what makes int8 edge deployment possible. On
+          simulated severe faults the raw standardised features reach ~1770
+          sigma, a dynamic range of three decades that 127 linear quantisation
+          levels cannot cover -- the first version of the exporter produced 78 %
+          mean score error because of exactly this. Clipping to a bounded range
+          gives int8 ~0.16 sigma of resolution across the whole usable span.
+
+        ``pdmcore.health.index.HealthIndex`` applies the same cap for the same
+        first reason, with the same value.
+        """
         X = np.atleast_2d(np.asarray(X, dtype=np.float64))
         if self.centre.size == 0:
             raise RuntimeError("scaler is not fitted")
         if X.shape[1] != self.centre.size:
             raise ValueError(f"expected {self.centre.size} features, got {X.shape[1]}")
-        return (self._apply_log(X) - self.centre) / self.scale
+        Z = (self._apply_log(X) - self.centre) / self.scale
+        if self.clip_sigma and self.clip_sigma > 0:
+            Z = np.clip(Z, -self.clip_sigma, self.clip_sigma)
+        return Z
 
     def fit_transform(self, X: np.ndarray, **kwargs) -> np.ndarray:
         return self.fit(X, **kwargs).transform(X)
@@ -121,6 +143,7 @@ class StandardScaler:
             "centre": self.centre.tolist(),
             "scale": self.scale.tolist(),
             "use_log": self.use_log.tolist() if self.use_log is not None else None,
+            "clip_sigma": self.clip_sigma,
         }
 
     @classmethod
@@ -129,6 +152,7 @@ class StandardScaler:
             centre=np.asarray(d["centre"], dtype=np.float64),
             scale=np.asarray(d["scale"], dtype=np.float64),
             use_log=np.asarray(d["use_log"], dtype=bool) if d.get("use_log") is not None else None,
+            clip_sigma=float(d.get("clip_sigma", 20.0)),
         )
 
 
@@ -145,6 +169,8 @@ class AnomalyDetector:
         self.scaler = StandardScaler()
         self._fitted = False
         self.train_scores_: Optional[np.ndarray] = None
+        self.calibration_scores_: Optional[np.ndarray] = None
+        self.threshold_: Optional[float] = None
 
     # -- to implement ------------------------------------------------------
     def _fit(self, Z: np.ndarray) -> None:  # pragma: no cover - abstract
@@ -167,8 +193,56 @@ class AnomalyDetector:
             raise RuntimeError(f"{type(self).__name__} is not fitted")
         return self._score(self.scaler.transform(np.atleast_2d(np.asarray(X, dtype=np.float64))))
 
+    def calibrate(self, X_healthy_holdout: np.ndarray, fpr: float = 0.01) -> float:
+        """Set the operating threshold from **held-out** healthy data.
+
+        Use this, not :meth:`threshold_at_fpr`, for any detector with meaningful
+        capacity. Deep SVDD with 1 800 parameters fitted on 60 commissioning
+        frames drives its *training* samples almost onto the hypersphere centre,
+        so a threshold derived from training scores sits far below where held-out
+        healthy data lands -- measured, the training-score threshold was 0.25
+        while held-out healthy samples scored 2.2, which would alarm on every
+        healthy acquisition.
+
+        The low-capacity detectors (``robust_threshold``, and ``mahalanobis``
+        with heavy shrinkage) do not have this problem, which is exactly why it
+        is easy to miss when it is introduced.
+        """
+        X = np.atleast_2d(np.asarray(X_healthy_holdout, dtype=np.float64))
+        if X.shape[0] < 10:
+            raise ValueError(
+                f"need >= 10 held-out healthy samples to calibrate, got {X.shape[0]}"
+            )
+        self.calibration_scores_ = self.score(X)
+        s = np.sort(self.calibration_scores_)
+        n = s.size
+        if n * fpr >= 1.0:
+            self.threshold_ = float(np.quantile(s, 1.0 - fpr))
+        else:
+            self.threshold_ = float(self._extrapolate_tail(s, fpr))
+        return self.threshold_
+
+    @staticmethod
+    def _extrapolate_tail(sorted_scores: np.ndarray, fpr: float) -> float:
+        """Gumbel upper-tail extrapolation when the quantile does not exist."""
+        n = sorted_scores.size
+        tail = sorted_scores[max(0, n - max(10, n // 5)) :]
+        mu = float(np.mean(tail))
+        sigma = float(np.std(tail))
+        if sigma <= 0:
+            return float(sorted_scores[-1])
+        beta = sigma * np.sqrt(6.0) / np.pi
+        loc = mu - 0.5772 * beta
+        return float(loc - beta * np.log(-np.log(1.0 - fpr)))
+
     def threshold_at_fpr(self, fpr: float = 0.01) -> float:
         """Threshold giving ``fpr`` false alarms on the *training* (healthy) set.
+
+        .. warning::
+           Valid only for low-capacity detectors. For anything that can fit its
+           training set -- Deep SVDD, an autoencoder -- use :meth:`calibrate`
+           with held-out healthy data instead. See that method for the measured
+           size of the error.
 
         This is the honest way to set an industrial alarm: the customer agrees a
         tolerable nuisance-alarm rate (typically "no more than one per sensor per
@@ -186,15 +260,7 @@ class AnomalyDetector:
         n = s.size
         if n * fpr >= 1.0:
             return float(np.quantile(s, 1.0 - fpr))
-        tail = s[max(0, n - max(10, n // 5)) :]
-        mu = float(np.mean(tail))
-        sigma = float(np.std(tail))
-        if sigma <= 0:
-            return float(s[-1])
-        # Gumbel upper-tail extrapolation.
-        beta = sigma * np.sqrt(6.0) / np.pi
-        loc = mu - 0.5772 * beta
-        return float(loc - beta * np.log(-np.log(1.0 - fpr)))
+        return float(self._extrapolate_tail(s, fpr))
 
     def explain(self, x: np.ndarray, top_k: int = 5, *, normalise: bool = True) -> List[Tuple[str, float]]:
         """Per-feature contribution to the score, largest first.

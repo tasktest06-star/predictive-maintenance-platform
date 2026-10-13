@@ -331,7 +331,20 @@ float pdm_velocity_rms_mm_s(const float *accel_spec_g, uint16_t n_bins,
 typedef struct {
     uint16_t n_in, n_out;
     const int8_t *w;        /* row-major [n_in][n_out] */
-    float w_scale;
+    float w_scale;          /* w_float ~= w_int8 * w_scale */
+    /* Scale used to quantise THIS layer's input: q = round(x / in_scale),
+     * clipped to [-127, 127]. Calibrated per layer by the exporter from the
+     * 99.9th percentile of observed activations.
+     *
+     * A single fixed scale for every layer looks simpler and is wrong. With a
+     * fixed 1/16 the representable range is +-8, which covers a healthy
+     * standardised feature but saturates hard on a fault -- measured 95 % score
+     * error on strongly faulty samples, because the very activations that carry
+     * the fault are the ones clipped. Detection survived (saturation only
+     * reduces an already-large score, so there were no decision flips) but the
+     * score stopped being usable as a magnitude, which breaks trending and RUL.
+     * Per-layer scales cost one float per layer in flash. */
+    float in_scale;
 } pdm_layer_i8;
 
 typedef struct {

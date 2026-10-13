@@ -744,6 +744,8 @@ static const uint8_t gold_iso_zones[8] = {
 #define GOLD_MODEL_H2      4
 #define GOLD_MODEL_S1      1.250000000e-02f
 #define GOLD_MODEL_S2      1.750000000e-02f
+#define GOLD_MODEL_A1      1.968500000e-01f
+#define GOLD_MODEL_A2      3.227300000e-01f
 #define GOLD_MODEL_LEAK    1.000000000e-01f
 static const int8_t gold_model_w1[48] = {
     88, 25, 36, 79, 15, 55, 66, -55, -89, -40, -43, 74, 82, -99, -1, 64,
@@ -775,6 +777,6 @@ static const float gold_model_features[8] = {
     0.000000000e+00f, -2.400000000e+00f,
 };
 
-#define GOLD_MODEL_SCORE   1.166983315e+01f
+#define GOLD_MODEL_SCORE   1.217437589e+01f
 
 #endif /* PDM_GOLDEN_H */

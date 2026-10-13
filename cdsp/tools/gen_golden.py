@@ -220,20 +220,25 @@ def main(argv: Sequence[str] | None = None) -> int:
     w1 = mrng.integers(-100, 100, size=(n_feat, h1)).astype(np.int8)
     w2 = mrng.integers(-100, 100, size=(h1, h2)).astype(np.int8)
     s1, s2 = 0.0125, 0.0175
+    # Per-layer activation scales, as the exporter calibrates them. A single
+    # fixed scale was the first implementation and it saturated on faults; see
+    # pdmcore.models.export for the measured error.
+    a1, a2 = 0.19685, 0.32273
     centre = np.array([0.3, -0.2, 0.15, 0.05])
     in_centre = np.linspace(-1.0, 1.0, n_feat)
     in_scale = np.linspace(0.5, 2.0, n_feat)
     feats = np.array([0.4, -1.2, 0.9, 2.1, -0.3, 1.7, 0.0, -2.4])
 
-    # Reference forward pass, mirroring pdm_model_score including its on-the-fly
-    # int8 input quantisation at 1/16 -- the C path quantises, so the reference
-    # must too or the comparison is meaningless.
-    z = (feats - in_centre) / in_scale
-    cur = z
-    for wq, sc, last in ((w1, s1, False), (w2, s2, True)):
-        xq = np.clip(np.round(cur * 16.0), -128, 127)
-        acc = xq @ wq.astype(np.int32)
-        y = acc * sc / 16.0
+    # Reference forward pass, mirroring pdm_model_score exactly -- including the
+    # on-the-fly int8 input quantisation and round-half-away-from-zero. numpy's
+    # default round-half-even would disagree on boundary values, so the rounding
+    # is written out rather than delegated.
+    cur = (feats - in_centre) / in_scale
+    for wq, sc, asc, last in ((w1, s1, a1, False), (w2, s2, a2, True)):
+        q = cur / asc
+        xq = np.clip(np.where(q >= 0, np.floor(q + 0.5), np.ceil(q - 0.5)), -127, 127)
+        acc = xq.astype(np.int64) @ wq.astype(np.int64)
+        y = acc.astype(np.float64) * sc * asc
         if not last:
             y = np.where(y < 0, y * 0.1, y)
         cur = y
@@ -245,6 +250,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     w(f"#define GOLD_MODEL_H2      {h2}")
     w(f"#define GOLD_MODEL_S1      {s1:.9e}f")
     w(f"#define GOLD_MODEL_S2      {s2:.9e}f")
+    w(f"#define GOLD_MODEL_A1      {a1:.9e}f")
+    w(f"#define GOLD_MODEL_A2      {a2:.9e}f")
     w(f"#define GOLD_MODEL_LEAK    1.000000000e-01f")
     w(c_int_array("gold_model_w1", w1.ravel(order="C")))
     w(c_int_array("gold_model_w2", w2.ravel(order="C")))

@@ -77,6 +77,36 @@ transform — bins outside that range were perfect. A tone sweep would have pass
 Parseval over the full band would have passed. A spectrum plot would have looked
 plausible. 395 of 1 049 checks failed and pointed straight at it.
 
+## The training-to-device round trip
+
+`core/tests/test_export_c_roundtrip.py` is the highest-value single test here.
+Everything else verifies one side of the firmware/cloud boundary; this one trains
+a detector in Python, quantises it, emits a C header, **compiles
+`cdsp/src/pdm_model.c` with a host compiler**, and checks that the firmware
+inference path produces the same score. Agreement: 1e-7 relative.
+
+Without it, "the model is deployed" is an assumption, and a disagreement between
+a cloud score and a device score is a mystery rather than a bug with a known
+location.
+
+It is skipped, not failed, when no C compiler is present — the Python suite has
+to stay runnable on a machine without a toolchain. CI has one, so the skip is
+visible.
+
+Two of its assertions are worth calling out because they encode things that were
+got wrong first:
+
+- **`test_quantisation_flips_only_borderline_decisions`** asserts a flip *rate*
+  and a flip *margin*, not zero flips. Demanding zero makes the test flaky and
+  tells you nothing: a sample within quantisation noise of the threshold flips
+  under any perturbation. What matters is that flips are borderline (within 25 %
+  of the threshold) and that none of them is a non-borderline move from alarm to
+  normal, which would be a missed detection introduced by quantisation.
+- **`test_holdout_threshold_differs_from_train_threshold`** pins the overfitting
+  trap: a training-score threshold on this detector is 15× too low. If that test
+  ever passes trivially, either the model stopped overfitting or the calibration
+  stopped using the holdout.
+
 ## Negative controls in the end-to-end POC
 
 `--replay` ends with four rejection paths, because a POC that only demonstrates

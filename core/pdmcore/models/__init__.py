@@ -25,7 +25,10 @@ from .anomaly import (
     build_detector,
 )
 
+from .export import QuantisedModel, emit_c_header, export_deep_svdd, quantise_deep_svdd
+
 __all__ = [
     "StandardScaler", "AnomalyDetector", "MahalanobisDetector", "PCAResidualDetector",
     "RobustThresholdDetector", "DeepSVDDDetector", "build_detector",
+    "QuantisedModel", "quantise_deep_svdd", "export_deep_svdd", "emit_c_header",
 ]
