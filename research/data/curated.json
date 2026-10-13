@@ -1,0 +1,1915 @@
+{
+ "generated_at": "2026-10-13T15:03:30.801427+00:00",
+ "window": {
+  "from": "2025-01-01",
+  "to": "2026-10-13"
+ },
+ "stats": {
+  "input_papers": 1639,
+  "aggregator_repos_dropped": 54,
+  "aggregator_repo_names": [
+   "20bytes/aerial-vln-arxiv-daily",
+   "aaron617/agent-arxiv-daily",
+   "arxivsub/arxivsub_daily_arxiv",
+   "asimfish/awesome_embody_recent",
+   "aspirincode/awesome-ai4molconformation-md",
+   "aspirincode/awesome-chemicalspectraai",
+   "baishuanghao/my_arxiv_daily",
+   "blake-jiang/ad-arxiv-daily",
+   "christophezei/optimizing-object-detection-models-for-tinyml-a-comprehensive-survey",
+   "doheyyeah/arxiv-favor",
+   "doublepoints/cv-arxiv-daily",
+   "dvlan26/daily-arxiv-ai4sensor",
+   "eerstar/llm-agent-paper-daily",
+   "event-ahu/cns_papers",
+   "exopoiesis/arxiv-radar-chem-eng",
+   "exopoiesis/arxiv-radar-chemistry",
+   "exopoiesis/arxiv-radar-electrochemistry",
+   "exopoiesis/arxiv-radar-physics",
+   "exopoiesis/arxiv-radar-polymer",
+   "gray-su427/embodiedclaw_research_papers",
+   "grrlkk/writing-agent-arxiv-daily",
+   "gudo7208/awesome-ai4cad",
+   "hafred/awesome-generative-recsys",
+   "halsay/asr-tts-paper-daily",
+   "harshit3355/faultweaver",
+   "insomaniacelf/sg-tamil-tts-resources-",
+   "iszhanjiawei/dubbing-dubber-arxiv-daily",
+   "iszhanjiawei/flow_matching_arxiv_daily",
+   "iszhanjiawei/tts_arxiv_daily",
+   "kissshhot/awesome-visual-coding",
+   "legendtkl/agent-paper-daily",
+   "liutaocode/tts-arxiv-daily",
+   "mjianm/arxiv_daily",
+   "neuraliying/awesome-agent-harnesses",
+   "openenvision/awesome-world-modeling",
+   "phuthiendao/rag-arxiv-daily",
+   "polyidoit/arxiv-quantum",
+   "polyidoit/arxiv-tqft",
+   "superzj827/awesome-rsi",
+   "tavish9/awesome-daily-ai-arxiv"
+  ],
+  "curated": 45,
+  "rejected": {
+   "no_repo": 1308,
+   "aggregator_only": 140,
+   "off_topic": 146
+  },
+  "rejected_examples": {
+   "off_topic": [
+    "2506.03828 (score +4.0) AssetOpsBench: Benchmarking AI Agents for Task Automation in Industria",
+    "2601.07476 (score +3.0) NanoCockpit: Performance-optimized Application Framework for AI-based ",
+    "2505.17662 (score +3.7) Automating Versatile Time-Series Analysis with Tiny Transformers on Em",
+    "2502.14381 (score +2.0) dtaianomaly: A Python library for time series anomaly detection",
+    "2608.02157 (score +1.3) RamanPFN: learning from Raman spectral structure with a tabular founda",
+    "2610.03632 (score +0.4) World Embedding Benchmark",
+    "2610.08526 (score -11.0) WareFly-VLA: A Vision-Language-Action Framework for UAV Navigation and",
+    "2606.25965 (score -3.0) Mixture-of-Experts RL for Fault-Tolerant Legged Locomotion"
+   ],
+   "aggregator_only": [
+    "2609.17021 -> iszhanjiawei/flow_matching_arxiv_daily: repository name matches an aggregator pattern (flow_matching_arxiv_daily)",
+    "2609.29746 -> iszhanjiawei/flow_matching_arxiv_daily: repository name matches an aggregator pattern (flow_matching_arxiv_daily)",
+    "2605.10624 -> Blake-Jiang/ad-arxiv-daily: repository name matches an aggregator pattern (ad-arxiv-daily)",
+    "2607.01595 -> BaiShuanghao/my_arXiv_daily: repository name matches an aggregator pattern (my_arxiv_daily)",
+    "2607.01986 -> BaiShuanghao/my_arXiv_daily: repository name matches an aggregator pattern (my_arxiv_daily)",
+    "2607.02371 -> liutaocode/TTS-arxiv-daily: repository name matches an aggregator pattern (tts-arxiv-daily)",
+    "2607.28391 -> BaiShuanghao/my_arXiv_daily: repository name matches an aggregator pattern (my_arxiv_daily)",
+    "2609.04030 -> BaiShuanghao/my_arXiv_daily: repository name matches an aggregator pattern (my_arxiv_daily)"
+   ]
+  },
+  "by_theme": {
+   "Prognostics and remaining useful life": 15,
+   "Foundation models and LLM agents for maintenance": 7,
+   "Datasets, benchmarks and evaluation methodology": 7,
+   "Acoustic and ultrasonic monitoring": 4,
+   "Transfer, domain adaptation and limited labels": 4,
+   "Bearing and rotating-machinery diagnosis": 3,
+   "Edge / TinyML deployment": 2,
+   "Uncertainty, explainability and trust": 2,
+   "Federated and privacy-preserving learning": 1
+  },
+  "by_year": {
+   "2025": 10,
+   "2026": 35
+  },
+  "by_licence": {
+   "none": 23,
+   "MIT": 16,
+   "NOASSERTION": 4,
+   "Apache-2.0": 2
+  },
+  "permissive_fraction": 0.4
+ },
+ "papers": [
+  {
+   "arxiv_id": "2606.26317",
+   "title": "Parametric Generalized Adaptive Moment Features (PG-AMF) for Bearing Fault Diagnosis and Machine Health Monitoring",
+   "published": "2026-06-24T19:02:23Z",
+   "authors": [
+    "Rajeev Kumar"
+   ],
+   "abstract": "Accurate fault diagnosis of rolling element bearings in rotating machinery is considered essential for ensuring industrial safety and enabling predictive maintenance. Conventional statistical feature-based methods rely on predefined descriptors, whose diagnostic sensitivity is constrained by fixed configurations and limited adaptability across varying fault conditions. Although deep learning approaches offer strong representational capacity, their effectiveness is often restricted by high data requirements and reduced interpretability. In this work, a parametric adaptive feature extraction framework is proposed, in which feature characteristics are learned directly from data rather than being manually specified. Multiple complementary representations are extracted from vibration signals, including absolute features capturing signal energy distribution, signed moment features reflecting waveform asymmetry, and AC-coupled moment features emphasizing dynamic fluctuations, while interactions between multiple sensor channels are modeled through a structured fusion mechanism to enhance fault representation. The proposed approach is evaluated on a benchmark gearbox bearing dataset comprising five health conditions, including normal operation and multiple fault types. Improved classification performance is observed compared to conventional methods, with consistent results under cross-validation, indicating strong generalization capability. Additionally, enhanced feature separability is demonstrated through clearer clustering patterns in low-dimensional projections. The learned representations effectively capture a wide range of signal characteristics, supporting both improved diagnostic performance and practical applicability in industrial monitoring systems.",
+   "comment": "07 pages, 09 figures and 04 table. Conference",
+   "primary_category": "eess.SP",
+   "theme": "Bearing and rotating-machinery diagnosis",
+   "relevance": 34.6,
+   "usability": 54.9,
+   "repos": [
+    {
+     "full_name": "rajeevfee/PG_AMF-Bearing-Fault-Analysis-",
+     "html_url": "https://github.com/rajeevfee/PG_AMF-Bearing-Fault-Analysis-",
+     "description": "Physics-guided deep learning for bearing fault diagnosis (100% accuracy on XJTU Gearbox). Learnable adaptive moment features replace hand-crafted statistics. PyTorch · 5-class vibration classification · BPFO/BPFI/BSF fault detection · reproducible research pipeline.",
+     "stars": 3,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "MIT",
+     "created_at": "2026-05-27T21:11:58Z",
+     "pushed_at": "2026-08-22T18:23:58Z",
+     "size_kb": 1295,
+     "archived": false,
+     "is_fork": false,
+     "topics": [
+      "bearing-fault-diagnosis",
+      "condition-monitoring",
+      "industrial-ai",
+      "predictive-maintenance",
+      "rotating-machinery",
+      "time-series-classification"
+     ],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2508.14689",
+   "title": "ECHO: Frequency-aware Hierarchical Encoding for Variable-length Signals",
+   "published": "2025-08-20T13:10:44Z",
+   "authors": [
+    "Yucong Zhang",
+    "Juan Liu",
+    "Ming Li"
+   ],
+   "abstract": "Pre-trained foundation models have demonstrated remarkable success in audio, vision and language, yet their potential for general machine signal modeling with arbitrary sampling rates-covering acoustic, vibration, and other industrial sensor data-remains under-explored. In this work, we propose a novel foundation model ECHO that integrates an advanced band-split architecture with frequency positional embeddings, enabling spectral localization across arbitrary sampling configurations. Moreover, the model incorporates sliding patches to support inputs of variable length without padding or cropping, producing a concise embedding that retains both temporal and spectral fidelity and naturally extends to streaming scenarios. We evaluate our method on various kinds of machine signal datasets, including previous DCASE task 2 challenges (2020-2025), and widely-used industrial signal corpora. Experimental results demonstrate consistent state-of-the-art performance in machine signal anomaly detection and fault classification, confirming the effectiveness and generalization capability of the proposed model. We open-sourced ECHO on https://github.com/yucongzh/ECHO.",
+   "comment": "Accepted by ICASSP 2026",
+   "primary_category": "cs.SD",
+   "theme": "Acoustic and ultrasonic monitoring",
+   "relevance": 10.5,
+   "usability": 76.0,
+   "repos": [
+    {
+     "full_name": "yucongzh/ECHO",
+     "html_url": "https://github.com/yucongzh/ECHO",
+     "description": "ECHO: Frequency-aware Hierarchical Encoding for Variable-length Signal",
+     "stars": 20,
+     "forks": 1,
+     "open_issues": 2,
+     "language": "Python",
+     "license": "MIT",
+     "created_at": "2025-08-19T16:37:04Z",
+     "pushed_at": "2026-07-03T15:16:19Z",
+     "size_kb": 1235,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "master",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2607.16493",
+   "title": "Leakage-Robust Evaluation and Data-Scale Sensitivity of Attention-Enhanced Multi-Task Learning for Joint Fault Diagnosis and Remaining Useful Life Estimation",
+   "published": "2026-07-17T20:33:36Z",
+   "authors": [
+    "Md Mahamudur Rahaman Shamim",
+    "Md. Nuruzzaman",
+    "Zannatul Ferdus",
+    "Md Rajib Ahmed",
+    "Abieer Nwshad Anward",
+    "Mohammad Tooneer",
+    "Johir Uddin Khan",
+    "Khalid Hossen"
+   ],
+   "abstract": "Multi-task deep learning models that jointly perform fault classification and remaining useful life (RUL) regression are increasingly used in predictive maintenance, yet reported performance can be strongly affected by how sliding-window sequences are split into training and test sets. We investigate this issue using AMTLNet, an attention-enhanced multi-task architecture, on three public benchmarks: NASA C-MAPSS, NASA IMS, and the UCI Hydraulic System dataset. We show that naive splitting can inflate classification accuracy from a genuine 20-60 percent to 99.9 percent, or reduce it to 0 percent through degenerate class representation. To address this, we introduce a chunk-based, leakage-audited splitting protocol and evaluate all models using five seeds, one-way ANOVA, and Tukey HSD tests. On C-MAPSS, with 19,976 leakage-free training windows, AMTLNet matches a single-task CNN-LSTM baseline in classification, achieving 84.12 +/- 0.96 percent accuracy with Tukey p = 1.0, and reaches an R2 of 0.86 +/- 0.01 while significantly outperforming a naive multi-task baseline. On the smaller Bearing and Hydraulic datasets, multi-task training is unstable, but the failure mode differs: classification degrades for Bearing, whereas regression degrades for Hydraulic. We relate this asymmetry to label provenance and propose a practical framework for deciding when joint training is appropriate under data scarcity. Ablation results show that the multi-head attention branch is the main contributor to regression stability. Removing it reduces R2 from 0.861 to 0.766 and more than doubles classification variance, whereas the convolutional branch contributes little to regression despite using about one-third of the parameters. This study contributes a reusable leakage-audit protocol, seed-transparent evaluation, and evidence that task-specific stability depends more on label provenance than on task type.",
+   "comment": "Submitted in Next Research (Elsevier)",
+   "primary_category": "cs.LG",
+   "theme": "Prognostics and remaining useful life",
+   "relevance": 27.1,
+   "usability": 40.0,
+   "repos": [
+    {
+     "full_name": "iamsandeshdhital/CALIBRA",
+     "html_url": "https://github.com/iamsandeshdhital/CALIBRA",
+     "description": "Cost-aware, leakage-audited, interpretable Bayesian reliability advisor",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "MIT",
+     "created_at": "2026-10-02T07:54:09Z",
+     "pushed_at": "2026-10-02T07:54:22Z",
+     "size_kb": 105,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2605.04262",
+   "title": "Imagery Dataset for Remaining Useful Life Estimation of Synthetic Fibre Ropes",
+   "published": "2026-05-05T19:56:27Z",
+   "authors": [
+    "Anju Rani",
+    "Daniel Ortiz-Arroyo",
+    "Petar Durdevic"
+   ],
+   "abstract": "Remaining useful life (RUL) estimation of synthetic fibre ropes (SFRs) is critical for safe operation in offshore-crane, wind turbine installation, and heavy-load handling applications, where rope failure can result in catastrophic safety incidents and costly downtime. Despite growing research interest in data-driven condition monitoring, there is no publicly available image dataset that captures the complete degradation lifecycle of SFRs under controlled cyclic fatigue loading. To address this gap, we present a novel image dataset comprising approximately 34,700 high-resolution images of eleven Dyneema SK75/78 high-modulus polyethylene (HMPE) rope samples subjected to cyclic fatigue on a sheave-bend test stand at seven distinct axial load levels ranging from 60 kN to 280 kN. Ropes were loaded until mechanical failure, with fatigue lifetimes ranging from 695 cycles to 8,340 cycles. After every fixed number of sheave cycles (an inspection burst), ten images were captured at different cross-sectional positions along the rope, providing spatially representative sampling of surface degradation throughout the rope's entire service life. The images obtained from each load are annotated with the corresponding elapsed cycle count, enabling a direct computation of RUL for any rope in the sequence. This dataset aims to support a broad range of machine learning (ML) tasks including RUL regression, damage progression modelling, anomaly detection, and load-conditioned prognostics. The dataset is intended to serve as a benchmark resource for the development and comparison of vision-based condition monitoring (CM) and prognostics algorithms for SFRs.",
+   "comment": "7 pages, 2 figures, 1 table",
+   "primary_category": "cs.CV",
+   "theme": "Prognostics and remaining useful life",
+   "relevance": 20.2,
+   "usability": 44.0,
+   "repos": [
+    {
+     "full_name": "AAU-Multimodal-Reasoning-Research-Group/RUL-SFR-Data",
+     "html_url": "https://github.com/AAU-Multimodal-Reasoning-Research-Group/RUL-SFR-Data",
+     "description": "Imagery Dataset for Remaining Useful Life Estimation of Synthetic Fibre Ropes",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "TeX",
+     "license": "MIT",
+     "created_at": "2026-05-05T18:59:14Z",
+     "pushed_at": "2026-05-07T08:20:33Z",
+     "size_kb": 22659,
+     "archived": false,
+     "is_fork": false,
+     "topics": [
+      "condition-monitoring",
+      "machine-learning",
+      "prognostic-models",
+      "remaining-useful-life-prediction"
+     ],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2604.08474",
+   "title": "Quantization Impact on the Accuracy and Communication Efficiency Trade-off in Federated Learning for Aerospace Predictive Maintenance",
+   "published": "2026-04-09T17:13:15Z",
+   "authors": [
+    "Abdelkarim Loukili"
+   ],
+   "abstract": "Federated learning (FL) enables privacy-preserving predictive maintenance across distributed aerospace fleets, but gradient communication overhead constrains deployment on bandwidth-limited IoT nodes. This paper investigates the impact of symmetric uniform quantization ($b \\in \\{32,8,4,2\\}$ bits) on the accuracy--efficiency trade-off of a custom-designed lightweight 1-D convolutional model (AeroConv1D, 9\\,697 parameters) trained via FL on the NASA C-MAPSS benchmark under a realistic Non-IID client partition. Using a rigorous multi-seed evaluation ($N=10$ seeds), we show that INT4 achieves accuracy \\emph{statistically indistinguishable} from FP32 on both FD001 ($p=0.341$) and FD002 ($p=0.264$ MAE, $p=0.534$ NASA score) while delivering an $8\\times$ reduction in gradient communication cost (37.88~KiB $\\to$ 4.73~KiB per round). A key methodological finding is that naïve IID client partitioning artificially suppresses variance; correct Non-IID evaluation reveals the true operational instability of extreme quantization, demonstrated via a direct empirical IID vs.\\ Non-IID comparison. INT2 is empirically characterized as unsuitable: while it achieves lower MAE on FD002 through extreme quantization-induced over-regularization, this apparent gain is accompanied by catastrophic NASA score instability (CV\\,=\\,45.8\\% vs.\\ 22.3\\% for FP32), confirming non-reproducibility under heterogeneous operating conditions. Analytical FPGA resource projections on the Xilinx ZCU102 confirm that INT4 fits within hardware constraints (85.5\\% DSP utilization), potentially enabling a complete FL pipeline on a single SoC. The full simulation codebase and FPGA estimation scripts are publicly available at https://github.com/therealdeadbeef/aerospace-fl-quantization.",
+   "comment": "",
+   "primary_category": "cs.LG",
+   "theme": "Edge / TinyML deployment",
+   "relevance": 11.2,
+   "usability": 61.0,
+   "repos": [
+    {
+     "full_name": "therealdeadbeef/aerospace-fl-quantization",
+     "html_url": "https://github.com/therealdeadbeef/aerospace-fl-quantization",
+     "description": "PyTorch simulation framework for the paper: \"Quantization Impact on the Accuracy and Communication Efficiency Trade-off in Federated Learning for Aerospace Predictive Maintenance\"",
+     "stars": 1,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "MIT",
+     "created_at": "2026-04-09T17:19:11Z",
+     "pushed_at": "2026-04-09T18:06:50Z",
+     "size_kb": 12395,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2606.01578",
+   "title": "Description and Discussion on DCASE 2026 Challenge Task 2: Noise-aware Unsupervised Anomalous Sound Detection for Machine Condition Monitoring",
+   "published": "2026-06-01T02:25:54Z",
+   "authors": [
+    "Tomoya Nishida",
+    "Noboru Harada",
+    "Daiki Takeuchi",
+    "Daisuke Niizumi",
+    "Keisuke Imoto",
+    "Kota Dohi",
+    "Harsh Purohit",
+    "Takashi Endo",
+    "Yohei Kawaguchi"
+   ],
+   "abstract": "This paper presents an overview of DCASE 2026 Challenge Task 2, titled \"Noise-aware unsupervised anomalous sound detection (UASD) for machine condition monitoring.\" The task aims to advance noise-robust anomalous sound detection for machine condition monitoring under the unsupervised setting, where only normal machine sounds are available for training. Reliable detection under noisy conditions is crucial for practical deployment, but previous DCASE Task 2 settings provided limited information about environmental noise, potentially limiting UASD performance in highly noisy situations. To address this limitation, DCASE 2026 allows participants to exploit two-channel audio samples simultaneously captured at locations near and far from the target machine. Since the distant microphone is expected to contain relatively stronger environmental noise and weaker direct machine sounds, it may help distinguish environmental noise components from the target machine sounds. After the challenge submission deadline, challenge results and an analysis of the submitted systems will be added.",
+   "comment": "this article draws heavily from arXiv:2506.10097",
+   "primary_category": "eess.AS",
+   "theme": "Acoustic and ultrasonic monitoring",
+   "relevance": 19.6,
+   "usability": 44.0,
+   "repos": [
+    {
+     "full_name": "nttcslab/dcase2023_task2_baseline_ae",
+     "html_url": "https://github.com/nttcslab/dcase2023_task2_baseline_ae",
+     "description": "",
+     "stars": 105,
+     "forks": 37,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "NOASSERTION",
+     "created_at": "2023-03-01T09:51:25Z",
+     "pushed_at": "2026-07-17T10:17:20Z",
+     "size_kb": 898,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    },
+    {
+     "full_name": "nttcslab/dcase2026_task2_evaluator",
+     "html_url": "https://github.com/nttcslab/dcase2026_task2_evaluator",
+     "description": "",
+     "stars": 1,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "NOASSERTION",
+     "created_at": "2026-07-08T06:41:59Z",
+     "pushed_at": "2026-07-08T22:02:31Z",
+     "size_kb": 209,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    },
+    {
+     "full_name": "haoqiu111/REF-Path-V1",
+     "html_url": "https://github.com/haoqiu111/REF-Path-V1",
+     "description": "",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "MIT",
+     "created_at": "2026-10-03T14:33:08Z",
+     "pushed_at": "2026-10-03T14:37:31Z",
+     "size_kb": 4649,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2604.23446",
+   "title": "IndustryAssetEQA: A Neurosymbolic Operational Intelligence System for Embodied Question Answering in Industrial Asset Maintenance",
+   "published": "2026-04-25T21:11:41Z",
+   "authors": [
+    "Chathurangi Shyalika",
+    "Dhaval Patel",
+    "Amit Sheth"
+   ],
+   "abstract": "Industrial maintenance environments increasingly rely on AI systems to assist operators in understanding asset behavior, diagnosing failures, and evaluating interventions. Although large language models (LLMs) enable fluent natural-language interaction, deployed maintenance assistants routinely produce generic explanations that are weakly grounded in telemetry, omit verifiable provenance, and offer no testable support for counterfactual or action-oriented reasoning that undermine trust in safety-critical settings. We present IndustryAssetEQA, a neurosymbolic operational intelligence system that combines episodic telemetry representations with a Failure Mode Effects Analysis Knowledge Graph (FMEA-KG) to enable Embodied Question Answering (EQA) over industrial assets. We evaluate on four datasets covering four industrial asset types, including rotating machinery, turbofan engines, hydraulic systems, and cyber-physical production systems. Compared to LLM-only baselines, IndustryAssetEQA improves structural validity by up to 0.51, counterfactual accuracy by up to 0.47, and explanation entailment by 0.64, while reducing severe expert-rated overclaims from 28% to 2% (approximately 93% reduction). Code, datasets, and the FMEA-KG are available at https://github.com/IBM/AssetOpsBench/tree/IndustryAssetEQA/IndustryAssetEQA.",
+   "comment": "20 pages, 4 figures, 4 tables, Accepted for the 64th Annual Meeting of the Association for Computational Linguistics (ACL 2026) Industry Track",
+   "primary_category": "cs.AI",
+   "theme": "Foundation models and LLM agents for maintenance",
+   "relevance": 6.5,
+   "usability": 70.0,
+   "repos": [
+    {
+     "full_name": "IBM/AssetOpsBench",
+     "html_url": "https://github.com/IBM/AssetOpsBench",
+     "description": "AssetOpsBench - Industry 4.0: A unified benchmark and framework for building, orchestrating, and evaluating domain-specific AI agents for Industry 4.0 asset operations and maintenance, with 460+ scenarios, 5 specialist agents (IoT, FMSR, TSFM, Work Order,...), and multi-agent orchestration blueprints (MetaAgent, AgentHive) over MCP.",
+     "stars": 2350,
+     "forks": 338,
+     "open_issues": 40,
+     "language": "Python",
+     "license": "Apache-2.0",
+     "created_at": "2025-05-01T20:48:50Z",
+     "pushed_at": "2026-10-13T12:38:54Z",
+     "size_kb": 111909,
+     "archived": false,
+     "is_fork": false,
+     "topics": [
+      "ai-for-physical-assets",
+      "condition-based-maintenance",
+      "hvac-maintenance",
+      "iot",
+      "llm-agents",
+      "model-context-protocol",
+      "predictive-maintenance",
+      "time-series-forecasting"
+     ],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2607.08273",
+   "title": "Empirical Calibration and Conditional-Reliability Diagnostics for Bearing RUL Prediction under Operating-Regime Shift",
+   "published": "2026-07-09T09:16:36Z",
+   "authors": [
+    "Shaoliang Yang",
+    "Jun Wang",
+    "Yunsheng Wang"
+   ],
+   "abstract": "Remaining useful life (RUL) estimates support reliability and maintenance decisions only if both point accuracy and prediction intervals remain trustworthy when operating conditions change. Convenient mixed splits can hide that failure. This paper studies the question on a documented 10-bearing PHME subset with time-varying load and speed. Derived load-speed regimes define the held-out evaluation units, while models receive only measured load and speed as context. A calibrated predictive-representation model fuses raw vibration windows, engineered descriptors, and operating context, then forms intervals by empirical residual calibration. Under strict train/validation/calibration/test separation, the model reaches normalized MAE 0.1477, empirical 90% coverage 0.900, and retrospective absolute-step MAE 285.26; a 400-tree random forest reaches 0.1538, 0.871, and 294.57. The results do not show uniform dominance: conditional diagnostics expose non-uniform reliability, including 0.666 coverage in a low-load/high-speed cell, and a post-hoc pooled regime-conditioned residual diagnostic raises that cell to 0.941 only as motivation for future pre-specified conditional calibration. Stress tests further identify raw-channel loss as the largest tested reliability failure mode. The contribution is therefore a bounded reliability-evaluation protocol for the processed 10-bearing subset, with conditional undercoverage and raw-channel loss reported explicitly as failure modes rather than deployment guarantees.",
+   "comment": "36 pages, 11 figures, 22 tables. Code: https://github.com/nbbllxx0/Empirical-Calibration-and-Conditional-Reliability-Diagnostics",
+   "primary_category": "cs.CE",
+   "theme": "Prognostics and remaining useful life",
+   "relevance": 17.5,
+   "usability": 48.0,
+   "repos": [
+    {
+     "full_name": "nbbllxx0/Empirical-Calibration-and-Conditional-Reliability-Diagnostics",
+     "html_url": "https://github.com/nbbllxx0/Empirical-Calibration-and-Conditional-Reliability-Diagnostics",
+     "description": "",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "MIT",
+     "created_at": "2026-06-19T09:20:44Z",
+     "pushed_at": "2026-09-30T22:42:24Z",
+     "size_kb": 60864,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2607.16678",
+   "title": "Pseudo-label distillation for discriminative anomalous sound detection",
+   "published": "2026-07-18T07:13:58Z",
+   "authors": [
+    "Takuya Fujimura",
+    "Tomoki Toda"
+   ],
+   "abstract": "Discriminative anomalous sound detection (ASD) methods train a feature extractor through a classification task using machine-information labels. They then detect anomalies in the resulting feature space based on distances to normal samples. The discriminative feature space effectively captures machine characteristics, leading to high ASD performance. However, this approach benefits from detailed labels, which are costly to obtain. An alternative is a self-supervised learning (SSL)-based label-free approach. This approach directly uses SSL features for ASD and has shown competitive performance. However, SSL models are typically large and computationally expensive. To address these problems, we propose a simple pseudo-label distillation framework. The proposed method generates pseudo labels from SSL features and trains a compact discriminative feature extractor using these pseudo labels. To suppress the effect of noise on pseudo-label generation, we also propose lightweight noise-robust feature transformation (NRFT) methods utilizing a small amount of clean machine-sound data or isolated noise data. We conducted comprehensive evaluations and analyses on the DCASE 2020-2025 Task 2 datasets using four SSL models. The results demonstrate that pseudo-label distillation not only transfers the performance of SSL models to a compact model but also further improves performance by leveraging available coarse labels and data augmentation. Also, our NRFT methods provide further gains.",
+   "comment": "",
+   "primary_category": "eess.AS",
+   "theme": "Acoustic and ultrasonic monitoring",
+   "relevance": 8.7,
+   "usability": 64.7,
+   "repos": [
+    {
+     "full_name": "TakuyaFujimura/dcase-asd-toolkit",
+     "html_url": "https://github.com/TakuyaFujimura/dcase-asd-toolkit",
+     "description": "",
+     "stars": 15,
+     "forks": 3,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "MIT",
+     "created_at": "2025-02-19T06:34:44Z",
+     "pushed_at": "2026-07-21T03:09:42Z",
+     "size_kb": 5674,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    },
+    {
+     "full_name": "realant-repo/acoustic-attribute-asd",
+     "html_url": "https://github.com/realant-repo/acoustic-attribute-asd",
+     "description": "",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "MIT",
+     "created_at": "2026-08-10T16:36:09Z",
+     "pushed_at": "2026-08-10T16:44:03Z",
+     "size_kb": 1940,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2603.12624",
+   "title": "Prompt-Driven Lightweight Foundation Model for Instance Segmentation-Based Fault Detection in Freight Trains",
+   "published": "2026-03-13T03:56:37Z",
+   "authors": [
+    "Guodong Sun",
+    "Qihang Liang",
+    "Xingyu Pan",
+    "Moyun Liu",
+    "Yang Zhang"
+   ],
+   "abstract": "Accurate visual fault detection in freight trains remains a critical challenge for intelligent transportation system maintenance, due to complex operational environments, structurally repetitive components, and frequent occlusions or contaminations in safety-critical regions. Conventional instance segmentation methods based on convolutional neural networks and Transformers often suffer from poor generalization and limited boundary accuracy under such conditions. To address these challenges, we propose a lightweight self-prompted instance segmentation framework tailored for freight train fault detection. Our method leverages the Segment Anything Model by introducing a self-prompt generation module that automatically produces task-specific prompts, enabling effective knowledge transfer from foundation models to domain-specific inspection tasks. In addition, we adopt a Tiny Vision Transformer backbone to reduce computational cost, making the framework suitable for real-time deployment on edge devices in railway monitoring systems. We construct a domain-specific dataset collected from real-world freight inspection stations and conduct extensive evaluations. Experimental results show that our method achieves 74.6 $AP^{\\text{box}}$ and 74.2 $AP^{\\text{mask}}$ on the dataset, outperforming existing state-of-the-art methods in both accuracy and robustness while maintaining low computational overhead. This work offers a deployable and efficient vision solution for automated freight train inspection, demonstrating the potential of foundation model adaptation in industrial-scale fault diagnosis scenarios. Project page: https://github.com/MVME-HBUT/SAM_FTI-FDet.git",
+   "comment": "14 pages, 9 figures",
+   "primary_category": "cs.CV",
+   "theme": "Foundation models and LLM agents for maintenance",
+   "relevance": 9.1,
+   "usability": 63.2,
+   "repos": [
+    {
+     "full_name": "MVME-HBUT/SAM_FTI-FDet",
+     "html_url": "https://github.com/MVME-HBUT/SAM_FTI-FDet",
+     "description": "",
+     "stars": 2,
+     "forks": 1,
+     "open_issues": 1,
+     "language": "Python",
+     "license": "Apache-2.0",
+     "created_at": "2025-12-09T03:55:06Z",
+     "pushed_at": "2026-02-05T07:12:29Z",
+     "size_kb": 10213,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2511.12240",
+   "title": "SCI: A Metacognitive Control for Signal Dynamics",
+   "published": "2025-11-15T14:48:17Z",
+   "authors": [
+    "Vishal Joshua Meesala"
+   ],
+   "abstract": "Modern deep learning systems are typically deployed as open-loop function approximators: they map inputs to outputs in a single pass, without regulating how much computation or explanatory effort is spent on a given case. In safety-critical settings, this is brittle: easy and ambiguous inputs receive identical processing, and uncertainty is only read off retrospectively from raw probabilities. We introduce the Surgical Cognitive Interpreter (SCI), a lightweight closed-loop metacognitive control layer that wraps an existing stochastic model and turns prediction into an iterative process. SCI monitors a scalar interpretive state SP(t), here instantiated as a normalized entropy-based confidence signal, and adaptively decides whether to stop, continue sampling, or abstain. The goal is not to improve accuracy per se, but to regulate interpretive error ΔSP and expose a safety signal that tracks when the underlying model is likely to fail. We instantiate SCI around Monte Carlo dropout classifiers in three domains: vision (MNIST digits), medical time series (MIT-BIH arrhythmia), and industrial condition monitoring (rolling-element bearings). In all cases, the controller allocates more inference steps to misclassified inputs than to correct ones (up to about 3-4x on MNIST and bearings, and 1.4x on MIT-BIH). The resulting ΔSP acts as a usable safety signal for detecting misclassifications (AUROC 0.63 on MNIST, 0.70 on MIT-BIH, 0.86 on bearings). Code and reproducibility: https://github.com/vishal-1344/sci",
+   "comment": "v2: Extended theoretical analysis (Lyapunov-style stability), added metacognitive experiments across three domains, and released code and configuration files at https://github.com/vishal-1344/sci",
+   "primary_category": "cs.LG",
+   "theme": "Bearing and rotating-machinery diagnosis",
+   "relevance": 9.4,
+   "usability": 61.0,
+   "repos": [
+    {
+     "full_name": "vishal-1344/sci",
+     "html_url": "https://github.com/vishal-1344/sci",
+     "description": "Inference-time control architecture for neural signal models, implementing discrepancy tracking, stability checks, and adaptive adjustment of model behavior.",
+     "stars": 1,
+     "forks": 0,
+     "open_issues": 1,
+     "language": "TeX",
+     "license": "MIT",
+     "created_at": "2025-11-30T01:20:44Z",
+     "pushed_at": "2026-02-20T16:07:40Z",
+     "size_kb": 1042,
+     "archived": false,
+     "is_fork": false,
+     "topics": [
+      "closed-loop-control",
+      "control-theory",
+      "deep-learning",
+      "dynamical-systems",
+      "feedbck-systems",
+      "human-in-the-loop",
+      "machine-learning",
+      "out-of-distribution-detection",
+      "signal-processing",
+      "time-series",
+      "uncertainty-estimation"
+     ],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2606.24173",
+   "title": "Lightweight Transformer Models for On-Device Fault Detection: A Benchmark Study on Resource-Constrained Deployment",
+   "published": "2026-06-23T05:54:33Z",
+   "authors": [
+    "Disha Patel"
+   ],
+   "abstract": "On-device fault detection enables real-time diagnostics without cloud dependency, but deploying machine learning models on resource-constrained hardware demands careful tradeoffs between accuracy, latency, and model size. We present a benchmark comparing traditional ML methods (Random Forest, XGBoost, SVM, Logistic Regression) against lightweight transformer architectures (DistilBERT, TinyBERT-6L, TinyBERT-4L, MobileBERT) for binary fault detection across three public datasets: NASA C-MAPSS turbofan degradation, SECOM semiconductor manufacturing, and UCI AI4I 2020 predictive maintenance. We evaluate classification performance (F1-score, AUC), model size, and CPU inference latency, and further assess INT8 dynamic quantization and a two-stage adaptive inference pipeline. Our results reveal that on well-separated sensor data (C-MAPSS), lightweight transformers match traditional ML at 87.8% F1 but at 100x the model size and 9000x the latency. TinyBERT-4L emerges as the most deployment-friendly transformer at 55 MB and 18 ms CPU latency. INT8 quantization reduces size by 25% while preserving 86.9% F1. Our adaptive pipeline, routing 97.9% of predictions through a quantized triage model and only 2.1% to a larger expert, achieves 87.6% F1 at 19.5 ms average latency. On severely imbalanced datasets (SECOM, UCI-PM), both traditional and transformer methods struggle significantly, highlighting fundamental limitations of current approaches for extreme class imbalance in fault detection. All code is publicly available.",
+   "comment": "5 pages, 3 figures",
+   "primary_category": "cs.LG",
+   "theme": "Edge / TinyML deployment",
+   "relevance": 14.9,
+   "usability": 44.0,
+   "repos": [
+    {
+     "full_name": "Rehman54454/fault-detection-github-release",
+     "html_url": "https://github.com/Rehman54454/fault-detection-github-release",
+     "description": "",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Jupyter Notebook",
+     "license": "MIT",
+     "created_at": "2026-08-11T10:17:56Z",
+     "pushed_at": "2026-08-11T10:20:00Z",
+     "size_kb": 2875,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2609.35792",
+   "title": "Serverless gossip training of LSTM failure detectors: A matched-protocol comparison with federated, local and centralized learning on NASA C-MAPSS",
+   "published": "2026-09-17T03:34:29Z",
+   "authors": [
+    "Yusuf Öztürk",
+    "Enes Göktekin",
+    "Bengisu Atlı",
+    "Akın Öztürk",
+    "Zhixiang Wang",
+    "Ulas Bagci"
+   ],
+   "abstract": "Industrial predictive maintenance increasingly depends on learning from equipment spread across sites whose sensor data cannot easily be pooled. Federated averaging (FedAvg) solves this with a central aggregation server; gossip learning removes the server, but its behaviour for recurrent failure-detection models has not been measured under controlled conditions. We compare synchronous ring gossip with FedAvg, isolated local training and a centralized reference for a stacked LSTM that detects imminent failure on the NASA C-MAPSS turbofan benchmark. All methods share one open implementation, architecture, initialization, optimizer, data split and training budget, and the primary endpoint uses one terminal window per test engine to avoid the statistical dependence of overlapping windows. On FD001 (five seeds), gossip reached a terminal-window F1 of 89.6 +/- 1.3%, compared with 89.9 +/- 1.1% for FedAvg, 83.6 +/- 6.7% for local training and 93.5 +/- 2.1% for centralized training, while transmitting the same payload as FedAvg without a coordinator. Node models agreed closely but not exactly (1.8% pairwise decision disagreement versus 5.6% without communication). Across FD002-FD004, peer communication improved terminal-window F1 over local training by 13-28 points; gossip matched FedAvg on FD003 and FD004 but was 4.3 points lower on the multi-condition FD002 subset. Simulated message loss, node failure and server outage changed neither method appreciably, whereas larger rings degraded gossip faster. Ring gossip is therefore a practical serverless alternative when data heterogeneity is moderate, and faster-mixing topologies become important as heterogeneity grows.",
+   "comment": "10 pages, 5 figures. Code: https://github.com/ZhixiangWang-CN/gossip-lstm-cmapss",
+   "primary_category": "cs.LG",
+   "theme": "Prognostics and remaining useful life",
+   "relevance": 9.8,
+   "usability": 54.0,
+   "repos": [
+    {
+     "full_name": "ZhixiangWang-CN/gossip-lstm-cmapss",
+     "html_url": "https://github.com/ZhixiangWang-CN/gossip-lstm-cmapss",
+     "description": "Serverless gossip training of LSTM failure detectors vs. FedAvg, local and centralized learning on NASA C-MAPSS FD001",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "MIT",
+     "created_at": "2026-09-16T15:22:54Z",
+     "pushed_at": "2026-09-27T00:37:19Z",
+     "size_kb": 15242,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2503.08749",
+   "title": "Source-free domain adaptation based on label reliability for cross-domain bearing fault diagnosis",
+   "published": "2025-03-11T13:02:18Z",
+   "authors": [
+    "Wenyi Wu",
+    "Hao Zhang",
+    "Zhisen Wei",
+    "Xiao-Yuan Jing",
+    "Qinghua Zhang",
+    "Songsong Wu"
+   ],
+   "abstract": "Source-free domain adaptation (SFDA) has been exploited for cross-domain bearing fault diagnosis without access to source data. Current methods select partial target samples with reliable pseudo-labels for model adaptation, which is sub-optimal due to the ignored target samples. We argue that every target sample can contribute to model adaptation, and accordingly propose in this paper a novel SFDA-based approach for bearing fault diagnosis that exploits both reliable and unreliable pseudo-labels. We develop a data-augmentation-based label voting strategy to divide the target samples into reliable and unreliable ones. We propose to explore the underlying relation between feature space and label space by using the reliable pseudo-labels as ground-truth labels, meanwhile, alleviating negative transfer by maximizing the entropy of the unreliable pseudo-labels. The proposed method achieves well-balance between discriminability and diversity by taking advantage of reliable and unreliable pseudo-labels. Extensive experiments are conducted on two bearing fault benchmarks, demonstrating that our approach achieves significant performance improvements against existing SFDA-based bearing fault diagnosis methods. Our code is available at https://github.com/BdLab405/SDALR.",
+   "comment": "15 pages, 12 figures and 7 tables",
+   "primary_category": "cs.LG",
+   "theme": "Bearing and rotating-machinery diagnosis",
+   "relevance": 13.9,
+   "usability": 40.0,
+   "repos": [
+    {
+     "full_name": "BdLab405/SDALR",
+     "html_url": "https://github.com/BdLab405/SDALR",
+     "description": "Source-free domain adaptation based on label reliability for cross-domain bearing fault diagnosis",
+     "stars": 41,
+     "forks": 2,
+     "open_issues": 1,
+     "language": "Python",
+     "license": null,
+     "created_at": "2024-12-26T03:08:24Z",
+     "pushed_at": "2025-09-30T02:19:09Z",
+     "size_kb": 115496,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2512.02610",
+   "title": "Target-specific Adaptation and Consistent Degradation Alignment for Cross-Domain Remaining Useful Life Prediction",
+   "published": "2025-12-02T10:15:14Z",
+   "authors": [
+    "Yubo Hou",
+    "Mohamed Ragab",
+    "Min Wu",
+    "Chee-Keong Kwoh",
+    "Xiaoli Li",
+    "Zhenghua Chen"
+   ],
+   "abstract": "Accurate prediction of the Remaining Useful Life (RUL) in machinery can significantly diminish maintenance costs, enhance equipment up-time, and mitigate adverse outcomes. Data-driven RUL prediction techniques have demonstrated commendable performance. However, their efficacy often relies on the assumption that training and testing data are drawn from the same distribution or domain, which does not hold in real industrial settings. To mitigate this domain discrepancy issue, prior adversarial domain adaptation methods focused on deriving domain-invariant features. Nevertheless, they overlook target-specific information and inconsistency characteristics pertinent to the degradation stages, resulting in suboptimal performance. To tackle these issues, we propose a novel domain adaptation approach for cross-domain RUL prediction named TACDA. Specifically, we propose a target domain reconstruction strategy within the adversarial adaptation process, thereby retaining target-specific information while learning domain-invariant features. Furthermore, we develop a novel clustering and pairing strategy for consistent alignment between similar degradation stages. Through extensive experiments, our results demonstrate the remarkable performance of our proposed TACDA method, surpassing state-of-the-art approaches with regard to two different evaluation metrics. Our code is available at https://github.com/keyplay/TACDA.",
+   "comment": "",
+   "primary_category": "cs.AI",
+   "theme": "Prognostics and remaining useful life",
+   "relevance": 14.7,
+   "usability": 38.3,
+   "repos": [
+    {
+     "full_name": "keyplay/TACDA",
+     "html_url": "https://github.com/keyplay/TACDA",
+     "description": "[TASE-25] Target-specific Adaptation and Consistent Degradation Alignment for Cross-Domain Remaining Useful Life Prediction",
+     "stars": 6,
+     "forks": 1,
+     "open_issues": 0,
+     "language": "Python",
+     "license": null,
+     "created_at": "2024-07-12T07:26:06Z",
+     "pushed_at": "2026-01-16T15:16:35Z",
+     "size_kb": 11154,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2503.13558",
+   "title": "Survival Analysis with Machine Learning for Predicting Li-ion Battery Remaining Useful Life",
+   "published": "2025-03-17T02:49:34Z",
+   "authors": [
+    "Jingyuan Xue",
+    "Xiaozhen Zhao",
+    "Dongjing Jiang",
+    "Qingchong Jiao",
+    "Redouane EL Bouchtaoui",
+    "Jianfei Zhang"
+   ],
+   "abstract": "Battery degradation significantly impacts the reliability and efficiency of energy storage systems, particularly in electric vehicles and industrial applications. Predicting the remaining useful life (RUL) of lithium-ion batteries is crucial for optimizing maintenance schedules, reducing costs, and improving safety. Traditional RUL prediction methods often struggle with nonlinear degradation patterns and uncertainty quantification. To address these challenges, we propose a hybrid survival analysis framework integrating survival data reconstruction, survival model learning, and survival probability estimation. Our approach transforms battery voltage time series into time-to-failure data using path signatures. The multiple Cox-based survival models and machine-learning-based methods, such as DeepHit and MTLR, are learned to predict battery failure-free probabilities over time. Experiments conducted on the Toyota battery and NASA battery datasets demonstrate the effectiveness of our approach, achieving high time-dependent AUC and concordance index (C-Index) while maintaining a low integrated Brier score. The data and source codes are available to the public at https://github.com/okic-ca/rul",
+   "comment": "arXiv admin note: This paper has been withdrawn by arXiv due to unverifiable authorship and affiliation",
+   "primary_category": "eess.SP",
+   "theme": "Prognostics and remaining useful life",
+   "relevance": 10.9,
+   "usability": 45.7,
+   "repos": [
+    {
+     "full_name": "OKIC-CA/RUL",
+     "html_url": "https://github.com/OKIC-CA/RUL",
+     "description": "Survival Analysis with Machine Learning for Predicting Li-ion Battery Remaining Useful Life",
+     "stars": 17,
+     "forks": 1,
+     "open_issues": 0,
+     "language": "Jupyter Notebook",
+     "license": null,
+     "created_at": "2025-03-17T01:00:06Z",
+     "pushed_at": "2026-05-04T03:13:28Z",
+     "size_kb": 4424,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2607.22987",
+   "title": "Label-free Industrial Fault Detection via Adversarial Inverse Reinforcement Learning: A System for Run-to-Failure Prognostics",
+   "published": "2026-07-25T02:02:22Z",
+   "authors": [
+    "Dhiraj Neupane",
+    "Mohamed Reda Bouadjenek",
+    "Richard Dazeley",
+    "Sunil Aryal"
+   ],
+   "abstract": "Machinery fault detection (MFD) remains heavily reliant on supervised learning, which struggles with the scarcity of fault labels in real-world settings. While reinforcement learning (RL) offers a framework to model the sequential nature of degradation, current ``RL-based'' MFD methods reduce the problem to a static contextual bandit (CB) formulation: by ignoring state transitions and discarding the temporal discount factor, they collapse to standard supervised classification. We propose an adversarial inverse reinforcement learning (AIRL) framework that treats MFD as an offline IRL problem. Unlike reconstruction-based approaches that rely on static error margins, or CBs that ignore dynamics, our method recovers an intrinsic \"health\" reward directly from observational state transitions, requiring neither manual reward engineering nor fault labels. On three run-to-failure benchmarks (HUMS2023, IMS, XJTU-SY), AIRL is the only method achieving non-saturated post-detection consistency across all datasets, while CB baselines fail to detect gradual degradation and reconstruction models collapse into always-anomalous states. Code and data: https://github.com/dhirajneupane/AIRL-MFD-DN.",
+   "comment": "",
+   "primary_category": "cs.LG",
+   "theme": "Prognostics and remaining useful life",
+   "relevance": 17.6,
+   "usability": 31.0,
+   "repos": [
+    {
+     "full_name": "dhirajneupane/AIRL-MFD-DN",
+     "html_url": "https://github.com/dhirajneupane/AIRL-MFD-DN",
+     "description": "",
+     "stars": 1,
+     "forks": 0,
+     "open_issues": 1,
+     "language": "Jupyter Notebook",
+     "license": null,
+     "created_at": "2025-11-11T07:33:11Z",
+     "pushed_at": "2026-07-02T05:11:49Z",
+     "size_kb": 25136,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2606.11990",
+   "title": "Time-Series Foundation Model Embeddings for Remaining Useful Life Estimation",
+   "published": "2026-06-10T12:14:16Z",
+   "authors": [
+    "Amir El-Ghoussani",
+    "Michele De Vita",
+    "Ronald Naumann",
+    "Vasileios Belagiannis"
+   ],
+   "abstract": "Remaining Useful Life (RUL) prediction is essential for industrial predictive maintenance, yet many learning-based approaches rely on extensive feature engineering or large labeled datasets to train task-specific sequence models. In this work, we introduce a lightweight learning approach, in which we leverage a frozen pretrained time-series foundation model (TSFM) and combine it with a small regression head for RUL estimation from multivariate sensor streams. More specifically, we use Chronos-2 as a frozen backbone to extract context window features and train a lightweight regression neural network for RUL prediction. Experiments on real-world industrial sensor data from two device types show that Chronos-2 features consistently improve over recurrent, convolutional, Transformer-based, and gradient-boosting baselines under the same preprocessing and evaluation protocol. We further analyze the impact of context length and find that performance improves significantly with longer histories, indicating that TSFM representation offer a practical and data-efficient alternative for RUL estimation in industrial settings.",
+   "comment": "Accepted to EUSIPCO 2026, 4 pages, 2 figures, 2 tables",
+   "primary_category": "cs.LG",
+   "theme": "Prognostics and remaining useful life",
+   "relevance": 12.2,
+   "usability": 40.0,
+   "repos": [
+    {
+     "full_name": "deshpandetanmay/chronos2-rul-replication",
+     "html_url": "https://github.com/deshpandetanmay/chronos2-rul-replication",
+     "description": "Permutation equivariance limits frozen time-series foundation model features for RUL estimation: a public-data replication on NASA C-MAPSS FD001 with calibration analysis",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "MIT",
+     "created_at": "2026-08-16T21:33:46Z",
+     "pushed_at": "2026-08-16T21:41:14Z",
+     "size_kb": 201,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2607.05805",
+   "title": "Onnes: A Physics-Grounded Multi-Agent LLM Simulator for Cryogenic Fault Diagnosis in Quantum Computing Infrastructure",
+   "published": "2026-07-07T03:57:21Z",
+   "authors": [
+    "Praneeth Narisetty",
+    "Uday Kumar Reddy Kattamanchi",
+    "Shiva Nagendra Babu Kore"
+   ],
+   "abstract": "Dilution refrigerators are the enabling infrastructure of superconducting quantum computers, yet their fault diagnosis is still dominated by threshold alarms that report that something is wrong, not what. We present Onnes, a physics-grounded digital-twin simulator of a dilution refrigerator (a forward physics model with a learned real-fridge noise fingerprint) that drives a live multi-agent LLM operations layer, and use it for a controlled head-to-head between a zero-shot LLM agent panel and a supervised ML classifier on cryogenic fault diagnosis. The twin couples a real dilution-cooling floor, a noise-and-correlation fingerprint learned from real BlueFors logs, and six physics-grounded fault classes, three engineered to overlap on temperature but separate on flow and pressure. Across a 1000-turn evaluation the zero-shot panel shows no significant difference from the classifier on detection but trails on classification, its errors concentrating on the confusable faults. Curated contrastive few-shot demonstrations and self-consistency voting then raise classification accuracy from 0.685 to 0.990, matching the supervised classifier (0.985) with no parameter updates and six labeled demonstrations; an ablation attributes the gain almost entirely to the demonstrations. Run as a continuous monitor across a nine-run fault-by-seed sweep, the agent catches every developing fault within one poll interval, and a confidence gate suppresses pre-onset false alarms whose rate is backend-dependent. As a first sim-to-real check, a detector trained purely on real BlueFors telemetry posts a real-hardware false-alarm rate of 6.4% and 100% recall on physics faults injected onto real held-out windows. All numbers are drawn verbatim from released run logs.",
+   "comment": "18 pages, 14 figures, 10 tables. Code, data, and released run logs: https://github.com/Onnes-Research/onnes",
+   "primary_category": "cs.AI",
+   "theme": "Foundation models and LLM agents for maintenance",
+   "relevance": 7.1,
+   "usability": 50.0,
+   "repos": [
+    {
+     "full_name": "Onnes-Research/onnes",
+     "html_url": "https://github.com/Onnes-Research/onnes",
+     "description": "",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "MIT",
+     "created_at": "2026-07-06T22:01:39Z",
+     "pushed_at": "2026-07-06T22:35:02Z",
+     "size_kb": 518,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2601.22631",
+   "title": "PEFT-MuTS: A Multivariate Parameter-Efficient Fine-Tuning Framework for Remaining Useful Life Prediction based on Cross-domain Time Series Representation Model",
+   "published": "2026-01-30T06:46:57Z",
+   "authors": [
+    "En Fu",
+    "Yanyan Hu",
+    "Zengwang Jin",
+    "Kaixiang Peng"
+   ],
+   "abstract": "The application of data-driven remaining useful life (RUL) prediction has long been constrained by the availability of large amount of degradation data. Mainstream solutions such as domain adaptation and meta-learning still rely on large amounts of historical degradation data from equipment that is identical or similar to the target, which imposes significant limitations in practical applications. This study investigates PEFT-MuTS, a Parameter-Efficient Fine-Tuning framework for few-shot RUL prediction, built on cross-domain pre-trained time-series representation models. Contrary to the widely held view that knowledge transfer in RUL prediction can only occur within similar devices, we demonstrate that substantial benefits can be achieved through pre-training process with large-scale cross-domain time series datasets. A independent feature tuning network and a meta-variable-based low rank multivariate fusion mechanism are developed to enable the pre-trained univariate time-series representation backbone model to fully exploit the multivariate relationships in degradation data for downstream RUL prediction task. Additionally, we introduce a zero-initialized regressor that stabilizes the fine-tuning process under few-shot conditions. Experiments on aero-engine and industrial bearing datasets demonstrate that our method can achieve effective RUL prediction even when less than 1\\% of samples of target equipment are used. Meanwhile, it substantially outperforms conventional supervised and few-shot approaches while markedly reducing the data required to achieve high predictive accuracy. Our code is available at https://github.com/fuen1590/PEFT-MuTS.",
+   "comment": "",
+   "primary_category": "cs.LG",
+   "theme": "Prognostics and remaining useful life",
+   "relevance": 15.7,
+   "usability": 31.6,
+   "repos": [
+    {
+     "full_name": "fuen1590/PEFT-MuTS",
+     "html_url": "https://github.com/fuen1590/PEFT-MuTS",
+     "description": "This is official implementation of the PEFT-MuTS framework.",
+     "stars": 10,
+     "forks": 1,
+     "open_issues": 1,
+     "language": "Python",
+     "license": null,
+     "created_at": "2025-10-09T07:44:38Z",
+     "pushed_at": "2026-01-30T10:55:30Z",
+     "size_kb": 51,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2512.24679",
+   "title": "Multi-modal cross-domain mixed fusion model with dual disentanglement for fault diagnosis under unseen working conditions",
+   "published": "2025-12-31T07:10:32Z",
+   "authors": [
+    "Pengcheng Xia",
+    "Yixiang Huang",
+    "Chengjin Qin",
+    "Chengliang Liu"
+   ],
+   "abstract": "Intelligent fault diagnosis has become an indispensable technique for ensuring machinery reliability. However, existing methods suffer significant performance decline in real-world scenarios where models are tested under unseen working conditions, while domain adaptation approaches are limited to their reliance on target domain samples. Moreover, most existing studies rely on single-modal sensing signals, overlooking the complementary nature of multi-modal information for improving model generalization. To address these limitations, this paper proposes a multi-modal cross-domain mixed fusion model with dual disentanglement for fault diagnosis. A dual disentanglement framework is developed to decouple modality-invariant and modality-specific features, as well as domain-invariant and domain-specific representations, enabling both comprehensive multi-modal representation learning and robust domain generalization. A cross-domain mixed fusion strategy is designed to randomly mix modality information across domains for modality and domain diversity augmentation. Furthermore, a triple-modal fusion mechanism is introduced to adaptively integrate multi-modal heterogeneous information. Extensive experiments are conducted on induction motor fault diagnosis under both unseen constant and time-varying working conditions. The results demonstrate that the proposed method consistently outperforms advanced methods and comprehensive ablation studies further verify the effectiveness of each proposed component and multi-modal fusion. The code is available at: https://github.com/xiapc1996/MMDG.",
+   "comment": "Accepted for publication in Mechanical Systems and Signal Processing",
+   "primary_category": "cs.AI",
+   "theme": "Transfer, domain adaptation and limited labels",
+   "relevance": 12.9,
+   "usability": 36.0,
+   "repos": [
+    {
+     "full_name": "xiapc1996/MMDG",
+     "html_url": "https://github.com/xiapc1996/MMDG",
+     "description": "Implementation for \"Multi-modal cross-domain mixed fusion model with dual disentanglement for fault diagnosis under unseen working conditions\"",
+     "stars": 20,
+     "forks": 0,
+     "open_issues": 3,
+     "language": "Python",
+     "license": null,
+     "created_at": "2025-12-30T08:08:00Z",
+     "pushed_at": "2026-07-18T11:26:07Z",
+     "size_kb": 40,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "master",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2606.29339",
+   "title": "Two kinds of robustness are not the same: disentangling fault tolerance and low-SNR robustness in multi-domain event detection on real data",
+   "published": "2026-06-28T11:14:20Z",
+   "authors": [
+    "Isao Kurosawa"
+   ],
+   "abstract": "Reliable event detection underpins induced-seismicity monitoring for Carbon dioxide Capture and Storage (CCS) and geothermal operations, distributed acoustic sensing (DAS), and industrial condition monitoring. In each setting a detector must stay reliable both when sensors fail and when the signal is buried in noise. These two failure modes are routinely conflated, and architectural complexity is often credited with robustness it may not deserve. We assemble a unified binary event-detection benchmark from three physically distinct real sources -- Hi-net seismic waveforms, Utah FORGE 2024 borehole DAS, and MAFAULDA industrial vibration -- each mapped to a common 8-channel, 256-sample representation, and evaluate a fault-tolerant detector (CEPHALON) trained with per-sample sensor-dropout against standard detectors (a 1D convolutional network, a temporal convolutional network, and a compact Transformer) trained with an identical recipe. On clean data every model is near-perfect (AUC ~ 0.99). Under progressive sensor loss, simple models with sensor-dropout are already robust and CEPHALON holds no advantage. Under additive noise, however, CEPHALON degrades far more gracefully: at -2.5 dB its overall AUC is 0.939 versus 0.532-0.572 for the convolutional baselines. Same-architecture ablations isolate the cause: disabling internal redundancy at inference reduces the low-SNR advantage only modestly, whereas removing sensor-dropout training collapses it (0.899 to 0.603 at -5 dB). The training recipe is therefore the dominant cause and parallel redundancy only secondary. We release a complete, numbered, reproducible pipeline so that every figure can be regenerated.",
+   "comment": "19 pages, 10 figures. Submitted to Computers & Geosciences. Code and reproduction material: https://github.com/ISAO9/cephalon-v2 (archived at Zenodo: https://doi.org/10.5281/zenodo.20995392)",
+   "primary_category": "physics.geo-ph",
+   "theme": "Datasets, benchmarks and evaluation methodology",
+   "relevance": 7.9,
+   "usability": 44.0,
+   "repos": [
+    {
+     "full_name": "ISAO9/cephalon-v2",
+     "html_url": "https://github.com/ISAO9/cephalon-v2",
+     "description": "Fault-tolerant multi-domain seismic event detector — disentangling sensor-loss vs low-SNR robustness on real DAS, seismic, and industrial data",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Jupyter Notebook",
+     "license": "MIT",
+     "created_at": "2026-06-28T09:02:55Z",
+     "pushed_at": "2026-06-28T09:25:13Z",
+     "size_kb": 47,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2606.12486",
+   "title": "An Empirical Study on Predictive Maintenance for Component X in Heavy-Duty Scania Trucks",
+   "published": "2026-06-10T09:21:51Z",
+   "authors": [
+    "Valeriu Dimidov",
+    "Sasan Jafarnejad",
+    "Raphaël Frank"
+   ],
+   "abstract": "Condition-based Predictive Maintenance (PdM) for truck fleets has gained momentum in recent years. This maintenance strategy aims to minimize unplanned downtimes and reduce costs by monitoring the health status of vehicles and taking proactive action based on their condition. However, the implementation of condition-based PdM systems is challenging due to the large volume of data generated by the trucks, the inherent complexity of detecting failures through sensor data and the difficulties in finding cost-effective trade-offs in the solution's implementation. In this paper, we define and validate a condition-based PdM methodology built on the assumption that the wear-and-tear state of the monitored component can be represented as a monotonically non-decreasing time series. It involves selecting only the most recent observations from the time series and transforming them into a tabular format for classification using machine learning (ML) models designed for tabular data. Our results indicate that the proposed methodology reduces costs on the Scania Component X dataset compared to current state-of-the-art (SOTA) approaches, while also simplifying the modeling process through AutoML.",
+   "comment": "",
+   "primary_category": "cs.LG",
+   "theme": "Datasets, benchmarks and evaluation methodology",
+   "relevance": 7.8,
+   "usability": 44.0,
+   "repos": [
+    {
+     "full_name": "GuilhermeFrick/autogluon-gbdt-manutencao-preditiva-componentx",
+     "html_url": "https://github.com/GuilhermeFrick/autogluon-gbdt-manutencao-preditiva-componentx",
+     "description": "",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": null,
+     "created_at": "2026-08-06T01:42:14Z",
+     "pushed_at": "2026-08-12T11:25:16Z",
+     "size_kb": 310,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    },
+    {
+     "full_name": "fsantibanezleal/CAOS_TruckVitals",
+     "html_url": "https://github.com/fsantibanezleal/CAOS_TruckVitals",
+     "description": "Onset detection and prognosis on haul-truck fleet telemetry: regime segmentation, within-regime residual, change-point, prognosis. The central claim measured on a controlled C-MAPSS contrast.",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "TypeScript",
+     "license": "MIT",
+     "created_at": "2026-08-10T12:56:12Z",
+     "pushed_at": "2026-10-02T18:47:47Z",
+     "size_kb": 3093,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2605.04943",
+   "title": "DART: A Vision-Language Foundation Model for Comprehensive Rope Condition Monitoring",
+   "published": "2026-05-06T14:12:02Z",
+   "authors": [
+    "Anju Rani",
+    "Daniel Ortiz-Arroyo",
+    "Petar Durdevic"
+   ],
+   "abstract": "The condition monitoring (CM) of synthetic fibre ropes (SFRs) used in offshore, maritime, and industrial settings demands more than a classifier: inspectors need continuous severity estimates, maintenance recommendations, anomaly flags, deterioration timelines, and automated reports, all from a single inspection image. We present DART (Damage Assessment via Rope Transformer), a vision-language foundation model that addresses the full rope inspection workflow through a unified multi-task architecture. DART extends the Joint-Embedding Predictive Architecture (JEPA) to the cross-modal domain by coupling a Vision Transformer (ViT-H/14) with Llama-3.2-3B-Instruct via a Severity-Conditioned Cross-Modal Fusion (SC-CMF) module. Three architectural innovations drive the model's versatility: (1) HD-MASK, a saliency-guided masking strategy that focuses self-supervised reconstruction on damage-dense patches; (2) per-class learnable severity gates that adaptively weight language grounding by damage category; and (3) a Contrastive Damage Disentanglement (CDD) loss that shapes the embedding space to simultaneously encode damage type, severity ordering, and cross-modal semantics. Trained once on 4,270 images spanning 14 fine-grained rope damage classes, the frozen DART backbone supports downstream tasks without any task-specific fine-tuning: damage classification (93.22 % accuracy, 91.04 % macro-F1, +38.5 pp over a vision-only baseline), continuous severity regression (Spearman rho = 0.94, within-1-ordinal accuracy 99.6 %), few-shot recognition (89.2 % macro-F1 at 20 shots). These results demonstrate that DART functions as a general-purpose CM backbone that goes well beyond classification, providing actionable inspection intelligence from a single shared representation.",
+   "comment": "18 pages, 8 figures, 9 tables",
+   "primary_category": "cs.CV",
+   "theme": "Foundation models and LLM agents for maintenance",
+   "relevance": 7.4,
+   "usability": 44.0,
+   "repos": [
+    {
+     "full_name": "AAU-Multimodal-Reasoning-Research-Group/RUL-SFR-Data",
+     "html_url": "https://github.com/AAU-Multimodal-Reasoning-Research-Group/RUL-SFR-Data",
+     "description": "Imagery Dataset for Remaining Useful Life Estimation of Synthetic Fibre Ropes",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "TeX",
+     "license": "MIT",
+     "created_at": "2026-05-05T18:59:14Z",
+     "pushed_at": "2026-05-07T08:20:33Z",
+     "size_kb": 22659,
+     "archived": false,
+     "is_fork": false,
+     "topics": [
+      "condition-monitoring",
+      "machine-learning",
+      "prognostic-models",
+      "remaining-useful-life-prediction"
+     ],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2605.15351",
+   "title": "Lie Generator Networks Extract EIS-Grade Battery Diagnostics from Pulse Relaxation Data",
+   "published": "2026-05-14T19:22:48Z",
+   "authors": [
+    "Shafayeth Jamil",
+    "Rehan Kapadia"
+   ],
+   "abstract": "Electrochemical impedance spectroscopy (EIS) is the most informative diagnostic for lithium-ion batteries: its frequency-resolved spectra decompose cell behavior into distinct electrochemical processes, revealing mechanism-specific degradation invisible to voltage and resistance measurements. Yet EIS requires dedicated hardware and minutes-long acquisitions incompatible with field deployment. Here we show that Lie Generator Networks (LGN), a structure-preserving identification framework, extract electrochemical time constants from 60 seconds of post-pulse voltage relaxation, data that battery management systems already collect, that encode the same diagnostic and prognostic information as impedance spectra. LGN learns the generator matrix of the relaxation dynamics with stability guaranteed by architecture, yielding time constants precise enough to resolve electrochemical variation that conventional curve fitting cannot detect from identical data. Across five datasets totaling over 850 cells, four institutions, and multiple chemistries, LGN tracks degradation with near-perfect rank correlation ($|ρ_s| = 0.999$), enables cross-validated reconstruction of full Nyquist spectra at 2% median error across 227 cells, predicts which capacity-matched cells fail first from three early diagnostics, and recovers Arrhenius activation energies with zero physics priors without retraining or cell-specific tuning. LGN requires no training data, no impedance hardware, and no chemistry-specific calibration, converting any existing relaxation pulse into an impedance-grade diagnostic. This enables real-time health monitoring, rapid second-life grading, production-line quality control, and physics-informed prognosis from minutes of measurement.",
+   "comment": "18 pages, 5 figures",
+   "primary_category": "eess.SY",
+   "theme": "Prognostics and remaining useful life",
+   "relevance": 7.0,
+   "usability": 44.0,
+   "repos": [
+    {
+     "full_name": "ShafayethJamil/Battery-Diagnostic-Using-LGN",
+     "html_url": "https://github.com/ShafayethJamil/Battery-Diagnostic-Using-LGN",
+     "description": "",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "MIT",
+     "created_at": "2026-02-16T07:21:42Z",
+     "pushed_at": "2026-06-02T22:30:43Z",
+     "size_kb": 30212,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2605.28345",
+   "title": "Picid: A Modular Evaluation Infrastructure for Reproducible PHM Across Tasks and Domains",
+   "published": "2026-05-27T11:50:52Z",
+   "authors": [
+    "Lev Telyatnikov",
+    "Raffael Theiler",
+    "Leandro Von Krannichfeldt",
+    "Olga Fink"
+   ],
+   "abstract": "Progress in Prognostics and Health Management (PHM) is hindered by the lack of standardized and reusable evaluation practices across tasks, datasets, and application domains. Reported results are often difficult to reproduce and compare, as key protocol choices, such as data splits, preprocessing, label alignment, temporal windowing, and metrics, are often implicit or implemented ad hoc. We introduce \\picid, a modular evaluation infrastructure that formalizes the PHM evaluation pipeline as an explicit, executable, and reproducible protocol. Through well-defined abstractions, \\picid enforces deterministic, leakage-safe dataset construction while remaining flexible across diverse PHM settings. The framework supports fault detection, diagnostics, and prognostics through a unified interface and can be extended to new datasets and model classes without violating protocol invariants. By standardizing data contracts and evaluation boundaries, \\picid also enables fair cross-task comparisons across diagnostics (classification) and prognostics (regression), allowing identical model families to be evaluated consistently across heterogeneous settings. We demonstrate \\picid through an empirical evaluation of thirteen models on twelve datasets spanning batteries, bearings, turbofan engines, hydraulics, filtration systems, and buildings. This work establishes a reusable foundation for standardized, fair and reproducible evaluation in PHM.",
+   "comment": "",
+   "primary_category": "cs.AI",
+   "theme": "Datasets, benchmarks and evaluation methodology",
+   "relevance": 13.9,
+   "usability": 26.2,
+   "repos": [
+    {
+     "full_name": "EPFL-IMOS/picid",
+     "html_url": "https://github.com/EPFL-IMOS/picid",
+     "description": "Benchmarking framework for Prognostics & Health Management (PHM)",
+     "stars": 4,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "NOASSERTION",
+     "created_at": "2026-06-03T17:28:35Z",
+     "pushed_at": "2026-08-30T20:34:23Z",
+     "size_kb": 47233,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "release",
+     "discovered_via": "github-readme-search"
+    },
+    {
+     "full_name": "xiongjiatao/PICID-NEW",
+     "html_url": "https://github.com/xiongjiatao/PICID-NEW",
+     "description": "存放工业设施维护大模型研究代码",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "NOASSERTION",
+     "created_at": "2026-09-25T17:20:19Z",
+     "pushed_at": "2026-09-30T06:52:24Z",
+     "size_kb": 4254,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2609.02190",
+   "title": "A physics-enhanced bidirectional multi-order graph fusion network for interpretable bearing remaining useful life prediction",
+   "published": "2026-09-02T06:54:05Z",
+   "authors": [
+    "Haoxuan Zhang",
+    "Dinghao Yang",
+    "Kangning Zhang",
+    "Shaoyong Guo",
+    "Haisheng Li",
+    "Rui Yang",
+    "Ruijun Liu"
+   ],
+   "abstract": "Accurate prediction of bearing remaining useful life (RUL) is a key challenge for intelligent maintenance. Although deep learning-based prediction methods have showed effectiveness, existing methods still have limitations in learning nonlinear bearing degradation processes and model interpretability. Especially in engineering applications, the \"black box\" nature of deep learning models can easily raise concerns about their reliability. Therefore, we propose a physics-enhanced bidirectional multi-order graph fusion network for interpretable bearing RUL prediction. Our network mines complementary information from both forward and backward degradation sequences. Specifically, our network introduces a multi-order graph propagator to capture the local-global degradation dependencies. A gated cross-fusion mechanism is further designed to dynamically balance the feature contributions from both forward and backward directions. Then, our network stores representative historical degradation prototypes in dynamic memory, so that the final RUL prediction no longer depends solely on the current latent features, but is guided by reusable historical degradation knowledge. To reveal how our model learns the nonlinear degradation process, the feature mapping parts utilize the Kolmogorov-Arnold network, which allows the nonlinear mapping to be visualized using learnable functions. Finally, a physics-enhanced dynamic loss function is developed to help our network learn effective and reliable degradation representations. Extensive experiments on two public datasets show that our method achieves the lowest error while providing more conservative estimates than existing methods. Our code is available at https://github.com/IMGresearcher/PE-BMGN.",
+   "comment": "",
+   "primary_category": "cs.CE",
+   "theme": "Prognostics and remaining useful life",
+   "relevance": 16.5,
+   "usability": 21.0,
+   "repos": [
+    {
+     "full_name": "IMGresearcher/PE-GKAN",
+     "html_url": "https://github.com/IMGresearcher/PE-GKAN",
+     "description": "A physics-enhanced bidirectional multi-level graph fusion network for interpretable bearing remaining useful life prediction",
+     "stars": 1,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": null,
+     "created_at": "2026-07-02T08:29:23Z",
+     "pushed_at": "2026-10-03T08:21:27Z",
+     "size_kb": 55,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2504.15225",
+   "title": "M$^2$AD: Multi-Sensor Multi-System Anomaly Detection through Global Scoring and Calibrated Thresholding",
+   "published": "2025-04-21T16:57:46Z",
+   "authors": [
+    "Sarah Alnegheimish",
+    "Zelin He",
+    "Matthew Reimherr",
+    "Akash Chandrayan",
+    "Abhinav Pradhan",
+    "Luca D'Angelo"
+   ],
+   "abstract": "With the widespread availability of sensor data across industrial and operational systems, we frequently encounter heterogeneous time series from multiple systems. Anomaly detection is crucial for such systems to facilitate predictive maintenance. However, most existing anomaly detection methods are designed for either univariate or single-system multivariate data, making them insufficient for these complex scenarios. To address this, we introduce M$^2$AD, a framework for unsupervised anomaly detection in multivariate time series data from multiple systems. M$^2$AD employs deep models to capture expected behavior under normal conditions, using the residuals as indicators of potential anomalies. These residuals are then aggregated into a global anomaly score through a Gaussian Mixture Model and Gamma calibration. We theoretically demonstrate that this framework can effectively address heterogeneity and dependencies across sensors and systems. Empirically, M$^2$AD outperforms existing methods in extensive evaluations by 21% on average, and its effectiveness is demonstrated on a large-scale real-world case study on 130 assets in Amazon Fulfillment Centers. Our code and results are available at https://github.com/sarahmish/M2AD.",
+   "comment": "Accepted at AISTATS 2025",
+   "primary_category": "cs.LG",
+   "theme": "Uncertainty, explainability and trust",
+   "relevance": 6.5,
+   "usability": 36.1,
+   "repos": [
+    {
+     "full_name": "sarahmish/M2AD",
+     "html_url": "https://github.com/sarahmish/M2AD",
+     "description": "Unsupervised Anomaly Detection for Heterogeneous Multivariate Time Series Data.",
+     "stars": 8,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Jupyter Notebook",
+     "license": null,
+     "created_at": "2024-09-23T20:10:49Z",
+     "pushed_at": "2025-03-11T16:32:05Z",
+     "size_kb": 310,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "master",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2604.13459",
+   "title": "Asymmetric-Loss-Guided Hybrid CNN-BiLSTM-Attention Model for Industrial RUL Prediction with Interpretable Failure Heatmaps",
+   "published": "2026-04-15T04:25:38Z",
+   "authors": [
+    "Mohammed Ezzaldin Babiker Abdullah"
+   ],
+   "abstract": "Turbofan engine degradation under sustained operational stress necessitates robust prognostic systems capable of accurately estimating the Remaining Useful Life (RUL) of critical components. Existing deep learning approaches frequently fail to simultaneously capture multi-sensor spatial correlations and long-range temporal dependencies, while standard symmetric loss functions inadequately penalize the safety-critical error of over-estimating residual life. This study proposes a hybrid architecture integrating Twin-Stage One-Dimensional Convolutional Neural Networks (1D-CNN), a Bidirectional Long Short-Term Memory (BiLSTM) network, and a custom Bahdanau Additive Attention mechanism. The model was trained and evaluated on the NASA Commercial Modular Aero-Propulsion System Simulation (C-MAPSS) FD001 sub-dataset employing a zero-leakage preprocessing pipeline, piecewise-linear RUL labeling capped at 130 cycles, and the NASA-specified asymmetric exponential loss function that disproportionately penalizes over-estimation to enforce industrial safety constraints. Experiments on 100 test engines achieved a Root Mean Squared Error (RMSE) of 17.52 cycles and a NASA S-Score of 922.06. Furthermore, extracted attention weight heatmaps provide interpretable, per-engine insights into the temporal progression of degradation, supporting informed maintenance decision-making. The proposed framework demonstrates competitive performance against established baselines and offers a principled approach to safe, interpretable prognostics in industrial settings.",
+   "comment": "Code is available at: https://github.com/Marco9249/Industrial-RUL-Prediction-Architecture",
+   "primary_category": "cs.LG",
+   "theme": "Prognostics and remaining useful life",
+   "relevance": 12.5,
+   "usability": 24.0,
+   "repos": [
+    {
+     "full_name": "Moh97746/Industrial-RUL-Prediction-Architecture",
+     "html_url": "https://github.com/Moh97746/Industrial-RUL-Prediction-Architecture",
+     "description": "Official code for arXiv:2604.13459 - Asymmetric-Loss CNN-BiLSTM-Attention for Industrial RUL Prediction",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": null,
+     "created_at": "2026-04-17T18:24:53Z",
+     "pushed_at": "2026-04-21T11:36:07Z",
+     "size_kb": 6858,
+     "archived": false,
+     "is_fork": false,
+     "topics": [
+      "arxiv",
+      "asymmetric-loss",
+      "attention-mechanism",
+      "nasa-cmapss",
+      "predictive-maintenance",
+      "remaining-useful-life",
+      "turbofan"
+     ],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2607.04188",
+   "title": "Physics-Informed Graph Learning with Uncertainty Awareness for Open-Set Domain Generalization in Fault Diagnosis",
+   "published": "2026-07-05T09:22:56Z",
+   "authors": [
+    "Jinfeng Zhu",
+    "Shiyu Long",
+    "Ye Yuan"
+   ],
+   "abstract": "Intelligent industrial maintenance critically relies on reliable fault diagnosis of rotating machinery. However, it faces formidable challenges from unknown fault types and domain shifts induced by varying operating conditions, which is formally formulated as the open-set domain generalization (OSDG) problem. Existing methods are mainly data-driven, thereby overlooking the cascaded propagation of uncertainty across feature extraction, topological learning, and decision-making stages.To tackle this challenge, we propose PGU-OD, a novel Physics-Informed Graph Learning framework with Uncertainty Awareness for Open-set Domain generalization. First, it designs a physics-informed spectral attention module to extract condition-robust fault features, thereby suppressing perceptual uncertainty caused by frequency shifts. Further, it constructs an uncertainty aware adaptive graph learning mechanism to dynamically adjust the edge weights of the sample graph guided by class-scale Gaussian distribution parameters, which mitigates the structural propagation of uncertainty. Finally, a Gaussian-distribution-based adaptive boundary loss function and a dual-criteria open-set inference strategy are developed to optimize decision boundaries and reliably reject unknown faults. Extensive experimental evaluations on two public and widely used rotating machinery fault datasets demonstrate that the proposed PGU-OD outperforms state-of-the-art baselines in both known fault classification and unknown fault rejection under domain shifts.",
+   "comment": "",
+   "primary_category": "cs.LG",
+   "theme": "Transfer, domain adaptation and limited labels",
+   "relevance": 17.2,
+   "usability": 14.0,
+   "repos": [
+    {
+     "full_name": "Argona7/when-the-link-to-earth-is-severed",
+     "html_url": "https://github.com/Argona7/when-the-link-to-earth-is-severed",
+     "description": "Offline-first clinical language models for crewed deep-space missions — paper, figures, and self-contained HTML build",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "HTML",
+     "license": null,
+     "created_at": "2026-07-08T19:33:55Z",
+     "pushed_at": "2026-07-08T19:34:00Z",
+     "size_kb": 2129,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2605.06643",
+   "title": "Are We Making Progress in Multimodal Domain Generalization? A Comprehensive Benchmark Study",
+   "published": "2026-05-07T17:51:16Z",
+   "authors": [
+    "Hao Dong",
+    "Hongzhao Li",
+    "Shupan Li",
+    "Muhammad Haris Khan",
+    "Eleni Chatzi",
+    "Olga Fink"
+   ],
+   "abstract": "Despite the growing popularity of Multimodal Domain Generalization (MMDG) for enhancing model robustness, it remains unclear whether reported performance gains reflect genuine algorithmic progress or are artifacts of inconsistent evaluation protocols. Current research is fragmented, with studies varying significantly across datasets, modality configurations, and experimental settings. Furthermore, existing benchmarks focus predominantly on action recognition, often neglecting critical real-world challenges such as input corruptions, missing modalities, and model trustworthiness. This lack of standardization obscures a reliable assessment of the field's advancement. To address this issue, we introduce MMDG-Bench, the first unified and comprehensive benchmark for MMDG, which standardizes evaluation across six datasets spanning three diverse tasks: action recognition, mechanical fault diagnosis, and sentiment analysis. MMDG-Bench encompasses six modality combinations, nine representative methods, and multiple evaluation settings. Beyond standard accuracy, it systematically assesses corruption robustness, missing-modality generalization, misclassification detection, and out-of-distribution detection. With 7, 402 neural networks trained in total across 95 unique cross-domain tasks, MMDG-Bench yields five key findings: (1) under fair comparisons, recent specialized MMDG methods offer only marginal improvements over ERM baseline; (2) no single method consistently outperforms others across datasets or modality combinations; (3) a substantial gap to upper-bound performance persists, indicating that MMDG remains far from solved; (4) trimodal fusion does not consistently outperform the strongest bimodal configurations; and (5) all evaluated methods exhibit significant degradation under corruption and missing-modality scenarios, with some methods further compromising model trustworthiness.",
+   "comment": "NeurIPS 2026",
+   "primary_category": "cs.CV",
+   "theme": "Datasets, benchmarks and evaluation methodology",
+   "relevance": 6.0,
+   "usability": 36.0,
+   "repos": [
+    {
+     "full_name": "lihongzhao99/MMDG_Benchmark",
+     "html_url": "https://github.com/lihongzhao99/MMDG_Benchmark",
+     "description": "The official implementation of the paper \"Are We Making Progress in Multimodal Domain Generalization? A Comprehensive Benchmark Study\"",
+     "stars": 19,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": null,
+     "created_at": "2026-02-13T12:19:31Z",
+     "pushed_at": "2026-09-30T05:28:45Z",
+     "size_kb": 1686,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2607.19444",
+   "title": "Marine Engine Fault Dataset: Open-Access Data under Controlled Reference and Fault Scenario Conditions",
+   "published": "2026-07-21T10:18:57Z",
+   "authors": [
+    "Ahmad BahooToroody",
+    "Oleksiy Bondarenko",
+    "Mohammad Mahdi Abaei",
+    "Niki Yoichi",
+    "Enrico Zio"
+   ],
+   "abstract": "Open-access datasets for marine-engine predictive maintenance remain scarce, particularly those from controlled fault experiments with documented operating conditions, subsystem-level interventions and system-level measurements. This work presents the Marine Engine Fault Dataset, an openly available dataset from a turbocharged, intercooled three-cylinder marine diesel engine operated on a testbed under both reference and fault-scenario conditions. The experimental campaign combined a reference-performance program across the 30-90% load range with scenario-based tests in which abnormal conditions were introduced after stabilized fault-free operation, enabling controlled comparison between baseline and fault-affected behaviour. Five anomaly classes were implemented through physical interventions affecting major engine subsystems: cooling-water pump cavitation, compressor air-filter clogging, air-cooler fouling, injection-valve nozzle clogging and turbine degradation induced through increased exhaust-side restriction. The released data comprise multi-sensor time-series of operating, thermal, pressure, flow and combustion-related variables, with a separate reference-performance record and metadata for structured reuse. Technical validation shows that the reference measurements remain physically coherent across the operating range and that the imposed anomalies produce interpretable response patterns consistent with the affected subsystems, including progressively distinguishable behaviour where different severities were implemented. By combining controlled fault realization, multi-load operation and system-level measurements within a real marine-engine platform, the dataset provides a well-documented benchmark for anomaly detection, fault diagnosis, degradation modelling and related condition-monitoring studies in maritime machinery.",
+   "comment": "submitted to a journal and currently is under review, 34 pages, 13 Figures",
+   "primary_category": "cs.LG",
+   "theme": "Datasets, benchmarks and evaluation methodology",
+   "relevance": 16.7,
+   "usability": 14.0,
+   "repos": [
+    {
+     "full_name": "MrNahadi/KeyFrame",
+     "html_url": "https://github.com/MrNahadi/KeyFrame",
+     "description": "",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Jupyter Notebook",
+     "license": null,
+     "created_at": "2026-09-28T13:19:58Z",
+     "pushed_at": "2026-10-08T15:33:24Z",
+     "size_kb": 18396,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2607.09205",
+   "title": "Joint-Embedding Predictive Architecture for Solar PV Panel Fault Classification",
+   "published": "2026-07-10T08:50:02Z",
+   "authors": [
+    "Seyyedhamid Azimidokht",
+    "Mehdi Monemi",
+    "Abdelhak Kharbouch",
+    "Farid Hamzehaghdam",
+    "Mehdi Rasti",
+    "Jamshid Aghaei",
+    "Emil Kurvinen"
+   ],
+   "abstract": "The rapid expansion of solar photovoltaic (PV) systems has increased the need for reliable and scalable fault classification, as manual inspection is impractical at scale. Thermal infrared (IR) imaging provides a non-contact solution for identifying PV faults; however, accurate classification remains challenging due to class imbalance, limited texture information, and subtle thermal differences. In this work, we investigate the applicability of Joint-Embedding Predictive Architecture (JEPA) for thermal IR PV fault classification across various scenarios and propose JEFFNet (JEPA-EFFicientNet), a multibranch architecture that combines JEPA-based self-supervised representation learning with EfficientNetV2-S-based supervised convolutional feature extraction. JEFFNet fuses semantic representations from a JEPA-pretrained Vision Transformer with convolutional features from EfficientNetV2-S, enabling complementary feature learning. JEFFNet is evaluated on two public thermal IR datasets, PVF-10 and InfraredSolarModules (ISM), for both multiclass and derived binary (healthy/faulty) classification. On PVF-10, JEFFNet achieves an F1-score of $93.21$ and an accuracy of $94.33$ in the 10-class task, and an F1-score of $97.53$ and an accuracy of $96.41$ in the derived 2-class task. On ISM, JEFFNet achieves an F1-score of $72.60$ and an accuracy of $83.88$ in the 12-class task, and an F1-score of $94.69$ and an accuracy of $94.78$ in the derived 2-class task. JEFFNet also uses only 108.6M parameters versus 205.91M for GEPFNet, a 47.2\\% reduction. These results demonstrate that combining self-supervised semantic and supervised convolutional features provides an effective, parameter-efficient solution for thermal IR PV fault classification. The source code is publicly available at https://github.com/Azimi2kht/JEFFNet",
+   "comment": "",
+   "primary_category": "eess.IV",
+   "theme": "Transfer, domain adaptation and limited labels",
+   "relevance": 6.2,
+   "usability": 33.2,
+   "repos": [
+    {
+     "full_name": "Azimi2kht/JEFFNet",
+     "html_url": "https://github.com/Azimi2kht/JEFFNet",
+     "description": "",
+     "stars": 2,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": null,
+     "created_at": "2026-05-19T14:48:10Z",
+     "pushed_at": "2026-09-18T09:12:16Z",
+     "size_kb": 27239,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "master",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2606.18503",
+   "title": "Quantum Annealing Enhanced Reinforcement Learning for Accurate Remaining Useful Lifetime Prediction",
+   "published": "2026-06-16T21:32:37Z",
+   "authors": [
+    "Manoranjan Gandhudi",
+    "Arunkumar V.",
+    "G. R. Anil",
+    "Gangadharan G. R"
+   ],
+   "abstract": "Remaining useful life (RUL) estimation is central to predictive maintenance, where an unplanned failure can cost far more than the asset itself. Statistical degradation models miss the strong nonlinearity of real systems, and data-driven models often converge to suboptimal solutions in high-dimensional, non-convex search spaces. We propose a Quantum Annealing enhanced Q-Learning (QAQL) framework that couples the sampling behaviour of quantum annealing with the sequential decision making of Q-learning. Each Q-value update is encoded as a small quadratic unconstrained binary optimization (QUBO) whose ground state is the greedy action; rather than acting as a deterministic optimizer, the annealer returns a distribution over near-optimal actions across many reads, and this stochastic action selection supplies the exploration that curbs premature convergence on nonlinear degradation trajectories. The QUBO is solved on the D-Wave Advantage system using minor embedding, with the annealer woven into the reinforcement-learning loop rather than bolted on after training. We validate QAQL on two public benchmarks: the NASA C-MAPSS turbofan engine datasets and a device-fleet predictive maintenance dataset. Averaged over many independent runs and across six error metrics, QAQL outperforms the classical and quantum baselines considered in this study, with statistically significant improvements. The results indicate that quantum annealing is a usable, not merely theoretical, optimizer inside a reinforcement-learning loop for industrial predictive-maintenance applications.",
+   "comment": "29 pages, 6 figures, 12 tables",
+   "primary_category": "cs.LG",
+   "theme": "Prognostics and remaining useful life",
+   "relevance": 16.5,
+   "usability": 10.0,
+   "repos": [
+    {
+     "full_name": "akv2011/akv2011",
+     "html_url": "https://github.com/akv2011/akv2011",
+     "description": "Config files for my GitHub profile.",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": null,
+     "license": null,
+     "created_at": "2024-03-24T05:29:29Z",
+     "pushed_at": "2026-08-17T15:15:01Z",
+     "size_kb": 256,
+     "archived": false,
+     "is_fork": false,
+     "topics": [
+      "config",
+      "github-config"
+     ],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2603.22323",
+   "title": "A Multi-Task Targeted Learning Framework for Lithium-Ion Battery State-of-Health and Remaining Useful Life",
+   "published": "2026-03-20T12:22:10Z",
+   "authors": [
+    "Chenhan Wang",
+    "Zhengyi Bao",
+    "Huipin Lin",
+    "Jiahao Nie",
+    "Chunxiang Zhu"
+   ],
+   "abstract": "Accurately predicting the state-of-health (SOH) and remaining useful life (RUL) of lithium-ion batteries is crucial for ensuring the safe and efficient operation of electric vehicles while minimizing associated risks. However, current deep learning methods are limited in their ability to selectively extract features and model time dependencies for these two parameters. Moreover, most existing methods rely on traditional recurrent neural networks, which have inherent shortcomings in long-term time-series modeling. To address these issues, this paper proposes a multi-task targeted learning framework for SOH and RUL prediction, which integrates multiple neural networks, including a multi-scale feature extraction module, an improved extended LSTM, and a dual-stream attention module. First, a feature extraction module with multi-scale CNNs is designed to capture detailed local battery decline patterns. Secondly, an improved extended LSTM network is employed to enhance the model's ability to retain long-term temporal information, thus improving temporal relationship modeling. Building on this, the dual-stream attention module-comprising polarized attention and sparse attention to selectively focus on key information relevant to SOH and RUL, respectively, by assigning higher weights to important features. Finally, a many-to-two mapping is achieved through the dual-task layer. To optimize the model's performance and reduce the need for manual hyperparameter tuning, the Hyperopt optimization algorithm is used. Extensive comparative experiments on battery aging datasets demonstrate that the proposed method reduces the average RMSE for SOH and RUL predictions by 111.3\\% and 33.0\\%, respectively, compared to traditional and state-of-the-art methods.",
+   "comment": "https://github.com/wch1121/Joint-prediction-of-SOH-and-RUL",
+   "primary_category": "cs.LG",
+   "theme": "Prognostics and remaining useful life",
+   "relevance": 7.0,
+   "usability": 28.3,
+   "repos": [
+    {
+     "full_name": "Chan1w/Joint-Prediction-Framwork",
+     "html_url": "https://github.com/Chan1w/Joint-Prediction-Framwork",
+     "description": "Joint prediction of SOH and RUL",
+     "stars": 6,
+     "forks": 1,
+     "open_issues": 0,
+     "language": "Python",
+     "license": null,
+     "created_at": "2024-10-24T11:32:27Z",
+     "pushed_at": "2026-02-24T08:50:02Z",
+     "size_kb": 22,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2505.21046",
+   "title": "A domain adaptation neural network for digital twin-supported fault diagnosis",
+   "published": "2025-05-27T11:27:05Z",
+   "authors": [
+    "Zhenling Chen",
+    "Haiwei Fu",
+    "Zhiguo Zeng"
+   ],
+   "abstract": "Digital twins offer a promising solution to the lack of sufficient labeled data in deep learning-based fault diagnosis by generating simulated data for model training. However, discrepancies between simulation and real-world systems can lead to a significant drop in performance when models are applied in real scenarios. To address this issue, we propose a fault diagnosis framework based on Domain-Adversarial Neural Networks (DANN), which enables knowledge transfer from simulated (source domain) to real-world (target domain) data. We evaluate the proposed framework using a publicly available robotics fault diagnosis dataset, which includes 3,600 sequences generated by a digital twin model and 90 real sequences collected from physical systems. The DANN method is compared with commonly used lightweight deep learning models such as CNN, TCN, Transformer, and LSTM. Experimental results show that incorporating domain adaptation significantly improves the diagnostic performance. For example, applying DANN to a baseline CNN model improves its accuracy from 70.00% to 80.22% on real-world test data, demonstrating the effectiveness of domain adaptation in bridging the sim-to-real gap.",
+   "comment": "Preprint accepted by ICCAD 2025 at Barcelona",
+   "primary_category": "cs.LG",
+   "theme": "Transfer, domain adaptation and limited labels",
+   "relevance": 7.3,
+   "usability": 27.5,
+   "repos": [
+    {
+     "full_name": "JialingRichard/Digital-Twin-Fault-Diagnosis",
+     "html_url": "https://github.com/JialingRichard/Digital-Twin-Fault-Diagnosis",
+     "description": "",
+     "stars": 13,
+     "forks": 2,
+     "open_issues": 0,
+     "language": "Jupyter Notebook",
+     "license": null,
+     "created_at": "2025-02-27T19:00:07Z",
+     "pushed_at": "2025-10-21T12:14:04Z",
+     "size_kb": 101044,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2604.27234",
+   "title": "Remaining Useful Life Estimation for Turbofan Engines: A Comparative Study of Classical, CNN, and LSTM Approaches",
+   "published": "2026-04-29T22:11:54Z",
+   "authors": [
+    "Astitva Goel",
+    "Samarth Galchar",
+    "Sumit Kanu"
+   ],
+   "abstract": "Remaining Useful Life (RUL) estimation is a critical component of Prognostics and Health Management (PHM), enabling proactive maintenance scheduling and reducing unplanned failures in industrial equipment. This paper presents a comparative study of machine learning approaches for RUL estimation on the NASA C-MAPSS turbofan engine dataset: classical baselines (Ridge Regression, Polynomial Ridge, and XGBoost), a 1D Convolutional Neural Network (CNN), and a Long Short-Term Memory (LSTM) network. All models are evaluated on the FD001 and FD003 subsets under an identical preprocessing pipeline to ensure a fair comparison. Among raw-sequence models, the LSTM achieves RMSE of 14.93 and 14.20 on FD001 and FD003 respectively, outperforming the deep LSTM reported by Zheng et al.~\\cite{paper} (RMSE 16.14 and 16.18) despite using a simpler single-layer architecture. The 1D CNN achieves RMSE of 16.97 on FD001 and 15.68 on FD003, demonstrating competitive performance on FD003 while producing more conservative RUL predictions on FD001. Ridge Regression is evaluated on raw and engineered features, while other classical models use only engineered inputs. XGBoost achieves an RMSE of 13.36 on FD003, highlighting the competitiveness of nonlinear modeling.",
+   "comment": "7 pages, 5 algorithms, 7 figures, 4 tables",
+   "primary_category": "cs.LG",
+   "theme": "Prognostics and remaining useful life",
+   "relevance": 15.5,
+   "usability": 10.0,
+   "repos": [
+    {
+     "full_name": "ckc5800/pdm-agent",
+     "html_url": "https://github.com/ckc5800/pdm-agent",
+     "description": "설비 이상탐지 + LLM 진단 — 탐지는 결정적 신호처리, NASA C-MAPSS에서 자명한 대조군·비용축·위험 커버리지로 검증(뒤집힌 결론 7건 기록)",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": null,
+     "created_at": "2026-07-18T04:24:08Z",
+     "pushed_at": "2026-09-25T06:12:16Z",
+     "size_kb": 335,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2510.16033",
+   "title": "Global-focal Adaptation with Information Separation for Noise-robust Transfer Fault Diagnosis",
+   "published": "2025-10-16T01:13:06Z",
+   "authors": [
+    "Junyu Ren",
+    "Wensheng Gan",
+    "Guangyu Zhang",
+    "Wei Zhong",
+    "Philip S. Yu"
+   ],
+   "abstract": "Existing transfer fault diagnosis methods typically assume either clean data or sufficient domain similarity, which limits their effectiveness in industrial environments where severe noise interference and domain shifts coexist. To address this challenge, we propose an information separation global-focal adversarial network (ISGFAN), a robust framework for cross-domain fault diagnosis under noise conditions. ISGFAN is built on an information separation architecture that integrates adversarial learning with an improved orthogonal loss to decouple domain-invariant fault representation, thereby isolating noise interference and domain-specific characteristics. To further strengthen transfer robustness, ISGFAN employs a global-focal domain-adversarial scheme that constrains both the conditional and marginal distributions of the model. Specifically, the focal domain-adversarial component mitigates category-specific transfer obstacles caused by noise in unsupervised scenarios, while the global domain classifier ensures alignment of the overall distribution. Experiments conducted on three public benchmark datasets demonstrate that the proposed method outperforms other prominent existing approaches, confirming the superiority of the ISGFAN framework. Data and code are available at https://github.com/JYREN-Source/ISGFAN",
+   "comment": "Preprint. 16 figures, 12 tables",
+   "primary_category": "cs.AI",
+   "theme": "Datasets, benchmarks and evaluation methodology",
+   "relevance": 6.1,
+   "usability": 27.2,
+   "repos": [
+    {
+     "full_name": "JYREN-Source/ISGFAN",
+     "html_url": "https://github.com/JYREN-Source/ISGFAN",
+     "description": "",
+     "stars": 2,
+     "forks": 0,
+     "open_issues": 1,
+     "language": "Python",
+     "license": null,
+     "created_at": "2025-08-28T17:41:27Z",
+     "pushed_at": "2026-01-02T16:29:13Z",
+     "size_kb": 93515,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2601.08480",
+   "title": "Quantitative Analysis of Proxy Tasks for Anomalous Sound Detection",
+   "published": "2026-01-13T12:12:29Z",
+   "authors": [
+    "Seunghyeon Shin",
+    "Seokjin Lee"
+   ],
+   "abstract": "Anomalous sound detection (ASD) typically involves self-supervised proxy tasks to learn feature representations from normal sound data, owing to the scarcity of anomalous samples. In ASD research, proxy tasks such as AutoEncoders operate under the explicit assumption that models trained on normal data will increase the reconstruction errors related to anomalies. A natural extension suggests that improved proxy task performance should improve ASD capability; however, this relationship has received little systematic attention. This study addresses this research gap by quantitatively analyzing the relationship between proxy task metrics and ASD performance across five configurations, namely, AutoEncoders, classification, source separation, contrastive learning, and pre-trained models. We evaluate the learned representations using linear probe (linear separability) and Mahalanobis distance (distributional compactness). Our experiments reveal that strong proxy performance does not necessarily improve anomalous sound detection performance. Specifically, classification tasks experience performance saturation owing to insufficient task difficulty, whereas contrastive learning fails to learn meaningful features owing to limited data diversity. Notably, source separation is the only task demonstrating a strong positive correlation, such that improved separation consistently improves anomaly detection. Based on these findings, we highlight the critical importance of task difficulty and objective alignment. Finally, we propose a three-stage alignment verification protocol to guide the design of highly effective proxy tasks for ASD systems.",
+   "comment": "47 pages, 5 figures; submitted to Expert Systems with Applications; code and supplementary materials are available at https://github.com/shin3875/asd-proxy-task-analysis",
+   "primary_category": "eess.AS",
+   "theme": "Acoustic and ultrasonic monitoring",
+   "relevance": 8.9,
+   "usability": 20.0,
+   "repos": [
+    {
+     "full_name": "shin3875/asd-proxy-task-analysis",
+     "html_url": "https://github.com/shin3875/asd-proxy-task-analysis",
+     "description": "",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": null,
+     "created_at": "2026-06-30T05:28:43Z",
+     "pushed_at": "2026-07-10T06:27:37Z",
+     "size_kb": 190,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "abstract-url"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2604.01725",
+   "title": "LiteInception: A Lightweight and Interpretable Deep Learning Framework for General Aviation Fault Diagnosis",
+   "published": "2026-04-02T07:45:10Z",
+   "authors": [
+    "Zhihuan Wei",
+    "Xinhang Chen",
+    "Danyang Han",
+    "Yang Hu",
+    "Jie Liu",
+    "Xuewen Miao",
+    "Guijiang Li"
+   ],
+   "abstract": "General aviation fault diagnosis and efficient maintenance are critical to flight safety; however, deploying deep learning models on resource-constrained edge devices poses dual challenges in computational capacity and interpretability. This paper proposes LiteInception--a lightweight interpretable fault diagnosis framework designed for edge deployment. The framework adopts a two-stage cascaded architecture aligned with standard maintenance workflows: Stage 1 performs high-recall fault detection, and Stage 2 conducts fine-grained fault classification on anomalous samples, thereby decoupling optimization objectives and enabling on-demand allocation of computational resources. For model compression, a multi-method fusion strategy based on mutual information, gradient analysis, and SE attention weights is proposed to reduce the input sensor channels from 23 to 15, and a 1+1 branch LiteInception architecture is introduced that compresses InceptionTime parameters by 70%, accelerates CPU inference by over 8x, with less than 3% F1 loss. Furthermore, knowledge distillation is introduced as a precision-recall regulation mechanism, enabling the same lightweight model to adapt to different scenarios--such as safety-critical and auxiliary diagnosis--by switching training strategies. Finally, a dual-layer interpretability framework integrating four attribution methods is constructed, providing traceable evidence chains of \"which sensor x which time period.\" Experiments on the NGAFID dataset demonstrate a fault detection accuracy of 81.92% with 83.24% recall, and a fault identification accuracy of 77.00%, validating the framework's favorable balance among efficiency, accuracy, and interpretability.",
+   "comment": "",
+   "primary_category": "cs.AI",
+   "theme": "Uncertainty, explainability and trust",
+   "relevance": 11.6,
+   "usability": 14.0,
+   "repos": [
+    {
+     "full_name": "abhinavsingh2403/SIH-KA-PROJECT-",
+     "html_url": "https://github.com/abhinavsingh2403/SIH-KA-PROJECT-",
+     "description": "",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "HTML",
+     "license": null,
+     "created_at": "2026-09-02T17:38:37Z",
+     "pushed_at": "2026-09-04T20:01:24Z",
+     "size_kb": 9414,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2507.14181",
+   "title": "Semi-Supervised Federated Learning via Dual Contrastive Learning and Soft Labeling for Intelligent Fault Diagnosis",
+   "published": "2025-07-12T10:54:23Z",
+   "authors": [
+    "Yajiao Dai",
+    "Jun Li",
+    "Zhen Mei",
+    "Yiyang Ni",
+    "Shi Jin",
+    "Zengxiang Li",
+    "Sheng Guo",
+    "Wei Xiang"
+   ],
+   "abstract": "Intelligent fault diagnosis (IFD) plays a crucial role in ensuring the safe operation of industrial machinery and improving production efficiency. However, traditional supervised deep learning methods require a large amount of training data and labels, which are often located in different clients. Additionally, the cost of data labeling is high, making labels difficult to acquire. Meanwhile, differences in data distribution among clients may also hinder the model's performance. To tackle these challenges, this paper proposes a semi-supervised federated learning framework, SSFL-DCSL, which integrates dual contrastive loss and soft labeling to address data and label scarcity for distributed clients with few labeled samples while safeguarding user privacy. It enables representation learning using unlabeled data on the client side and facilitates joint learning among clients through prototypes, thereby achieving mutual knowledge sharing and preventing local model divergence. Specifically, first, a sample weighting function based on the Laplace distribution is designed to alleviate bias caused by low confidence in pseudo labels during the semi-supervised training process. Second, a dual contrastive loss is introduced to mitigate model divergence caused by different data distributions, comprising local contrastive loss and global contrastive loss. Third, local prototypes are aggregated on the server with weighted averaging and updated with momentum to share knowledge among clients. To evaluate the proposed SSFL-DCSL framework, experiments are conducted on two publicly available datasets and a dataset collected on motors from the factory. In the most challenging task, where only 10\\% of the data are labeled, the proposed SSFL-DCSL can improve accuracy by 1.15% to 7.85% over state-of-the-art methods.",
+   "comment": "Accepted to IEEE Internet of Things Journal, Early Access. 14 pages, 5 figures",
+   "primary_category": "cs.LG",
+   "theme": "Federated and privacy-preserving learning",
+   "relevance": 9.6,
+   "usability": 14.0,
+   "repos": [
+    {
+     "full_name": "FatherTimeSDKP/legendary-FatherTimeSDKP",
+     "html_url": "https://github.com/FatherTimeSDKP/legendary-FatherTimeSDKP",
+     "description": "Physics simulations and alternative physics with successful predictions and empirical data matching ",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "HTML",
+     "license": "NOASSERTION",
+     "created_at": "2026-03-16T06:42:02Z",
+     "pushed_at": "2026-03-21T08:01:21Z",
+     "size_kb": 41020,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "Master-SDKP-Framework",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2606.26861",
+   "title": "Cascaded Multi-Granularity Pruning for On-Device LLM Inference in Industrial IoT",
+   "published": "2026-06-25T10:44:48Z",
+   "authors": [
+    "Jinghan Wang",
+    "Yanjun Chen",
+    "Wei Zhang",
+    "Xiaotong Huang",
+    "Tianchen Liu",
+    "Gaoliang Peng"
+   ],
+   "abstract": "Deploying large language models (LLMs) on Industrial Internet of Things (IIoT) edge devices demands extreme compression, yet existing structured pruning methods collapse at high compression ratios due to one-shot importance estimation, and their cross-architecture behavior remains unpredictable. This article presents a cascaded multi-granularity pruning framework that removes layers, attention heads, and feed-forward channels in coarse-to-fine order, with lightweight low-rank recovery between stages to re-estimate component importance. An information-theoretic analysis motivates this ordering, and the Structural Independence Assumption (SIA) is formalized as a checkable condition predicting whether per-component pruning criteria are reliable for a given architecture: Multi-Head Attention (MHA)+GELU designs satisfy the SIA, whereas Grouped Query Attention (GQA)+SwiGLU designs violate it. On bearing fault diagnosis spanning 88M to 6.25B-parameter models, the framework extends achievable compression to 13.8 times on MHA+GELU architectures with 83.82% accuracy (+3.70 percentage points (pp) over the strongest baseline), while exposing a ~74pp accuracy collapse on GQA+SwiGLU architectures that violate the SIA. Deployed on an industrial slewing bearing fault diagnosis platform with NVIDIA DGX Spark, compressed models reduce inference latency by up to 67.2% and peak memory by 62.5%, demonstrating viability for IIoT edge inference.",
+   "comment": "This work has been submitted to the IEEE Internet of Things Journal for possible publication",
+   "primary_category": "cs.CL",
+   "theme": "Foundation models and LLM agents for maintenance",
+   "relevance": 13.0,
+   "usability": 4.0,
+   "repos": [
+    {
+     "full_name": "ether4o4/LLM-research-protocol-",
+     "html_url": "https://github.com/ether4o4/LLM-research-protocol-",
+     "description": "",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": null,
+     "license": null,
+     "created_at": "2026-09-04T09:20:58Z",
+     "pushed_at": "2026-09-04T12:09:26Z",
+     "size_kb": 21,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2604.22777",
+   "title": "An Intelligent Fault Diagnosis Method for General Aviation Aircraft Based on Multi-Fidelity Digital Twin and FMEA Knowledge Enhancement",
+   "published": "2026-04-03T06:20:56Z",
+   "authors": [
+    "Zhihuan Wei",
+    "Yang Hu",
+    "Xinhang Chen",
+    "Yiming Zhang",
+    "Jie Liu",
+    "Wei Wang"
+   ],
+   "abstract": "Fault diagnosis of general aviation aircraft faces challenges including scarce real fault data, diverse fault types, and weak fault signatures. This paper proposes an intelligent fault diagnosis framework based on multi-fidelity digital twin, integrating four modules: high-fidelity flight dynamics simulation, FMEA-driven fault injection, multi-fidelity residual feature extraction, and large language model (LLM)-enhanced interpretable report generation. A digital twin is constructed using the JSBSim six-degree-of-freedom (6-DoF) flight dynamics engine, generating 23-channel engine health monitoring data via semi-empirical sensor synthesis equations. A three-layer fault injection engine based on failure mode and effects analysis (FMEA) models the physical causal propagation of 19 engine fault types. A multi-fidelity residual computation framework comprising paired-mirror residuals and GRU surrogate prediction residuals is proposed: the high-fidelity path obtains clean fault deviation signals using nominal mirror trajectories with identical initial conditions, while the low-fidelity path achieves online real-time residual computation through a multi-step prediction GRU surrogate model. A 1D-CNN classifier performs end-to-end diagnosis of 20 fault classes. An LLM diagnostic report engine enhanced with FMEA knowledge fuses classification results, residual evidence, and domain causal knowledge to generate interpretable natural language reports. Experiments show the paired-mirror residual scheme achieves a Macro-F1 of 96.2% on the 20-class task, while the GRU surrogate scheme achieves 4.3x inference acceleration at only 0.6% performance cost. Comparison across 24 schemes reveals that residual feature quality contributes approximately 5x more to diagnostic performance than classifier architecture, establishing the \"residual quality first\" design principle.",
+   "comment": "",
+   "primary_category": "cs.AI",
+   "theme": "Foundation models and LLM agents for maintenance",
+   "relevance": 6.1,
+   "usability": 14.0,
+   "repos": [
+    {
+     "full_name": "abhinavsingh2403/SIH-KA-PROJECT-",
+     "html_url": "https://github.com/abhinavsingh2403/SIH-KA-PROJECT-",
+     "description": "",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "HTML",
+     "license": null,
+     "created_at": "2026-09-02T17:38:37Z",
+     "pushed_at": "2026-09-04T20:01:24Z",
+     "size_kb": 9414,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2605.20742",
+   "title": "VBFDD-Agent for Electric Vehicle Battery Fault Detection and Diagnosis: Descriptive Text Modeling of Battery Digital Signals",
+   "published": "2026-05-20T05:44:52Z",
+   "authors": [
+    "Joey Chan",
+    "Zhen Chen",
+    "Ershun Pan"
+   ],
+   "abstract": "With the rapid proliferation of electric vehicles, the safety and reliability of lithium-ion batteries have become critical concerns. Effective anomaly detection is essential for ensuring safe battery operation. However, as battery systems and operating scenarios become increasingly complex, battery fault diagnosis and maintenance require stronger cross-domain adaptability and human-AI collaboration. Traditional fault detection and diagnosis methods are usually designed for specific scenarios and predefined workflows, making them less effective in complex real-world applications. To address the scarcity of open-source battery fault report corpora and the lack of unified maintenance knowledge representation, this study proposes a descriptive text modeling approach for battery signal reports. Monitoring signals, statistical features, anomaly records, and state assessment results are transformed into structured and readable natural language descriptions, forming a language corpus for battery health diagnosis and maintenance. Based on this corpus, we propose VBFDD-Agent, a vehicle battery fault detection and diagnosis agent for automotive-grade battery systems. VBFDD-Agent integrates descriptive battery-state texts, historical case retrieval, local maintenance manuals, and large language model reasoning to generate structured diagnostic results and maintenance recommendations. Experiments show that the proposed framework can accurately perform anomaly monitoring based on descriptive textual representations and provide flexible, efficient, and actionable maintenance suggestions. Expert evaluation further confirms the practical value of the generated recommendations. Overall, VBFDD-Agent extends traditional battery diagnosis from label prediction to interpretable and maintenance-oriented decision support.",
+   "comment": "",
+   "primary_category": "cs.AI",
+   "theme": "Foundation models and LLM agents for maintenance",
+   "relevance": 6.1,
+   "usability": 14.0,
+   "repos": [
+    {
+     "full_name": "sjtu-chan-joey/VBFDD-Agent-Vehicle-Battery-Fault-Detection-and-Diagnosis-Agent",
+     "html_url": "https://github.com/sjtu-chan-joey/VBFDD-Agent-Vehicle-Battery-Fault-Detection-and-Diagnosis-Agent",
+     "description": "This repository provides the open-source results associated with our study on **VBFDD-Agent**, an LLM-empowered framework for electric vehicle battery fault detection, diagnosis, and maintenance recommendation generation.",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": null,
+     "license": null,
+     "created_at": "2026-05-20T03:42:42Z",
+     "pushed_at": "2026-05-25T07:58:24Z",
+     "size_kb": 9242,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  },
+  {
+   "arxiv_id": "2608.06695",
+   "title": "A Transferable Autologistic Model for Predicting Rare Failures in Heterogeneous Equipment",
+   "published": "2026-08-07T01:48:11Z",
+   "authors": [
+    "Islam Benamirouche",
+    "Djemel Ziou",
+    "Feriel Fass"
+   ],
+   "abstract": "Predicting failures before they occur remains a major challenge in predictive maintenance, particularly when failures are rare, when equipment of the same family differ in sensor configurations, and when the goal is anticipation rather than diagnosis of an already observed fault. This paper proposes a common-to-target probabilistic model that learns shared failure-related patterns across a family of heterogeneous equipment and adapts parsimoniously to target equipment. The model explicitly accounts for sensor heterogeneity, operating context, and degradation dynamics to produce calibrated failureprobability estimates suitable for maintenance planning. Its performance is evaluated on a synthetic refrigerator dataset comprising 27 simulated refrigerators with varying sensor configurations, operating conditions, and failure types, providing a controlle",
+   "comment": "",
+   "primary_category": "cs.LG",
+   "theme": "Datasets, benchmarks and evaluation methodology",
+   "relevance": 6.5,
+   "usability": 8.0,
+   "repos": [
+    {
+     "full_name": "iben0x/fridge-sensor-data",
+     "html_url": "https://github.com/iben0x/fridge-sensor-data",
+     "description": "",
+     "stars": 0,
+     "forks": 0,
+     "open_issues": 0,
+     "language": "Python",
+     "license": "NOASSERTION",
+     "created_at": "2026-08-23T05:55:01Z",
+     "pushed_at": "2026-09-02T21:15:48Z",
+     "size_kb": 283351,
+     "archived": false,
+     "is_fork": false,
+     "topics": [],
+     "default_branch": "main",
+     "discovered_via": "github-readme-search"
+    }
+   ]
+  }
+ ]
+}
