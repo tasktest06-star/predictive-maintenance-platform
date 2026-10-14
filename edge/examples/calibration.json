@@ -1,0 +1,29 @@
+{
+  "_comment": [
+    "Written at commissioning from the sensor's calibration certificate.",
+    "Every number here is transcribed from paper, and a transcription error",
+    "produces a plausible wrong answer -- so the serial and the certificate",
+    "date are carried too, and the agent prints the whole table at start."
+  ],
+  "channels": {
+    "voltage0": {
+      "serial": "TE-8911-001234",
+      "certificate_date": "2026-02-10",
+      "sensitivity_mv_per_g": 100.3,
+      "reference_hz": 159.2,
+      "gain": 1.0,
+      "adc_full_scale_v": 4.096,
+      "adc_bits": 24,
+      "noise_density_g": 7.0e-6,
+      "units": "g",
+      "response": [
+        [5.0, 0.93],
+        [10.0, 0.98],
+        [159.2, 1.00],
+        [1000.0, 1.01],
+        [5000.0, 1.06],
+        [10000.0, 1.22]
+      ]
+    }
+  }
+}
