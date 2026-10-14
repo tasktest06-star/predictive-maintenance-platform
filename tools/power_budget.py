@@ -41,7 +41,7 @@ import sys
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence
 
-#: Standard acquisition: 1 s at the kit's sample rate, 63-feature frame.
+#: 63 float32 features + 44-byte header + CRC.
 FRAME_BYTES = 300
 RAW_SNAPSHOT_BYTES = 51_200
 
@@ -61,7 +61,14 @@ class Kit:
     compute_ms: float
     #: Current while acquiring (sensor active, MCU mostly idle in DMA).
     acquire_ma: float
-    #: Acquisition window. 1 s at the sample rate, plus sensor settling.
+    #: Acquisition window, milliseconds. DERIVED from acq_samples / fs_hz when
+    #: both are given, which is the only way it stays honest: this is the
+    #: largest term in every battery kit's budget, and the first version of this
+    #: model used a flat 1000 ms "standard acquisition" for every kit while the
+    #: firmware actually acquires 8192 samples at 26.667 kHz = 307 ms. That
+    #: overstated the dominant term by 3.3x on four of the five MCU kits and
+    #: therefore understated their battery life by roughly the same factor.
+    #: Set it directly only for a kit with no app_config.h to read.
     acquire_ms: float
     #: Sensor power-on settling time. Frequently the largest single term, and
     #: the one most often forgotten.
@@ -80,17 +87,35 @@ class Kit:
     mains_powered: bool = False
     #: Continuous draw for mains-powered kits, in W.
     continuous_w: float = 0.0
+    #: Acquisition length and rate from the kit's app_config.h. When both are
+    #: set they override acquire_ms, so the model cannot drift away from the
+    #: firmware.
+    acq_samples: int = 0
+    fs_hz: float = 0.0
+    #: Frames transmitted per acquisition. 3 on the Renesas RA8D1, which
+    #: analyses three axes from one burst and ships one frame each -- so its
+    #: compute and radio terms are three times a single-axis kit's, and that
+    #: has to appear in the budget rather than in a footnote.
+    frames_per_cycle: int = 1
     sources: List[str] = field(default_factory=list)
     notes: str = ""
+
+    def __post_init__(self) -> None:
+        if self.acq_samples > 0 and self.fs_hz > 0.0:
+            self.acquire_ms = self.acq_samples / self.fs_hz * 1000.0
 
     # -- derived ----------------------------------------------------------
     def energy_per_cycle_mas(self, payload_bytes: int = FRAME_BYTES) -> Dict[str, float]:
         """mA.s per term, per acquisition cycle."""
+        n = max(1, self.frames_per_cycle)
         return {
             "settle": self.settle_ma * self.settle_ms / 1000.0,
             "acquire": self.acquire_ma * self.acquire_ms / 1000.0,
-            "compute": self.compute_ma * self.compute_ms / 1000.0,
-            "radio": self.radio_fixed_mas + self.radio_ma_s_per_kb * payload_bytes / 1024.0,
+            # Multi-axis runs the pipeline once per axis out of the same burst:
+            # the acquisition is paid once, the DSP and the radio once per axis.
+            "compute": self.compute_ma * self.compute_ms / 1000.0 * n,
+            "radio": (self.radio_fixed_mas
+                      + self.radio_ma_s_per_kb * payload_bytes * n / 1024.0),
         }
 
     def average_current_ua(self, interval_s: float, payload_bytes: int = FRAME_BYTES) -> float:
@@ -161,6 +186,8 @@ KITS: Dict[str, Kit] = {
         compute_ms=5.7,
         acquire_ma=4.0,
         acquire_ms=1000.0,
+        acq_samples=8192,
+        fs_hz=26667.0,
         # IIS3DWB turn-on time is 100 ms to full accuracy at 26.7 kHz ODR.
         settle_ms=100.0,
         settle_ma=3.0,
@@ -177,12 +204,16 @@ KITS: Dict[str, Kit] = {
             "ISM330BX DS14387: 0.55 mA combo mode",
             "STWIN.box UM3027: 480 mAh battery",
         ],
-        notes=("The 307 ms acquisition window is 85 % of the budget -- not the radio "
-               "(6 %) and not the DSP (2.5 %). Most published vibration-node designs "
-               "optimise the latter two. Separately: the 480 mAh LiPo's 3 %/month "
-               "self-discharge is 20 uA, MORE than the circuit's 15 uA average draw, so "
-               "battery life saturates at ~1.6 years regardless of interval. A LiSOCl2 "
-               "AA takes it to 15 years with no firmware change."),
+        notes=("Acquisition dominates -- not the radio, and not the DSP. Most "
+               "published vibration-node designs optimise the latter two. "
+               "Separately: the 480 mAh LiPo's 3 %/month self-discharge is 20 uA, "
+               "MORE than the circuit's average draw, so battery life saturates "
+               "at ~1.6 years regardless of interval. A LiSOCl2 AA takes it to "
+               "~16 years with no firmware change. Shares are printed above "
+               "rather than quoted here: a percentage written into a note is a "
+               "percentage that goes stale the next time the model is "
+               "corrected, which is exactly what happened to the flat-1000 ms "
+               "acquisition window."),
     ),
     "esp32s3": Kit(
         key="esp32s3",
@@ -195,6 +226,8 @@ KITS: Dict[str, Kit] = {
         compute_ms=4.1,
         acquire_ma=12.0,
         acquire_ms=1000.0,
+        acq_samples=4096,
+        fs_hz=4000.0,
         settle_ms=10.0,
         settle_ma=12.0,
         # Wi-Fi: this is the problem. Association + DHCP + TLS handshake +
@@ -227,6 +260,8 @@ KITS: Dict[str, Kit] = {
         compute_ms=14.2,
         acquire_ma=4.4,
         acquire_ms=1000.0,
+        acq_samples=8192,
+        fs_hz=26667.0,
         settle_ms=100.0,
         settle_ma=3.0,
         # LTE-M: RRC connection + data + release. ~ 1.5 s at ~60 mA average
@@ -244,8 +279,9 @@ KITS: Dict[str, Kit] = {
             "Tadiran TL-5930 D-cell: 19 Ah nominal, derated here to 3600 mAh usable "
             "at the pulse currents LTE-M demands",
         ],
-        notes=("The LTE-M connection costs 95 mA.s against 0.36 mA.s for sense + compute: "
-               "the radio is 99.6 % of the budget. Design consequences: PSM with a long "
+        notes=("The LTE-M connection costs 95 mA.s against 1.7 mA.s for sense + compute, "
+               "so the radio is essentially the whole budget -- the share is printed "
+               "above. Design consequences: PSM with a long "
                "TAU, batch several acquisitions per connection, and never send a raw "
                "snapshot without being asked. The LiSOCl2 chemistry is chosen for its "
                "0.08 %/month self-discharge -- with a LiPo the cell would self-discharge "
@@ -263,6 +299,8 @@ KITS: Dict[str, Kit] = {
         compute_ms=2.4,
         acquire_ma=4.0,
         acquire_ms=1000.0,
+        acq_samples=8192,
+        fs_hz=26667.0,
         settle_ms=100.0,
         settle_ma=3.0,
         radio_fixed_mas=0.25,
@@ -293,6 +331,9 @@ KITS: Dict[str, Kit] = {
         compute_ms=1.3,
         acquire_ma=6.0,
         acquire_ms=1000.0,
+        acq_samples=8192,
+        fs_hz=26667.0,
+        frames_per_cycle=3,
         settle_ms=100.0,
         settle_ma=3.0,
         radio_fixed_mas=0.25,
@@ -304,11 +345,13 @@ KITS: Dict[str, Kit] = {
             "Renesas RA8D1 datasheet R01DS0400EJ: 'Operating current' 480 MHz",
             "Arm Cortex-M85 TRM: Helium MVE",
         ],
-        notes=("Fastest compute here (1.3 ms) and the highest active current (62 mA). "
-               "They cancel: 0.08 mA.s per cycle, still an order of magnitude below "
-               "sensor settling. The M85 is the right choice when the DSP workload grows "
-               "-- multi-axis order tracking, a 16384-point FFT, several bearings per "
-               "node -- not for the baseline pipeline."),
+        notes=("Fastest compute here (1.3 ms/axis) and the highest active current "
+               "(62 mA). They cancel: speed buys no energy, because energy is work "
+               "and the work is fixed. What the headroom buys is three axes and a "
+               "real tachometer, and THAT is visible in the budget -- 3x the DSP "
+               "and 3x the radio, 0.60 mA.s against a single-axis kit's 0.20. The "
+               "trade is deliberate: an axial channel and a measured shaft speed "
+               "for 10 % of the cycle energy."),
     ),
     "cn0549": Kit(
         key="cn0549",

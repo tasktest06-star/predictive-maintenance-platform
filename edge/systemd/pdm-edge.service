@@ -1,0 +1,65 @@
+# systemd unit for the edge agent.
+#
+#   sudo cp pdm-edge.service /etc/systemd/system/
+#   sudo systemctl enable --now pdm-edge
+#
+# The hardening below is not decoration. This agent reads a sensor, writes one
+# queue file and talks to one broker; everything else it could reach is attack
+# surface on a device that sits on a plant network and is rarely patched.
+
+[Unit]
+Description=Predictive maintenance edge agent
+Documentation=https://github.com/tasktest06-star/predictive-maintenance-platform
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pdm
+Group=pdm
+# iio group membership is what lets a non-root user read /dev/iio:device*.
+# Running this as root because "it needs the ADC" is the single most common
+# shortcut on this tier and the one that turns a sensor bug into a root bug.
+SupplementaryGroups=iio
+Environment=PYTHONPATH=/opt/pdm/core:/opt/pdm/edge
+Environment=PYTHONUNBUFFERED=1
+WorkingDirectory=/opt/pdm
+ExecStart=/usr/bin/python3 -m pdmedge --config /etc/pdm/agent.json
+Restart=always
+RestartSec=10
+# A node that cannot reach its broker must keep acquiring and queueing rather
+# than restart-looping: the queue is the whole point.
+StartLimitIntervalSec=0
+
+# --- hardening ---------------------------------------------------------------
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=no          # needs /dev/iio:device*
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+ReadWritePaths=/var/lib/pdm
+ReadOnlyPaths=/etc/pdm
+
+# --- resources ---------------------------------------------------------------
+# A gateway that OOMs takes its queue with it. The limit is above the measured
+# working set (numpy plus a 32 k-sample float64 block is well under 200 MB) and
+# below anything that would threaten a 4 GB board.
+MemoryMax=512M
+# The agent is bursty: a few hundred milliseconds of DSP per interval. Capping
+# CPU keeps a misconfigured short interval from starving a gateway's other work.
+CPUQuota=80%
+Nice=5
+IOSchedulingClass=best-effort
+IOSchedulingPriority=5
+
+[Install]
+WantedBy=multi-user.target
