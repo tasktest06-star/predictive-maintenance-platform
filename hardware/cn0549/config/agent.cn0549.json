@@ -1,0 +1,44 @@
+{
+  "_comment": "CN0549 reference instrument. Copy to /etc/pdm/agent.json on the Cora Z7.",
+  "device_id": "00c0549000000001",
+  "tier": "node",
+  "fs_hz": 32000.0,
+  "block_samples": 32768,
+  "interval_s": 900,
+  "n_fft": 8192,
+  "envelope_n_fft": 4096,
+  "calibration_path": "/etc/pdm/calibration.json",
+  "queue_path": "/var/lib/pdm/queue.sqlite",
+  "queue_max_frames": 200000,
+  "max_drain": 64,
+  "source": {
+    "kind": "iio",
+    "uri": "ip:analog.local",
+    "device": "ad7768-1",
+    "channels": ["voltage0"],
+    "filter_type": "wideband",
+    "_filter_note": "wideband: flat to 0.433 x Nyquist, short group delay. Use sinc5 only if the sharper transition matters more than impact timing."
+  },
+  "sink": {
+    "kind": "mqtt",
+    "host": "pdm-broker.example.com",
+    "port": 8883,
+    "topic": "pdm/v1/raw",
+    "client_id": "pdm-cn0549-00c0549000000001",
+    "tls": true,
+    "ca_cert": "/etc/pdm/ca.pem",
+    "certfile": "/etc/pdm/device.pem",
+    "keyfile": "/etc/pdm/device.key"
+  },
+  "channels": [
+    {
+      "name": "reference_de",
+      "asset_id": "RIG-01",
+      "source_channel": "voltage0",
+      "shaft_hz": 29.6667,
+      "bearing": "SKF6205",
+      "demod_band_hz": [2500, 12000]
+    }
+  ],
+  "labels": {"role": "reference-instrument", "site": "lab"}
+}

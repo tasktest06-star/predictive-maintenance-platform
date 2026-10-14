@@ -1,0 +1,38 @@
+{
+  "_comment": [
+    "Transcribed from the sensor's calibration certificate at commissioning.",
+    "The serial and date are here so a stale or swapped sensor is visible in",
+    "the agent's start-up report. Every number is a transcription, and a",
+    "transcription error produces a plausible wrong answer.",
+    "",
+    "THESE ARE PLACEHOLDER VALUES from the TE 8911 datasheet, not from a",
+    "certificate for a specific unit. Replace them before the data means",
+    "anything -- the nominal sensitivity of a 100 mV/g sensor is typically",
+    "within 5 % of the certified value, which is a 5 % amplitude error on",
+    "every reading and enough to move an ISO zone boundary."
+  ],
+  "channels": {
+    "voltage0": {
+      "serial": "PLACEHOLDER-REPLACE-ME",
+      "certificate_date": "2026-06-01",
+      "sensitivity_mv_per_g": 100.0,
+      "reference_hz": 159.2,
+      "gain": 1.0,
+      "adc_full_scale_v": 4.096,
+      "adc_bits": 24,
+      "noise_density_g": 7.0e-6,
+      "units": "g",
+      "response": [
+        [1.0, 0.70],
+        [2.0, 0.90],
+        [5.0, 0.98],
+        [10.0, 0.99],
+        [159.2, 1.00],
+        [1000.0, 1.01],
+        [5000.0, 1.05],
+        [10000.0, 1.18],
+        [20000.0, 1.60]
+      ]
+    }
+  }
+}
