@@ -17,6 +17,10 @@
 #define APP_FS_HZ               26667.0f
 #define APP_N_FFT               4096
 #define APP_WINDOW              PDM_WIN_HANN
+/* Integer twin of APP_WINDOW. The preprocessor cannot see a C enum, so the
+ * PDM_TABLES_IN_FLASH guard needs an integer to compare. Keep them in step:
+ * rect 0, hann 1, hamming 2, blackman 3, blackman_harris 4, flattop 5. */
+#define APP_WINDOW_ID           1
 /* Acquisition length is set by the ENVELOPE stage, not the spectral one.
  *
  * Envelope resolution is a function of record *duration*, not of decimation:
@@ -55,7 +59,7 @@
  * threshold accordingly, which would have burned 99 mA.s per cycle instead of
  * 0.30 -- a 20x increase in total node energy, and a battery life of weeks
  * instead of years. Caught by
- * hardware/*/tests/test_kit.py::test_sensor_keepalive_crossover_is_consistent_with_the_energy_model,
+ * hardware/<kit>/tests/test_kit.py::test_sensor_keepalive_crossover_is_consistent_with_the_energy_model,
  * which recomputes the crossover from tools/power_budget.py rather than
  * trusting the constant.
  *

@@ -11,7 +11,7 @@ BIN      = $(VENV)/bin
 
 help:
 	@echo "make install    create $(VENV) and install core[ml,field,dev]"
-	@echo "make test       run the full test suite"
+	@echo "make test       run the full test suite (core + edge)"
 	@echo "make lint       ruff check"
 	@echo "make demo       commissioning -> degradation -> alarm -> RUL walk-through"
 	@echo "make clean      remove build artefacts and the venv"
@@ -24,10 +24,10 @@ install: $(BIN)/python
 	$(BIN)/pip install -q -e "core[ml,field,dev]"
 
 test: install
-	$(BIN)/python -m pytest core/tests -q
+	$(BIN)/python -m pytest core/tests edge/tests -q
 
 test-fast: install
-	$(BIN)/python -m pytest core/tests -q -x --ff
+	$(BIN)/python -m pytest core/tests edge/tests -q -x --ff
 
 lint: install
 	$(BIN)/ruff check core/pdmcore || true

@@ -75,6 +75,21 @@ pdm_status pdm_rfft_init(pdm_rfft_ctx *ctx, uint16_t n, float *twiddle, uint16_t
     return PDM_OK;
 }
 
+pdm_status pdm_rfft_attach(pdm_rfft_ctx *ctx, uint16_t n,
+                           const float *twiddle, const uint16_t *bitrev)
+{
+    if (ctx == NULL || twiddle == NULL || bitrev == NULL) {
+        return PDM_ERR_ARG;
+    }
+    if (!pdm_is_power_of_two((uint32_t)n) || n < 64u || n > PDM_FFT_MAX) {
+        return PDM_ERR_SIZE;
+    }
+    ctx->n = n;
+    ctx->twiddle = twiddle;
+    ctx->bitrev = bitrev;
+    return PDM_OK;
+}
+
 /* In-place complex radix-2 DIT FFT of `len` complex values in `z`
  * (interleaved re, im), using a precomputed twiddle table of len/2 pairs. */
 static void complex_fft_inplace(float *z, uint16_t len, const float *tw,
