@@ -23,6 +23,10 @@ PYTHONPATH=core:edge python3 -m pdmedge --self-test
 
 ## Branches
 
+Full per-branch detail — what is in each file, what each branch measured, and
+what it did not run — is in
+**[`docs/08_branch_catalogue.md`](docs/08_branch_catalogue.md)**.
+
 | Branch | Kit | What it is, and the finding worth reading |
 |---|---|---|
 | **`platform/core`** | — | The shared layer: a calibrated DSP library verified by Parseval invariants, a C twin pinned to it by 1 113 generated checks, a 300-byte wire format, the health/RUL chain, the ingest service and compose stack, and [`edge/`](edge/) — the Linux-tier agent |
