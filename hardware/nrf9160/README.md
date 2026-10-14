@@ -102,24 +102,25 @@ on one subtly wrong on the other.
 
 ```
 $ python3 ../../tools/power_budget.py --kit nrf9160
-    settle      0.3000 mA.s    0.3 %
-    acquire     4.4000 mA.s    4.4 %
-    compute     0.0653 mA.s    0.1 %
-    radio      95.3516 mA.s   95.2 %  ######################################
-    total     100.1169 mA.s
-  at 3600 s interval: 39.8 uA average -> 9.37 years
-    (load 39.8 uA + self-discharge 4.0 uA)
+  per acquisition cycle (300 B payload):
+    settle      0.3000 mA.s    0.3 %  #
+    acquire     1.3517 mA.s    1.4 %  #
+    compute     0.0653 mA.s    0.1 %  #
+    radio      95.3516 mA.s   98.2 %  #######################################
+    total      97.0685 mA.s
+  dominant term: radio
+  at 3600 s interval: 39.0 uA average -> 9.56 years
 ```
 
 | Interval | Avg current | Life | +1 snapshot/day |
 |---|---:|---:|---:|
-| 5 min | 346 µA | 1.17 y | 1.17 y |
-| 15 min | 123 µA | 3.23 y | 3.18 y |
-| 1 h | 39.8 µA | **9.37 y** | 9.01 y |
-| 6 h | 16.6 µA | 19.9 y | 18.3 y |
-| 24 h | 13.2 µA | 23.9 y | 21.7 y |
+| 5 min | 335.6 µA | 1.21 y | 1.20 y |
+| 15 min | 119.9 µA | 3.32 y | 3.27 y |
+| 1 h | 39.0 µA | **9.56 y** | 9.18 y |
+| 6 h | 16.5 µA | 20.04 y | 18.43 y |
+| 24 h | 13.1 µA | 23.98 y | 21.71 y |
 
-**The radio is 95 % of the budget, so the design levers are all about
+**The radio is 98 % of the budget, so the design levers are all about
 connections, not bytes.** Three consequences in the configuration:
 
 1. **PSM with a ~10.5 h TAU, 0 s active time.** Stay registered, sleep deeply.
