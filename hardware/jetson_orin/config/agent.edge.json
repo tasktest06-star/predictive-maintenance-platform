@@ -1,0 +1,47 @@
+{
+  "_comment": "Jetson Orin Nano Super site edge node. Aggregation plus on-site training.",
+  "device_id": "004e7301000000001",
+  "_device_id_note": "Truncated to 64 bits on encode. Keep it under 16 hex digits.",
+  "tier": "edge",
+  "fs_hz": 25600.0,
+  "block_samples": 8192,
+  "interval_s": 3600,
+  "n_fft": 4096,
+  "envelope_n_fft": 2048,
+  "queue_path": "/var/lib/pdm/edge.sqlite",
+  "queue_max_frames": 2000000,
+  "_queue_note": "2M frames x 300 B = 600 MB. On an Orin with NVMe that is nothing, and it is 4.5 years of a 50-node site -- which is the point of training here: the history never has to leave.",
+  "max_drain": 256,
+  "scorer": {
+    "kind": "cpu_features",
+    "_kind_note": "Measured at 5 us/frame batched. The GPU has no job on this path; see tools/workload_study.py for the three candidates it was tested against."
+  },
+  "training": {
+    "enabled": true,
+    "schedule": "weekly",
+    "out_dir": "/var/lib/pdm/models",
+    "target_fpr": 0.01,
+    "_note": "On-site training is the one justification for this board that survived the workload study. No frame leaves the site."
+  },
+  "sink": {
+    "kind": "mqtt",
+    "host": "pdm-site-broker.internal",
+    "port": 8883,
+    "topic": "pdm/v1/raw",
+    "client_id": "pdm-edge-jetson-01",
+    "tls": true,
+    "ca_cert": "/etc/pdm/ca.pem",
+    "certfile": "/etc/pdm/device.pem",
+    "keyfile": "/etc/pdm/device.key"
+  },
+  "channels": [
+    {
+      "name": "edge_self",
+      "asset_id": "EDGE-01",
+      "shaft_hz": 29.6667,
+      "units_are_g": true,
+      "_note": "No sensor of its own; present so --self-test exercises the full path."
+    }
+  ],
+  "labels": {"role": "site-edge", "data_leaves_site": "false"}
+}

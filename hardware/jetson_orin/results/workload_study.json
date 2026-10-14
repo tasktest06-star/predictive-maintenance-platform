@@ -1,0 +1,86 @@
+{
+ "host": {
+  "machine": "aarch64",
+  "cores": 2,
+  "numpy": "2.0.2",
+  "torch": false
+ },
+ "candidate_1_rescoring": {
+  "site_nodes": 1000,
+  "days": 365,
+  "frames": 8760000,
+  "measured_frames": 20000,
+  "measured_s": 0.10005548899061978,
+  "per_frame_us": 5.002774449530989,
+  "full_history_s": 43.82430417789146,
+  "verdict": "CPU is sufficient"
+ },
+ "candidate_2_training": {
+  "fits": [
+   {
+    "n_frames": 40,
+    "n_features": 63,
+    "mahalanobis_ms": 1.7556219827383757,
+    "pca_residual_ms": 0.6723459810018539,
+    "robust_threshold_ms": 0.29511001775972545
+   },
+   {
+    "n_frames": 200,
+    "n_features": 63,
+    "mahalanobis_ms": 8.50484799593687,
+    "pca_residual_ms": 1.9960220088250935,
+    "robust_threshold_ms": 0.8824440010357648
+   },
+   {
+    "n_frames": 1000,
+    "n_features": 63,
+    "mahalanobis_ms": 21.046693000243977,
+    "pca_residual_ms": 6.237848981982097,
+    "robust_threshold_ms": 2.830268000252545
+   },
+   {
+    "n_frames": 5000,
+    "n_features": 63,
+    "mahalanobis_ms": 99.827185011236,
+    "pca_residual_ms": 27.957234997302294,
+    "robust_threshold_ms": 12.89480400737375
+   }
+  ],
+  "note": "These are closed-form or SVD fits, not gradient descent. A Deep SVDD or 1D CNN is the case a GPU would change, and torch is not installed here -- so that number is absent rather than guessed.",
+  "torch_available": false
+ },
+ "candidate_3_waveform": {
+  "site_nodes": 1000,
+  "mmac_per_inference": 4.0,
+  "inferences_per_s": 0.2777777777777778,
+  "gmac_per_s_required": 0.0011111111111111111,
+  "cpu_gmac_per_s_realistic": 15.0,
+  "orin_tmac_per_s_rated": 33.5,
+  "verdict": "CPU is sufficient at this cadence",
+  "cadence_that_would_need_a_gpu_hz": 3750.0
+ },
+ "energy": {
+  "boards": [
+   {
+    "board": "Raspberry Pi 5 + SSD",
+    "watts": 7.5,
+    "kwh_per_year": 65.7,
+    "eur_per_year": 13.14
+   },
+   {
+    "board": "Jetson Orin Nano (15 W mode)",
+    "watts": 15.0,
+    "kwh_per_year": 131.4,
+    "eur_per_year": 26.28
+   },
+   {
+    "board": "Jetson Orin Nano Super (25 W)",
+    "watts": 25.0,
+    "kwh_per_year": 219.0,
+    "eur_per_year": 43.800000000000004
+   }
+  ],
+  "eur_per_kwh": 0.2
+ },
+ "conclusion": "Nothing in this platform needs a Jetson. The surviving justifications are data sovereignty (training on site) and multimodal fusion, both of which concern models that do not exist yet."
+}
