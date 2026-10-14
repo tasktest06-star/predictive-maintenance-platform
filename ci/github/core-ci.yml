@@ -27,6 +27,14 @@ jobs:
         run: python -c "import pdmcore, pdmcore.dsp, pdmcore.health, pdmcore.io; print(pdmcore.__version__)"
       - name: Tests
         run: python -m pytest core/tests -q
+      - name: Edge-tier tests
+        # The Linux-class kits (CN0549, Pi 5 + Hailo, Jetson) share this agent
+        # the way the MCU kits share cdsp/. It has no third-party dependency
+        # beyond what the core already needs: pyadi-iio and paho-mqtt are
+        # imported lazily, so the suite runs on a bare runner.
+        run: PYTHONPATH=core:edge python -m pytest edge/tests -q
+      - name: Edge self-test (no sensor, no broker)
+        run: PYTHONPATH=core:edge python -m pdmedge --self-test
       - name: CLI smoke test
         run: |
           pdm payload

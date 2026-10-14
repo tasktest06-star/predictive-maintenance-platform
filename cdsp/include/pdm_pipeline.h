@@ -36,6 +36,33 @@ extern "C" {
 #define PDM_FRAME_SPEED_ESTIMATED    (1u << 5)
 #define PDM_FRAME_TEMP_OUT_OF_RANGE  (1u << 6)
 #define PDM_FRAME_STORED_FORWARDED   (1u << 7)
+/* Channel index, bits 8-9. Zero on every single-channel device, so a frame from
+ * one is unchanged and an older decoder reads it identically. A multi-channel
+ * device (the RA8D1's three axes, a gateway's several sensors) ships one frame
+ * per channel, distinguished only by these bits -- a decoder that ignores them
+ * sees several frames with the same timestamp and different features, which
+ * looks like a sensor fault. */
+#define PDM_FRAME_CHANNEL_SHIFT      8u
+#define PDM_FRAME_CHANNEL_MASK       (3u << 8)
+#define PDM_FRAME_CHANNEL(ch)        (((uint16_t)(ch) & 3u) << PDM_FRAME_CHANNEL_SHIFT)
+/* The acquisition was resampled into the angle domain before analysis, so the
+ * spectral features are per-revolution orders rather than hertz. The cloud MUST
+ * know: comparing an order-tracked frame against a frequency-domain baseline is
+ * a guaranteed false alarm on any machine that is not at exactly nominal speed.
+ */
+#define PDM_FRAME_ORDER_TRACKED      (1u << 10)
+/* The shaft speed moved materially during the record, measured by a real
+ * tachometer. The features are still frequency-domain, so the cloud must widen
+ * its harmonic-match tolerance and discount the high-order content: smearing
+ * grows with order, so a gear-mesh line at 40x loses ~6 dB at 4 % drift while
+ * the 1x line loses ~1 dB. Without this flag that looks like a developing
+ * gear-mesh fault that mysteriously heals when production steadies. */
+#define PDM_FRAME_SPEED_UNSTEADY     (1u << 11)
+/* The sample rate used is the CONFIGURED one, not a measured one. An IIO
+ * divider or a MEMS internal oscillator can be percent-wrong, and every bearing
+ * frequency scales with it: at 2 % a 106 Hz BPFO line moves 2.1 Hz, which is
+ * the whole harmonic-match tolerance. */
+#define PDM_FRAME_RATE_NOMINAL       (1u << 12)
 
 /* Number of log-spaced bands. Comes from the generated layout so it cannot
  * disagree with the Python extractor. */

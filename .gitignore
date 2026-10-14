@@ -19,3 +19,8 @@ dist/
 *.o
 *.a
 cdsp/tests/test_cdsp
+cdsp/tests/test_pipeline
+cdsp/tests/test_flash_tables
+cdsp/tests/virtual_device
+cdsp/tests/virtual_device_mc
+hardware/*/tests/test_order
