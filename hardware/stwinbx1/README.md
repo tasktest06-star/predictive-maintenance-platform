@@ -210,24 +210,33 @@ Computed by `tools/power_budget.py`, not hand-tabulated:
 ```
 $ python3 ../../tools/power_budget.py --kit stwinbx1
   per acquisition cycle (300 B payload):
-    settle      0.3000 mA.s    6.4 %  ##
-    acquire     4.0000 mA.s   85.0 %  ##################################
-    compute     0.1197 mA.s    2.5 %  #
-    radio       0.2852 mA.s    6.1 %  ##
-    total       4.7049 mA.s
-  at 3600 s interval: 15.3 uA average -> 1.55 years
-    (load 15.3 uA + self-discharge 20.0 uA)
-    NOTE: self-discharge exceeds the load
+    settle      0.3000 mA.s   15.5 %  ######
+    acquire     1.2288 mA.s   63.5 %  #########################
+    compute     0.1197 mA.s    6.2 %  ##
+    radio       0.2852 mA.s   14.7 %  #####
+    total       1.9336 mA.s
+  dominant term: acquire
+  at 3600 s interval: 14.5 uA average -> 1.59 years
+    (load 14.5 uA + self-discharge 20.0 uA)
+    NOTE: self-discharge exceeds the load -- the cell's shelf life, not this circuit, sets the replacement interval
 ```
 
 ### Two findings worth acting on
 
 **1. The acquisition window dominates — not the radio, not the DSP.**
-85 % of the per-cycle energy is the 307 ms the sensor and MCU spend awake
+**63.5 %** of the per-cycle energy is the 307 ms the sensor and MCU spend awake
 capturing samples. Most published vibration-node designs optimise the radio and
-the FFT; on this kit those are 6 % and 2.5 %. The levers that matter are a
+the FFT; on this kit those are 14.7 % and 6.2 %. The levers that matter are a
 shorter record (costs envelope resolution) and the IIS3DWB's 1.1 mA operating
 current (fixed by the part).
+
+*An earlier version of this README said 85 %.* That came from a model which used
+a flat 1000 ms "standard acquisition" for every kit while this firmware acquires
+8192 samples at 26.667 kHz = 307 ms — a 3.3× error in the largest term. The
+window is now derived from `acq_samples / fs_hz` and
+[`tests/test_kit.py`](tests/test_kit.py) asserts it matches `app_config.h`, so
+it cannot drift again. The *ordering* was right and survives; the percentage was
+not.
 
 The 100 ms settling time alone (0.30 mA·s) costs more than all the DSP (0.12
 mA·s) — but **not** more than leaving the sensor powered. Settling costs 0.30
@@ -244,26 +253,26 @@ derived from an estimate and never re-derived is a defect waiting to be
 measured.
 
 **2. The shipped 480 mAh LiPo is the binding constraint, not the firmware.**
-Its 3 %/month self-discharge is 20 µA — *more than the circuit's 15.3 µA average
+Its 3 %/month self-discharge is 20 µA — *more than the circuit's 14.5 µA average
 draw*. Battery life therefore saturates at ~1.6 years no matter how long the
 acquisition interval:
 
 | Interval | Avg current | Life |
 |---|---:|---:|
-| 60 s | 92.4 µA | 0.49 y |
-| 15 min | 19.2 µA | 1.40 y |
-| 1 h | 15.3 µA | 1.55 y |
-| 24 h | 14.1 µA | **1.61 y** ← saturated |
+| 60 s | 46.2 µA | 0.83 y |
+| 15 min | 16.1 µA | 1.51 y |
+| 1 h | 14.5 µA | 1.59 y |
+| 24 h | 14.0 µA | **1.61 y** ← saturated |
 
 Swap the cell for a lithium-thionyl-chloride AA (0.08 %/month):
 
 ```
 $ python3 ../../tools/power_budget.py --kit stwinbx1 \
     --battery-mah 2400 --self-discharge-pct-month 0.08
-  at 3600 s interval: 15.3 uA average -> 15.23 years
+  at 3600 s interval: 14.5 uA average -> 15.91 years
 ```
 
-**1.55 → 15.2 years from the cell alone, with no firmware change.** LiSOCl₂ has
+**1.59 → 15.9 years from the cell alone, with no firmware change.** LiSOCl₂ has
 real drawbacks — passivation after long storage, and a pulse-current limit that
 matters for the cellular kits but not for BLE — but for a fit-and-forget
 vibration node it is the correct chemistry and the shipped LiPo is a
@@ -362,7 +371,7 @@ output goes to the U5's ADC, so this is firmware work, not hardware.
 
 **ISM330BX with MLC/ISPU.** An in-sensor programmable core that can run a
 decision tree on the accelerometer itself, waking the MCU only when something
-changes. Given that 85 % of this kit's energy is the acquisition window, a
+changes. Given that 63.5 % of this kit's energy is the acquisition window, a
 "wake me when the vibration changes" primitive in the sensor is the single
 largest available energy win — potentially an order of magnitude at long
 intervals.
