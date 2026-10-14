@@ -20,8 +20,8 @@
       \kv{NPU}{2$\times$ Ethos-U55, 128 and 256 MAC}\\[1mm]
       \kv{SRAM}{5.5 MB on-chip}\\[1mm]
       \kv{Helium}{MVE --- halves the FFT}\\[1mm]
-      \kv{Compute share}{\textbf{0.5 \% of the energy cycle}}\\[1mm]
-      \kv{Battery life}{1.47 y --- \emph{slightly worse} than the STM32U5}
+      \kv{Compute share}{\textbf{1.2 \% of the energy cycle}}\\[1mm]
+      \kv{Battery life}{1.50 y --- \emph{slightly worse} than the STM32U5}
     \end{column}
     \begin{column}{0.46\textwidth}
       \scriptsize\color{pdmink2}
@@ -44,11 +44,11 @@
     \toprule
     & \textbf{Latency} & \textbf{Share of the energy cycle} \\
     \midrule
-    63-float detector, plain C       & $\sim$23 $\mu$s & 0.0005 \% \\
+    63-float detector, plain C       & $\sim$23 $\mu$s & 0.011 \% \\
     \quad CMSIS-NN on the M55        & $\sim$8 $\mu$s  & --- \\
     \quad \textbf{Ethos-U55}         & $\sim$2 $\mu$s  & --- \\
-    Whole DSP pipeline (Helium)      & 2.4 ms          & 0.5 \% \\
-    \textcolor{pdmcrit}{\textbf{Acquisition window}} & \textcolor{pdmcrit}{\textbf{307 ms}} & \textcolor{pdmcrit}{\textbf{85 \%}} \\
+    Whole DSP pipeline (Helium)      & 2.4 ms          & 1.2 \% \\
+    \textcolor{pdmcrit}{\textbf{Acquisition window}} & \textcolor{pdmcrit}{\textbf{307 ms}} & \textcolor{pdmcrit}{\textbf{66.9 \%}} \\
     \bottomrule
   \end{tabular}
   \\[3mm]
@@ -56,8 +56,14 @@
     \begin{column}{0.48\textwidth}
       \scriptsize
       An NPU that takes inference from 23 $\mu$s to 2 $\mu$s is optimising
-      \textbf{0.0005 \%} of the budget. Helium, which halves the FFT, optimises
-      0.5 \%.
+      \textbf{0.010 \%} of the budget. Helium, which halves the FFT, optimises
+      1.2 \%.
+      \\[1mm]
+      \color{pdmink2}\footnotesize
+      These were 0.0005 \% and 0.5 \% until the energy model's acquisition
+      window was corrected from a flat 1000 ms to this firmware's 307 ms. The
+      NPU figure moved by 20$\times$ and the conclusion did not --- which says
+      it was never resting on the number.
       \\[1.5mm]
       A node on this part has materially the same battery life as one on a
       90 EUR STM32U5 --- in fact \emph{slightly worse}, because the sleep

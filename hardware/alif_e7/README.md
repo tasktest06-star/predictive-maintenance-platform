@@ -14,21 +14,33 @@ what that capability is for.
 Stating this first because it is the result, and because every "AI
 microcontroller" evaluation should start here:
 
-| | Baseline detector | Measured on this kit |
-|---|---|---|
-| Model | 63-24-12 MLP, 1 800 MACs | — |
-| Plain C on the HE core | ~23 µs | 0.5 % of compute |
-| CMSIS-NN on the M55 | ~8 µs | — |
-| **Ethos-U55 (128 MAC)** | **~2 µs** | — |
-| Compute share of the energy cycle | | **0.5 %** |
+| Running the 63-24-12 detector (1 800 MACs) | Latency | Share of the energy cycle |
+|---|---:|---:|
+| Plain C on the HE core | ~23 µs | 0.011 % |
+| CMSIS-NN on the M55 | ~8 µs | 0.004 % |
+| **Ethos-U55 (128 MAC)** | **~2 µs** | **0.001 %** |
+| | | |
+| **What the NPU saves over plain C** | 21 µs | **0.010 %** |
+| The whole DSP pipeline (Helium) | 2.4 ms | 1.2 % |
+| **The acquisition window** | **307 ms** | **66.9 %** |
 
 Saving 21 µs once an hour is not a reason to choose a part. The whole DSP
-pipeline is 2.4 ms at 9 mA — 0.02 mA·s of a 4.7 mA·s cycle — and the dominant
-term here, as on every BLE kit, is the 307 ms acquisition window at 85 %.
+pipeline is 2.4 ms at 9 mA — 0.022 mA·s of a 1.84 mA·s cycle — and the dominant
+term here, as on every BLE kit, is the 307 ms acquisition window.
 
 **Helium is the part that helps.** MVE halves the FFT against a scalar M33:
 1.1 ms instead of 2.2 ms for 3 × 4096-point transforms. That is a real
-improvement and it is *also* only 0.5 % of the cycle.
+improvement and it is *also* only 1.2 % of the cycle.
+
+> **These percentages were all wrong until the energy model was corrected, and
+> the conclusion did not change.** An earlier version of this table said the NPU
+> optimises 0.0005 % and compute is 0.5 %, against an acquisition window of
+> 85 %. Those came from a model that assumed a flat 1000 ms acquisition for
+> every kit while this firmware acquires 307 ms — so the denominator was 2.6×
+> too big. Corrected, the NPU saves 0.010 % rather than 0.0005 %: twenty times
+> more, and still four orders of magnitude from mattering. When a conclusion
+> survives a 20× correction to its own headline number, the conclusion was not
+> resting on the number.
 
 So: on compute grounds this kit has no advantage over the €90 STWIN.box.
 
@@ -115,19 +127,25 @@ uses the same BLE figures as the STWIN.box rather than measured ones.
 
 ```
 $ python3 ../../tools/power_budget.py --kit alif_e7
-    settle      0.3000 mA.s    6.9 %
-    acquire     4.0000 mA.s   91.8 %  ##################################
-    compute     0.0216 mA.s    0.5 %  #
-    radio       0.2852 mA.s    6.5 %  ##
+  per acquisition cycle (300 B payload):
+    settle      0.3000 mA.s   16.3 %  ######
+    acquire     1.2288 mA.s   66.9 %  ##########################
+    compute     0.0216 mA.s    1.2 %  #
+    radio       0.2852 mA.s   15.5 %  ######
+    total       1.8355 mA.s
+  dominant term: acquire
+  at 3600 s interval: 16.5 uA average -> 1.50 years
+    (load 16.5 uA + self-discharge 20.0 uA)
+    NOTE: self-discharge exceeds the load -- the cell's shelf life, not this circuit, sets the replacement interval
 ```
 
-Compute is **0.5 %**. Helium halved it from 1 % and the NPU would take it to
-0.02 %. Neither matters.
+Compute is **1.2 %**. Helium halved it from 2.4 % and the NPU would take it to
+1.17 %. Neither matters.
 
-Battery life at hourly: **1.47 y** on the reference 480 mAh LiPo — slightly
-*worse* than the STWIN.box's 1.55 y, because the sleep current is marginally
+Battery life at hourly: **1.50 y** on the reference 480 mAh LiPo — slightly
+*worse* than the STWIN.box's 1.59 y, because the sleep current is marginally
 higher. And as on that kit the cell's 20 µA self-discharge exceeds the circuit's
-17 µA draw, so the number is a property of the battery, not the silicon.
+16.5 µA draw, so the number is a property of the battery, not the silicon.
 
 With a LiSOCl₂ AA: ~14 years. Same conclusion, same arithmetic:
 
