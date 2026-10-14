@@ -56,6 +56,26 @@
 /* ADXL355 standing current is 200 uA, so the keepalive crossover is
  * 0.12 mA.s / 0.2 mA = 0.6 s. Still far below any realistic interval. */
 #define APP_SENSOR_KEEPALIVE_THRESHOLD_S  1u
+/* THREE harmonics, not five, and the decimation is why.
+ *
+ * The 2x decimation puts the envelope Nyquist at 1000 Hz, which is deliberately
+ * the ADXL355's own flat bandwidth -- there is no point resolving above a band
+ * the sensor has already rolled off. But BPFI on the configured bearing is
+ * 325 Hz at 3600 rpm, so five harmonics reach 1625 Hz: above the decimated
+ * Nyquist AND above the sensor. Asking for five would alias two of them onto
+ * plausible-looking lines.
+ *
+ * Three harmonics reach 975 Hz, just inside both limits.
+ *
+ * This is a SPEED limit as much as a harmonic limit: at 1780 rpm BPFI is
+ * 161 Hz and 1000 Hz holds six harmonics, so a slower machine could use five.
+ * Three is the 3600 rpm worst case, and the config is one number for the fleet.
+ *
+ * Found by tests/test_kit.py after its config parser was changed to run the C
+ * preprocessor: the previous regex parser read the LAST #define in the file --
+ * the IIS3DWB profile's -- so this check had been silently passing against the
+ * wrong profile. */
+#define APP_BEARING_HARMONICS   3u
 
 #else
 /* ---- IIS3DWB profile: wideband, for bearing work -------------------- */
@@ -70,6 +90,9 @@
 #define APP_ENVELOPE_DECIMATE   8u
 #define APP_ENVELOPE_N_FFT      1024
 #define APP_SENSOR_KEEPALIVE_THRESHOLD_S  1u
+/* Five harmonics: the 8x decimation leaves a 1667 Hz envelope Nyquist, and five
+ * BPFI harmonics at 3600 rpm reach 1625 Hz -- inside it, just. */
+#define APP_BEARING_HARMONICS   5u
 #endif
 
 #define APP_WINDOW              PDM_WIN_HANN
@@ -83,7 +106,6 @@
 #define APP_BEARING_BALL_D      0.3126f
 #define APP_BEARING_PITCH_D     1.537f
 #define APP_BEARING_ANGLE_DEG   0.0f
-#define APP_BEARING_HARMONICS   5u
 
 #define APP_TIER1_ESCALATE_FRAC 0.55f
 #define APP_TIER2_ESCALATE_FRAC 1.00f

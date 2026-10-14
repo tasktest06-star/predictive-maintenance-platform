@@ -67,6 +67,38 @@ A negative bearing result from the ADXL355 profile means *not measured*, and the
 frame's `tier` field tells the cloud as much. Reporting it as "no bearing fault"
 would be the single most misleading thing this kit could do.
 
+### The profiles need different harmonic counts, and a test only just caught it
+
+| Profile | Envelope Nyquist | Harmonics | Top BPFI harmonic at 3600 rpm |
+|---|---:|---:|---:|
+| ADXL355 (4 kHz ÷ 2) | 1000 Hz | **3** | 975 Hz |
+| IIS3DWB (26.667 kHz ÷ 8) | 1667 Hz | **5** | 1625 Hz |
+
+The ADXL355 profile's 2× decimation puts the envelope Nyquist at 1000 Hz, which
+is deliberately the sensor's *own* flat bandwidth — there is no point resolving
+above a band the part has already rolled off. But BPFI on the configured bearing
+is 325 Hz at 3600 rpm, so **five** harmonics reach 1625 Hz: above the decimated
+Nyquist *and* above the sensor. Two of them would have aliased onto
+plausible-looking lines.
+
+`APP_BEARING_HARMONICS` is therefore per profile: 3 for the ADXL355, 5 for the
+IIS3DWB.
+
+This is a **speed** limit as much as a harmonic limit. At 1780 rpm BPFI is
+161 Hz and 1000 Hz holds six harmonics, so a slower machine could use five;
+3 is the 3600 rpm worst case, and the config is one number for the fleet.
+
+**How it was missed, and how it was found.** `tests/test_kit.py` had always
+checked this relationship — but its config parser was a regex over `#define`
+lines, which reports whichever definition comes *last* in the file. That is the
+IIS3DWB profile. So the check had been silently passing against the wrong
+profile for this kit's entire history. The parser now runs the real C
+preprocessor, exactly as `tools/check_config.py` already did, and the check
+failed on the first run.
+
+A test that reads the wrong configuration is worse than no test: it was
+reporting a pass on a question it had never actually asked.
+
 ---
 
 ## Bill of materials
@@ -106,11 +138,14 @@ them alongside.
 
 ```
 $ python3 ../../tools/power_budget.py --kit esp32s3
-    settle      0.1200 mA.s    0.0 %
-    acquire    12.0000 mA.s    4.8 %
-    compute     0.1722 mA.s    0.1 %
-    radio     240.1465 mA.s   95.1 %  ######################################
-    total     252.4387 mA.s
+  per acquisition cycle (300 B payload):
+    settle      0.1200 mA.s    0.0 %  #
+    acquire    12.2880 mA.s    4.9 %  #
+    compute     0.1722 mA.s    0.1 %  #
+    radio     240.1465 mA.s   95.0 %  ######################################
+    total     252.7267 mA.s
+  dominant term: radio
+  at 3600 s interval: 105.2 uA average -> 1.67 years
 ```
 
 **Wi-Fi association is 240 mA·s — 1 400× the sensing and compute combined.**
