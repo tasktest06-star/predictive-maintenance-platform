@@ -174,16 +174,27 @@ def experiment_resolution(severities: Sequence[float], seeds: int = 5) -> Dict[s
     # than 3 standard deviations of the healthy case -- the same 3-sigma
     # convention the health index uses, so the numbers are comparable.
     thresholds: Dict[str, Optional[float]] = {}
+    margins: Dict[str, Optional[float]] = {}
     for qname in CHAINS:
         healthy = out[qname][0]
         noise = max(spread[qname][0], 1e-9)
         limit = healthy + 3.0 * noise
         found = None
+        margin = None
         for sev, value in zip(severities, out[qname]):
             if sev > 0.0 and value > limit:
                 found = float(sev)
+                # How far past the limit it landed, in units of the limit. A
+                # margin near 1.0 means the chain only just crossed, so the
+                # reported severity is one grid step away from flipping -- and
+                # a single number that flips between runs is worse than a
+                # number with its margin attached. The first version of this
+                # function reported only the severity, and the committed JSON
+                # then disagreed with the README that quoted an earlier run.
+                margin = float(value / limit)
                 break
         thresholds[qname] = found
+        margins[qname] = margin
 
     return {
         "feature": key,
@@ -191,6 +202,7 @@ def experiment_resolution(severities: Sequence[float], seeds: int = 5) -> Dict[s
         "median": out,
         "std": spread,
         "detection_severity": thresholds,
+        "detection_margin": margins,
         "seeds": seeds,
         "block_samples": BLOCK,
         "fs_hz": FS,
@@ -322,9 +334,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         for q in CHAINS:
             row += f"{r1['median'][q][i]:>20.3f}"
         print(row)
-    print("  first severity detected at 3 sigma above healthy:")
+    print("  first severity detected at 3 sigma above healthy, with the margin")
+    print("  by which it crossed (near 1.0 = one grid step from flipping):")
     for q, sev in r1["detection_severity"].items():
-        print(f"    {q:22s} {sev if sev is not None else 'never in this sweep'}")
+        m = r1["detection_margin"][q]
+        note = "" if m is None or m > 1.5 else "   <-- borderline"
+        print(f"    {q:22s} {sev if sev is not None else 'never in this sweep'}"
+              f"   margin {m:.2f}{note}" if m is not None else
+              f"    {q:22s} never in this sweep")
 
     print("\nexperiment 2: does a disconnected sensor look healthy?")
     r2 = experiment_disconnected(n_healthy=40 if args.quick else 60,

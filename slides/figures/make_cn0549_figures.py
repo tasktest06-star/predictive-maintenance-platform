@@ -105,9 +105,16 @@ def fig_detection(data: dict, path: str) -> None:
     ax.set_axisbelow(True)
     ax.legend(loc="upper left", fontsize=7.4)
     det = r["detection_severity"]
-    same = len(set(v for v in det.values() if v is not None)) <= 1
-    ax.set_title("A 10$\\times$ quieter sensor does not lower the detection threshold"
-                 if same else "Detection threshold by sensing chain")
+    vals = sorted({v for v in det.values() if v is not None})
+    if len(vals) <= 1:
+        title = "A 10$\\times$ quieter sensor does not lower the detection threshold"
+    else:
+        # One step on a factor-of-two grid, and the title says so rather than
+        # implying a proportional gain. Computed from the JSON, so it cannot
+        # disagree with the measurement it sits above.
+        title = (f"A 10$\\times$ quieter sensor buys one grid step: "
+                 f"{vals[0]:g} against {vals[-1]:g} severity")
+    ax.set_title(title)
     fig.savefig(path)
     plt.close(fig)
 

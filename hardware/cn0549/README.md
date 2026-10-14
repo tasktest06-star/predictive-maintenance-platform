@@ -78,22 +78,38 @@ noise density — and the answer there is also not flattering:
 
 ```
   severity        IIS3DWB 16-bit      ADXL355 20-bit       CN0549 24-bit
-     0.000                 1.554               1.581               1.649
-     0.005                 1.553               1.926               1.962
-     0.010                 1.996               2.845               3.262
-     0.020                 3.904               5.029               5.644
-     0.050                 7.636               8.452               8.497
-  first severity detected at 3 sigma above healthy:
-    IIS3DWB 16-bit         0.01
-    ADXL355 20-bit         0.01
-    CN0549 24-bit          0.01
+     0.000                 1.571               1.747               1.659
+     0.002                 1.610               1.655               1.670
+     0.005                 1.708               1.808               1.945
+     0.010                 2.000               2.728               2.930
+     0.020                 3.661               4.886               5.198
+     0.050                 7.419               8.388               8.295
+     0.100                 9.224               9.492               9.495
+     0.300                 9.668               9.711               9.705
+  first severity detected at 3 sigma above healthy, with the margin
+  by which it crossed (near 1.0 = one grid step from flipping):
+    IIS3DWB 16-bit         0.02   margin 1.71
+    ADXL355 20-bit         0.01   margin 1.24
+    CN0549 24-bit          0.01   margin 1.39
 ```
 
-**A 10× quieter sensor did not lower the detection threshold.** All three detect
-at severity 0.01. The piezo gives a stronger signature once there *is* one
-(3.26 against 2.00 at severity 0.01), which is worth something for severity
-estimation — but not for *detection*, because the machine's own broadband noise,
-not the sensor's, sets the floor.
+**A 10× quieter sensor buys about one grid step of detection, not ten.** The two
+quieter chains cross the 3 σ line at severity 0.01 where the 16-bit MEMS chain
+needs 0.02 — one step on a factor-of-two grid — and both cross only marginally
+(margins 1.24 and 1.39, against the 16-bit chain's 1.71 at its own step). So the
+advantage is real, modest, and at the edge of what this sweep can resolve.
+
+The piezo also gives a stronger signature once there *is* one, which helps
+*severity estimation* more than detection. The machine's own broadband noise,
+not the sensor's, sets the floor for both.
+
+**A number that flipped between runs, and the fix.** An earlier run of this
+sweep put all three chains at 0.01; the committed JSON put the 16-bit chain at
+0.02. Both were true — the 3 σ limit depends on the healthy-case standard
+deviation, which moves with the seed count and the grid. A single number that
+flips is worse than a number with its margin attached, so the experiment now
+reports **how far past the limit each chain crossed**, and this README's block
+is pasted from the committed JSON rather than from a terminal.
 
 Caveat that matters: this is a simulator whose noise model was written in this
 repository. It can support an argument about physics — noise density dominates

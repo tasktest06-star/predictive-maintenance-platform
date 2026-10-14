@@ -69,19 +69,25 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{And a 10$\times$ quieter sensor did not detect earlier either}
+\begin{frame}{And a 10$\times$ quieter sensor buys one grid step, not ten}
   \centering
   \includegraphics[width=0.76\textwidth]{cn0549_detection.pdf}
   \\[1mm]
   \begin{columns}[T]
     \begin{column}{0.49\textwidth}
       \scriptsize
-      All three chains first separate fault from healthy at simulated severity
-      \textbf{0.01}. The piezo gives a stronger signature once one exists
-      (3.26 against 2.00) --- useful for \emph{severity estimation}, not for
+      The two quieter chains cross the 3$\sigma$ line at severity
+      \textbf{0.01} where the 16-bit MEMS chain needs \textbf{0.02} --- one
+      step on a factor-of-two grid --- and both cross only marginally
+      (margins 1.24 and 1.39).
+      \\[1mm]
+      So the advantage is real, modest, and at the edge of what this sweep can
+      resolve. The piezo also gives a stronger signature once one exists
+      (2.93 against 2.00), which helps \emph{severity estimation} more than
       detection.
-      \\[2mm]
-      The machine's own broadband noise, not the sensor's, sets the floor.
+      \\[1mm]
+      The machine's own broadband noise, not the sensor's, sets the floor for
+      all three.
     \end{column}
     \begin{column}{0.49\textwidth}
       \scriptsize\color{pdmcrit}
@@ -100,8 +106,11 @@
   \end{columns}
   \srcnote{Simulator result. The \emph{physics} argument --- sensor noise
   dominates ADC noise by 600$\times$ --- is datasheet arithmetic and stands
-  alone; the detection threshold does not. Stage 2 of the validation protocol
-  is the experiment that would replace it.}
+  alone; the detection threshold does not. An earlier run of this sweep put all
+  three chains at 0.01, so the experiment now reports the \emph{margin} by
+  which each crossed: a single number that flips between runs is worse than a
+  number with its margin attached. Stage 2 of the validation protocol is the
+  experiment that would replace it.}
 \end{frame}
 
 % --------------------------------------------- finding 2: the disconnected one --
