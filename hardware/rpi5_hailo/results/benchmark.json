@@ -1,0 +1,131 @@
+{
+ "host": {
+  "machine": "aarch64",
+  "processor": "aarch64",
+  "python": "3.9.25",
+  "numpy": "2.0.2",
+  "cpu_count": 2,
+  "bogomips": "2000.00"
+ },
+ "features": [
+  {
+   "median_ms": 2.8453044942580163,
+   "p95_ms": 3.0618082586443056,
+   "min_ms": 2.7797660150099546,
+   "n": 20,
+   "block_samples": 4096,
+   "n_fft": 2048,
+   "record_s": 0.16
+  },
+  {
+   "median_ms": 3.455640995525755,
+   "p95_ms": 3.512813340057619,
+   "min_ms": 3.3724899985827506,
+   "n": 20,
+   "block_samples": 8192,
+   "n_fft": 4096,
+   "record_s": 0.32
+  },
+  {
+   "median_ms": 4.594106489093974,
+   "p95_ms": 4.814542773237918,
+   "min_ms": 4.534652980510145,
+   "n": 20,
+   "block_samples": 16384,
+   "n_fft": 4096,
+   "record_s": 0.64
+  },
+  {
+   "median_ms": 6.857642001705244,
+   "p95_ms": 7.002627084148116,
+   "min_ms": 6.815842993091792,
+   "n": 20,
+   "block_samples": 32768,
+   "n_fft": 8192,
+   "record_s": 1.28
+  }
+ ],
+ "scoring": {
+  "single": {
+   "median_ms": 0.016862497432157397,
+   "p95_ms": 0.018726782582234595,
+   "min_ms": 0.016504025552421808,
+   "n": 20
+  },
+  "batch_1000": {
+   "median_ms": 4.856373008806258,
+   "p95_ms": 7.068187603726982,
+   "min_ms": 4.842748981900513,
+   "n": 10
+  }
+ },
+ "wire": {
+  "encode": {
+   "median_ms": 0.00520551111549139,
+   "p95_ms": 0.005380116635933518,
+   "min_ms": 0.0049549853429198265,
+   "n": 200
+  },
+  "decode": {
+   "median_ms": 0.003963490598835051,
+   "p95_ms": 0.004164212441537529,
+   "min_ms": 0.003802997525781393,
+   "n": 200
+  },
+  "frame_bytes": 300
+ },
+ "queue": {
+  "durable": {
+   "frames": 300,
+   "seconds": 0.007532296993304044,
+   "frames_per_s": 39828.487945535046,
+   "ms_per_frame": 0.02510765664434681
+  },
+  "nosync": {
+   "frames": 300,
+   "seconds": 0.007186713017290458,
+   "frames_per_s": 41743.70108813755,
+   "ms_per_frame": 0.02395571005763486
+  },
+  "durability_cost": 1.0480865139852042,
+  "fsync_appears_effective": false
+ },
+ "fan_out": [
+  {
+   "interval_s": 60.0,
+   "cores_used": 1,
+   "headroom": 0.25,
+   "nodes": 13022,
+   "feature_ms": 3.455640995525755
+  },
+  {
+   "interval_s": 300.0,
+   "cores_used": 1,
+   "headroom": 0.25,
+   "nodes": 65110,
+   "feature_ms": 3.455640995525755
+  },
+  {
+   "interval_s": 900.0,
+   "cores_used": 1,
+   "headroom": 0.25,
+   "nodes": 195332,
+   "feature_ms": 3.455640995525755
+  },
+  {
+   "interval_s": 3600.0,
+   "cores_used": 1,
+   "headroom": 0.25,
+   "nodes": 781331,
+   "feature_ms": 3.455640995525755
+  }
+ ],
+ "fan_out_4core_1h": {
+  "interval_s": 3600.0,
+  "cores_used": 4,
+  "headroom": 0.25,
+  "nodes": 3125324,
+  "feature_ms": 3.455640995525755
+ },
+ "caveat": "Measured on the host above, which is NOT a Raspberry Pi 5. A Pi 5 Cortex-A76 at 2.4 GHz is roughly 1.4-1.8x this container per core on numpy-heavy float work; the range is wide and only running this script on a Pi closes it."
+}

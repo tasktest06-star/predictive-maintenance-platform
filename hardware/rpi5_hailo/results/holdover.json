@@ -1,0 +1,36 @@
+{
+ "nodes": 50,
+ "interval_s": 3600.0,
+ "outage_days": 14.0,
+ "frames": 16800,
+ "backlog_mb": 5.04,
+ "uplinks": [
+  {
+   "uplink": "LTE Cat-M1 (shared)",
+   "bytes_per_s": 8000,
+   "flush_s": 630.0,
+   "ups_wh": 1.3125
+  },
+  {
+   "uplink": "4G LTE (plant, contended)",
+   "bytes_per_s": 250000,
+   "flush_s": 20.16,
+   "ups_wh": 0.041999999999999996
+  },
+  {
+   "uplink": "Wi-Fi to site LAN",
+   "bytes_per_s": 2000000,
+   "flush_s": 2.52,
+   "ups_wh": 0.0052499999999999995
+  },
+  {
+   "uplink": "Gigabit Ethernet",
+   "bytes_per_s": 40000000,
+   "flush_s": 0.126,
+   "ups_wh": 0.00026250000000000004
+  }
+ ],
+ "gateway_w": 7.5,
+ "recommended_holdover_s": 60.0,
+ "recommended_wh": 0.125
+}

@@ -1,0 +1,39 @@
+{
+  "_comment": "Raspberry Pi 5 gateway. Terminates node traffic, forwards upstream, scores locally.",
+  "device_id": "00517a1100000001",
+  "tier": "gateway",
+  "fs_hz": 25600.0,
+  "block_samples": 8192,
+  "interval_s": 3600,
+  "n_fft": 4096,
+  "envelope_n_fft": 2048,
+  "queue_path": "/var/lib/pdm/gateway.sqlite",
+  "_queue_note": "200000 frames x 300 B = 60 MB. At 50 nodes hourly that is 166 days of outage cover; see tools/holdover.py.",
+  "queue_max_frames": 200000,
+  "max_drain": 64,
+  "scorer": {
+    "kind": "cpu_features",
+    "_kind_note": "cpu_features is the only kind that works: 17 us/frame measured. 'hailo' raises -- there is no trained waveform model to compile. See gateway/hailo_backend.py."
+  },
+  "sink": {
+    "kind": "mqtt",
+    "host": "pdm-cloud.example.com",
+    "port": 8883,
+    "topic": "pdm/v1/raw",
+    "client_id": "pdm-gateway-00517a1100000001",
+    "tls": true,
+    "ca_cert": "/etc/pdm/ca.pem",
+    "certfile": "/etc/pdm/device.pem",
+    "keyfile": "/etc/pdm/device.key"
+  },
+  "channels": [
+    {
+      "name": "gateway_self",
+      "asset_id": "GW-01",
+      "shaft_hz": 29.6667,
+      "units_are_g": true,
+      "_note": "A gateway has no sensor of its own. This channel exists only so --self-test exercises the full path; delete it on a pure aggregation deployment."
+    }
+  ],
+  "labels": {"role": "gateway", "site": "example", "tier": "edge"}
+}
