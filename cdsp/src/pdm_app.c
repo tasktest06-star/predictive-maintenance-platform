@@ -39,6 +39,34 @@
 #include "pdm_payload.h"
 #include "pdm_pipeline.h"
 
+/* Sensor channels analysed per acquisition. One on every kit but the Renesas
+ * RA8D1, which has the compute headroom to run the whole pipeline three times
+ * (radial, tangential, axial) inside the same 307 ms sensing window and ships
+ * one frame per axis, tagged in PDM_FRAME_CHANNEL.
+ *
+ * Why this lives in the shared loop rather than in that kit's main():
+ * everything around the pipeline -- the battery gate, the sticky-flag
+ * discipline, the sequence accounting the cloud deduplicates on, the drain --
+ * is exactly the part that must not be reimplemented per kit. With
+ * APP_N_AXES undefined the loop runs once and the emitted bytes are identical
+ * to before it existed, which is what keeps the golden tests meaningful.
+ */
+#ifdef APP_N_AXES
+#define PDM_APP_CHANNELS APP_N_AXES
+#else
+#define PDM_APP_CHANNELS 1u
+#endif
+
+/* Shims so the shared code reads the same in both builds. On a single-channel
+ * kit both collapse to nothing. */
+#if PDM_APP_CHANNELS > 1u
+static uint16_t board_extra_flags(void) { return pdm_board_extra_flags(); }
+static void release_block(void) { pdm_board_release_block(); }
+#else
+static uint16_t board_extra_flags(void) { return 0u; }
+static void release_block(void) { }
+#endif
+
 /* Acquisition buffer. The single largest allocation in the firmware, and the
  * number that decides which parts are in scope. */
 static float    s_acq[APP_ACQ_SAMPLES];
@@ -125,6 +153,117 @@ void pdm_app_set_config(uint32_t interval_s, float threshold)
 }
 
 /* ------------------------------------------------------------- one cycle */
+/* Steps 5-8 for one sensor channel: pipeline, encode, transmit-or-queue, and
+ * -- when the link is demonstrably up -- drain the backlog.
+ *
+ * Extracted so the multi-axis kit runs the identical code path per axis rather
+ * than reimplementing the queue and sequence discipline in its main(). On a
+ * single-channel build it is called exactly once with ch = 0 and the emitted
+ * bytes are unchanged.
+ */
+static pdm_status channel_cycle(uint8_t ch, uint64_t now_ms, float shaft_hz,
+                                pdm_pipeline_result *out, pdm_app_result *r)
+{
+    /* --- 5. pipeline --------------------------------------------------- */
+    pdm_pipeline_result pr;
+    memset(&pr, 0, sizeof(pr));
+    pr.threshold_hint = s_state.threshold;
+    const pdm_status pst = pdm_pipeline_run(s_acq, APP_ACQ_SAMPLES, shaft_hz, &pr);
+    if (pst != PDM_OK) {
+        r->action = PDM_APP_PIPELINE_FAIL;
+        return pst;
+    }
+    /* Channel 0 is the one the health chain and the alarm state machine follow.
+     * Letting an axial channel overwrite last_score would make the alarm
+     * hysteresis chase whichever axis happened to be noisiest. */
+    if (ch == 0u) {
+        s_state.last_score = pr.score;
+        s_state.last_tier = pr.tier;
+    }
+
+    /* --- 6. encode ----------------------------------------------------- */
+    float temp_c = 0.0f;
+    (void)pdm_board_temperature_c(&temp_c);
+
+    pdm_payload_meta meta;
+    memset(&meta, 0, sizeof(meta));
+    meta.device_id = s_board.device_uid;
+    meta.timestamp_ms = now_ms;
+    meta.uptime_s = (uint32_t)(now_ms / 1000u);
+    meta.battery_mv = s_state.battery_mv;
+    meta.rssi_dbm = pdm_board_rssi_dbm();
+    /* The rate the hardware actually used, not the nominal one. A 3 % MEMS
+     * oscillator error moves a 106 Hz BPFO line by 3.2 Hz, which the cloud needs
+     * in order to re-derive the kinematic frequencies correctly. */
+    meta.shaft_hz = shaft_hz;
+    meta.temperature_c = temp_c;
+    meta.flags = (uint16_t)(pr.flags | s_state.pending_flags
+                            | PDM_FRAME_CHANNEL(ch) | board_extra_flags());
+    meta.sequence = s_state.sequence;
+
+    size_t len = 0;
+    const pdm_status est = pdm_payload_encode(&meta, pr.features, PDM_N_FEATURES,
+                                              s_frame, sizeof(s_frame), &len);
+    if (est != PDM_OK) {
+        r->action = PDM_APP_ENCODE_FAIL;
+        return est;
+    }
+    /* Sequence advances only once a frame has been built, so a failed
+     * acquisition does not create a gap the cloud would report as lost data. */
+    s_state.sequence = (uint16_t)((s_state.sequence + 1u) & 0xFFFFu);
+    s_state.pending_flags = 0u;
+
+    /* --- 7. transmit, or queue ----------------------------------------- */
+    if (pdm_board_transmit(s_frame, len) == PDM_BOARD_OK) {
+        ++s_state.frames_sent;
+        r->transmitted = 1u;
+        /* --- 8. the link is demonstrably up: drain the backlog --------- */
+        uint32_t drained = 0;
+        while (pdm_board_queue_depth() > 0u && drained < PDM_APP_MAX_DRAIN) {
+            size_t qlen = 0;
+            if (pdm_board_queue_pop(s_frame, sizeof(s_frame), &qlen) != PDM_BOARD_OK) {
+                break;
+            }
+            /* Mark the replay so the cloud can distinguish a backlog flush from
+             * live data; it deduplicates on (device, sequence) either way, but
+             * a sudden burst of in-order frames with old timestamps is
+             * otherwise indistinguishable from a clock fault. */
+            s_frame[40] = (uint8_t)(s_frame[40] | PDM_FRAME_STORED_FORWARDED);
+            /* The flags byte changed, so the CRC must be recomputed. Forgetting
+             * this turns every replayed frame into a CRC rejection, i.e. the
+             * store-and-forward feature silently throws away everything it
+             * saved. */
+            {
+                const uint32_t crc = pdm_crc32(s_frame, qlen - 4u);
+                for (int i = 0; i < 4; ++i) {
+                    s_frame[qlen - 4u + (size_t)i] = (uint8_t)((crc >> (8 * i)) & 0xFFu);
+                }
+            }
+            if (pdm_board_transmit(s_frame, qlen) != PDM_BOARD_OK) {
+                /* Push it back and stop: the link went down mid-drain. */
+                (void)pdm_board_queue_push(s_frame, qlen);
+                break;
+            }
+            ++drained;
+            ++s_state.frames_sent;
+            pdm_board_watchdog_feed();
+        }
+        r->drained += drained;
+    } else {
+        if (pdm_board_queue_push(s_frame, len) == PDM_BOARD_OK) {
+            ++s_state.frames_queued;
+            r->queued = 1u;
+        } else {
+            ++s_state.frames_dropped;
+        }
+    }
+
+    if (out != NULL) {
+        *out = pr;
+    }
+    return PDM_OK;
+}
+
 pdm_app_result pdm_app_step(uint64_t now_ms)
 {
     pdm_app_result r;
@@ -187,6 +326,9 @@ pdm_app_result pdm_app_step(uint64_t now_ms)
     }
 
     /* --- 4. acquire ---------------------------------------------------- */
+#if PDM_APP_CHANNELS > 1u
+    pdm_board_select_channel(0u);
+#endif
     float fs_actual = APP_FS_HZ;
     const pdm_board_status acq = pdm_board_acquire(s_acq, APP_ACQ_SAMPLES, &fs_actual);
     if (!keep_alive) {
@@ -236,105 +378,46 @@ pdm_app_result pdm_app_step(uint64_t now_ms)
                 ++s_state.frames_dropped;
             }
         }
+        release_block();
         r.status = PDM_OK;
         r.action = PDM_APP_ACQUIRE_FAIL;
         return r;
     }
     if (acq != PDM_BOARD_OK) {
+        release_block();
         r.status = PDM_ERR_UNSUPPORTED;
         r.action = PDM_APP_ACQUIRE_FAIL;
         return r;
     }
 
-    /* --- 5. pipeline --------------------------------------------------- */
+    /* --- 5-8, once per sensor channel ---------------------------------- */
     pdm_pipeline_result pr;
     memset(&pr, 0, sizeof(pr));
-    pr.threshold_hint = s_state.threshold;
-    const pdm_status pst = pdm_pipeline_run(s_acq, APP_ACQ_SAMPLES, shaft_hz, &pr);
-    if (pst != PDM_OK) {
-        r.status = pst;
-        r.action = PDM_APP_PIPELINE_FAIL;
-        return r;
-    }
-    s_state.last_score = pr.score;
-    s_state.last_tier = pr.tier;
-
-    /* --- 6. encode ----------------------------------------------------- */
-    float temp_c = 0.0f;
-    (void)pdm_board_temperature_c(&temp_c);
-
-    pdm_payload_meta meta;
-    memset(&meta, 0, sizeof(meta));
-    meta.device_id = s_board.device_uid;
-    meta.timestamp_ms = now_ms;
-    meta.uptime_s = (uint32_t)(now_ms / 1000u);
-    meta.battery_mv = s_state.battery_mv;
-    meta.rssi_dbm = pdm_board_rssi_dbm();
-    /* The rate the hardware actually used, not the nominal one. A 3 % MEMS
-     * oscillator error moves a 106 Hz BPFO line by 3.2 Hz, which the cloud needs
-     * in order to re-derive the kinematic frequencies correctly. */
-    meta.shaft_hz = shaft_hz;
-    meta.temperature_c = temp_c;
-    meta.flags = (uint16_t)(pr.flags | s_state.pending_flags);
-    meta.sequence = s_state.sequence;
-
-    size_t len = 0;
-    const pdm_status est = pdm_payload_encode(&meta, pr.features, PDM_N_FEATURES,
-                                              s_frame, sizeof(s_frame), &len);
-    if (est != PDM_OK) {
-        r.status = est;
-        r.action = PDM_APP_ENCODE_FAIL;
-        return r;
-    }
-    /* Sequence advances only once a frame has been built, so a failed
-     * acquisition does not create a gap the cloud would report as lost data. */
-    s_state.sequence = (uint16_t)((s_state.sequence + 1u) & 0xFFFFu);
-    s_state.pending_flags = 0u;
-
-    /* --- 7. transmit, or queue ----------------------------------------- */
-    if (pdm_board_transmit(s_frame, len) == PDM_BOARD_OK) {
-        ++s_state.frames_sent;
-        r.transmitted = 1u;
-        /* --- 8. the link is demonstrably up: drain the backlog --------- */
-        uint32_t drained = 0;
-        while (pdm_board_queue_depth() > 0u && drained < PDM_APP_MAX_DRAIN) {
-            size_t qlen = 0;
-            if (pdm_board_queue_pop(s_frame, sizeof(s_frame), &qlen) != PDM_BOARD_OK) {
+    for (uint8_t ch = 0; ch < (uint8_t)PDM_APP_CHANNELS; ++ch) {
+#if PDM_APP_CHANNELS > 1u
+        if (ch > 0u) {
+            /* A RAM copy out of the block channel 0 already read: the extra
+             * axes are the same instant of the same machine, not three
+             * acquisitions a few hundred milliseconds apart. */
+            pdm_board_select_channel(ch);
+            if (pdm_board_acquire(s_acq, APP_ACQ_SAMPLES, NULL) != PDM_BOARD_OK) {
                 break;
             }
-            /* Mark the replay so the cloud can distinguish a backlog flush from
-             * live data; it deduplicates on (device, sequence) either way, but
-             * a sudden burst of in-order frames with old timestamps is
-             * otherwise indistinguishable from a clock fault. */
-            s_frame[40] = (uint8_t)(s_frame[40] | PDM_FRAME_STORED_FORWARDED);
-            /* The flags byte changed, so the CRC must be recomputed. Forgetting
-             * this turns every replayed frame into a CRC rejection, i.e. the
-             * store-and-forward feature silently throws away everything it
-             * saved. */
-            {
-                const uint32_t crc = pdm_crc32(s_frame, qlen - 4u);
-                for (int i = 0; i < 4; ++i) {
-                    s_frame[qlen - 4u + (size_t)i] = (uint8_t)((crc >> (8 * i)) & 0xFFu);
-                }
-            }
-            if (pdm_board_transmit(s_frame, qlen) != PDM_BOARD_OK) {
-                /* Push it back and stop: the link went down mid-drain. */
-                (void)pdm_board_queue_push(s_frame, qlen);
-                break;
-            }
-            ++drained;
-            ++s_state.frames_sent;
-            pdm_board_watchdog_feed();
         }
-        r.drained = drained;
-    } else {
-        if (pdm_board_queue_push(s_frame, len) == PDM_BOARD_OK) {
-            ++s_state.frames_queued;
-            r.queued = 1u;
-        } else {
-            ++s_state.frames_dropped;
+#endif
+        pdm_pipeline_result cpr;
+        const pdm_status cst = channel_cycle(ch, now_ms, shaft_hz, &cpr, &r);
+        if (cst != PDM_OK) {
+            release_block();
+            r.status = cst;
+            return r;
         }
+        if (ch == 0u) {
+            pr = cpr;
+        }
+        pdm_board_watchdog_feed();
     }
+    release_block();
 
     r.status = PDM_OK;
     r.action = (pr.request_snapshot) ? PDM_APP_SNAPSHOT_REQUESTED : PDM_APP_FRAME_READY;

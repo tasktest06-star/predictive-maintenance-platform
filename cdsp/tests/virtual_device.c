@@ -131,6 +131,10 @@ int main(int argc, char **argv)
                 (unsigned)st->frames_queued, (unsigned)st->frames_dropped,
                 (unsigned)st->overruns, (unsigned)st->battery_mv,
                 (double)pdm_board_host_sleep_total_ms() / 3600000.0);
+#if defined(APP_N_AXES) && APP_N_AXES > 1u
+        fprintf(stderr, "%u axes, raw block released %u times\n",
+                (unsigned)APP_N_AXES, (unsigned)pdm_board_host_release_count());
+#endif
     }
     fclose(fs);
     return 0;

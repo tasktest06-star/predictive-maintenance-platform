@@ -83,6 +83,22 @@ class FrameFlags(IntFlag):
     SPEED_ESTIMATED = 1 << 5  # shaft_hz is tacholess, not measured
     TEMP_OUT_OF_RANGE = 1 << 6
     STORED_AND_FORWARDED = 1 << 7  # replayed from the queue, not live
+    # Channel index, bits 8-9: zero on every single-axis kit, so those frames
+    # are byte-identical to before this field existed. A multi-axis node ships
+    # one frame per axis per acquisition and these bits are the only thing
+    # distinguishing them -- read them with `channel`, below.
+    CHANNEL_BIT0 = 1 << 8
+    CHANNEL_BIT1 = 1 << 9
+    ORDER_TRACKED = 1 << 10  # features are per-revolution orders, not hertz
+    # A tachometer measured material speed drift across the record. Features are
+    # still in hertz, so high-order content is smeared: widen the harmonic
+    # tolerance and discount orders above ~10x rather than scoring them as-is.
+    SPEED_UNSTEADY = 1 << 11
+
+    @property
+    def channel(self) -> int:
+        """Sensor channel (axis) this frame came from, 0-3."""
+        return (int(self) >> 8) & 0x3
 
     @property
     def blocks_scoring(self) -> bool:

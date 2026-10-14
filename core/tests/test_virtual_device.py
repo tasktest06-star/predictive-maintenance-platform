@@ -325,3 +325,119 @@ def test_corrupting_a_firmware_frame_is_caught(device_binary, tmp_path):
     raw[120] ^= 0x01
     with pytest.raises(PayloadError, match="CRC mismatch"):
         decode_frame(bytes(raw))
+
+
+# --------------------------------------------------------------- multi-axis -
+# The Renesas RA8D1 analyses three axes per acquisition and ships one frame per
+# axis. These tests drive the *same* pdm_app.c compiled with APP_N_AXES=3, so
+# the multi-channel code path is exercised rather than merely compiled.
+
+_BIN_MC = os.path.join(_CDSP, "tests", "virtual_device_mc")
+
+
+@pytest.fixture(scope="module")
+def device_binary_mc():
+    proc = subprocess.run(
+        ["make", "-C", _CDSP, "virtual-device-mc"],
+        capture_output=True, text=True, timeout=600,
+        env={**os.environ, "PY": sys.executable},
+    )
+    if proc.returncode != 0 or not os.path.isfile(_BIN_MC):
+        pytest.fail(f"virtual_device_mc failed to build:\n{proc.stdout}\n{proc.stderr}")
+    return _BIN_MC
+
+
+def test_multi_axis_emits_one_tagged_frame_per_axis(device_binary_mc, tmp_path):
+    """Three frames per acquisition, channels 0/1/2, one shared timestamp.
+
+    The shared timestamp is the point of the design: three axes of the same
+    instant. If the board acquired three times instead of copying out of one
+    block, the timestamps would differ and cross-axis comparison would be
+    meaningless.
+    """
+    spec = replace(MACHINE_LIBRARY["motor_pump_37kw"], fs_hz=FS_HZ)
+    records = [simulate(spec, None, duration_s=0.35, seed=810 + i).accel_g for i in range(4)]
+    path = str(tmp_path / "axes.txt")
+    _write_samples(path, records)
+
+    frames, log = _run_device(device_binary_mc, path, cycles=4)
+    assert len(frames) == 12, f"expected 3 frames x 4 cycles, got {len(frames)}"
+
+    decoded = [decode_frame(f) for f in frames]
+    for i in range(0, 12, 3):
+        group = decoded[i : i + 3]
+        channels = [FrameFlags(d.flags).channel for d in group]
+        assert channels == [0, 1, 2], f"cycle {i // 3}: channels {channels}"
+        stamps = {d.timestamp_ms for d in group}
+        assert len(stamps) == 1, f"cycle {i // 3}: axes report {stamps}"
+        # Sequence numbers are per FRAME, not per acquisition: the ingest
+        # service deduplicates on (device, sequence), so three axes sharing a
+        # sequence would have two of them silently discarded.
+        seqs = [d.sequence for d in group]
+        assert seqs == [seqs[0], seqs[0] + 1, seqs[0] + 2]
+
+    # And the raw block is released once per acquisition, not never.
+    assert "raw block released 4 times" in log, log
+
+
+def test_multi_axis_frames_are_not_copies_of_each_other(device_binary_mc, tmp_path):
+    """Each frame's features must come from its own channel's samples.
+
+    The failure this catches is the plausible one: a board that tags the channel
+    correctly but hands the same buffer to every pipeline run. The dashboard
+    then shows three perfectly correlated axes, which looks like a well-behaved
+    machine rather than a bug.
+    """
+    spec = replace(MACHINE_LIBRARY["motor_pump_37kw"], fs_hz=FS_HZ)
+    path = str(tmp_path / "distinct.txt")
+    _write_samples(path, [simulate(spec, None, duration_s=0.35, seed=820).accel_g])
+
+    frames, _ = _run_device(device_binary_mc, path, cycles=1)
+    rms = [decode_frame(f).features[0:14] for f in frames]
+    assert len(rms) == 3
+    # The host fixture attenuates channels 1 and 2 by 0.60 and 0.35, so RMS must
+    # fall in that ratio. Checked as a ratio, not a value, because the fixture's
+    # attenuation is arbitrary but its *ordering* is the invariant.
+    r0, r1, r2 = (float(v[1]) for v in rms)   # time.rms at index 1
+    assert r0 > r1 > r2 > 0.0, f"rms per axis {r0}, {r1}, {r2}"
+    assert abs(r1 / r0 - 0.60) < 0.05, f"channel 1 ratio {r1 / r0:.3f}"
+    assert abs(r2 / r0 - 0.35) < 0.05, f"channel 2 ratio {r2 / r0:.3f}"
+
+
+def test_multi_axis_does_not_claim_order_tracking_it_did_not_do(device_binary_mc, tmp_path):
+    """ORDER_TRACKED must be clear unless the board really resampled.
+
+    An order-tracked frame's spectral features are per-revolution orders. Scored
+    against a hertz-domain baseline they are a guaranteed false alarm on any
+    machine not at exactly nominal speed, so the flag is not decorative.
+    """
+    spec = replace(MACHINE_LIBRARY["motor_pump_37kw"], fs_hz=FS_HZ)
+    path = str(tmp_path / "noorder.txt")
+    _write_samples(path, [simulate(spec, None, duration_s=0.35, seed=830).accel_g])
+    frames, _ = _run_device(device_binary_mc, path, cycles=1)
+    for f in frames:
+        assert not (decode_frame(f).flags & FrameFlags.ORDER_TRACKED)
+
+
+def test_multi_axis_overrun_discards_the_whole_acquisition(device_binary_mc, tmp_path):
+    """One overrun must cost one frame, not three.
+
+    All three axes come from the same FIFO burst, so if that burst lost samples
+    every axis is corrupt. Emitting two clean-looking axes alongside one flagged
+    one would be worse than emitting nothing.
+    """
+    spec = replace(MACHINE_LIBRARY["motor_pump_37kw"], fs_hz=FS_HZ)
+    records = [simulate(spec, None, duration_s=0.35, seed=840 + i).accel_g for i in range(4)]
+    path = str(tmp_path / "ovr.txt")
+    _write_samples(path, records)
+
+    frames, _ = _run_device(device_binary_mc, path, cycles=4, overrun_every=2)
+    decoded = [decode_frame(f) for f in frames]
+    overrun = [d for d in decoded if d.flags & FrameFlags.FIFO_OVERRUN]
+    clean = [d for d in decoded if not (d.flags & FrameFlags.FIFO_OVERRUN)]
+    # Cycles 2 and 4 overrun: one diagnostic frame each, not three.
+    assert len(overrun) == 2, f"{len(overrun)} overrun frames"
+    assert len(clean) == 6, f"{len(clean)} clean frames"
+    for d in overrun:
+        assert FrameFlags(d.flags).channel == 0
+        assert FrameFlags(d.flags).blocks_scoring

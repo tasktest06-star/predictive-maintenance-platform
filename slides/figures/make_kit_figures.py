@@ -67,8 +67,12 @@ TIMING_MS: Dict[str, List] = {
                   ("envelope chain", 7.0), ("bearing SNR", 2.2), ("int8 model", 0.08)],
     "alif_e7":   [("moments", 0.4), ("3x FFT 4096 (Helium)", 1.1), ("bands/shape/orders", 0.3),
                   ("envelope chain", 1.0), ("bearing SNR", 0.4), ("int8 model (NPU)", 0.002)],
-    "ra8d1":     [("moments", 0.2), ("3x FFT 4096 (Helium)", 0.6), ("bands/shape/orders", 0.15),
-                  ("envelope chain", 0.5), ("bearing SNR", 0.2), ("int8 model", 0.01)],
+    # Three axes, so the whole pipeline runs three times out of one burst. The
+    # per-axis figures are the Helium ones; the entries below are x3, plus the
+    # angle-domain resampling pass that no other kit runs.
+    "ra8d1":     [("moments x3", 0.6), ("9x FFT 4096 (Helium)", 1.8), ("bands/shape/orders x3", 0.45),
+                  ("envelope chain x3", 1.5), ("bearing SNR x3", 0.6), ("int8 model x3", 0.03),
+                  ("angular resample", 0.9)],
 }
 
 

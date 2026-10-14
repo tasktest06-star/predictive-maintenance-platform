@@ -91,6 +91,21 @@ from reading the repository:
   (code size, RAM, the 1 049 golden checks) are measured.
 - **"The power budgets are measured."** They are datasheet arithmetic. Real
   consumption is typically 20–50 % worse than datasheet arithmetic.
+- **"The power budgets at least agree with the firmware."** They do *now*.
+  Until the `hw/renesas-ra8d1-helium` branch, `tools/power_budget.py` modelled a
+  flat 1000 ms "standard acquisition" for every kit while the firmware acquires
+  8192 samples at 26.667 kHz = **307 ms** — a 3.3× error in the largest term of
+  every battery kit's budget, and it had already been quoted in four pushed
+  branch READMEs. The window is now derived from `acq_samples / fs_hz` and
+  `hardware/*/tests/test_kit.py` asserts it matches `app_config.h`.
+
+  The corrected acquisition shares are stwinbx1 63.5 % (was 85.0 %), alif_e7
+  66.9 % (was 86.8 %), ra8d1 67.3 % (was 87.0 %), esp32s3 4.9 %, nrf9160 1.4 %.
+  Battery life moved by under 3 % on every kit, because on four of the five
+  self-discharge dominates the circuit load — so those branches' *conclusions*
+  survive and their *percentages* do not. The lesson is the general one: a
+  model constant that nothing cross-checks will eventually disagree with the
+  code it models.
 - **"The compose stack runs."** It has never been started; there is no Docker in
   the environment it was written in.
 - **"The research list is complete."** It is arXiv-only. `MSSP`, `IEEE TIM` and

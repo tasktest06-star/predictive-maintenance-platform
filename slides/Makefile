@@ -27,6 +27,14 @@ kit-figures:
 	    key=$$(echo $$k | tr '-' '_'); \
 	    $(PY) figures/make_kit_figures.py --kit $$key --out figures || true; \
 	done
+# A few kits have a figure that is specific to what makes them different, and
+# that no shared generator can produce -- the RA8D1's order-tracking
+# measurement runs the kit's own C test and plots its output.
+	@for g in $(wildcard figures/make_*_figures.py); do \
+	    case $$g in *make_core_figures.py|*make_kit_figures.py) ;; \
+	        *) $(PY) $$g --out figures || true ;; \
+	    esac; \
+	done
 
 %.pdf: %.tex common/pdmtheme.sty
 	$(LATEX) $(LFLAGS) $< >/dev/null || { $(LATEX) -interaction=nonstopmode $< | tail -40; false; }

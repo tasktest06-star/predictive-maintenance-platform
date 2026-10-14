@@ -115,11 +115,79 @@ uint32_t pdm_board_accel_settle_ms(void)
     return APP_SENSOR_SETTLE_MS;
 }
 
+#if defined(APP_N_AXES) && APP_N_AXES > 1u
+/* Multi-channel emulation, for the RA8D1's three-axis path.
+ *
+ * Channel 0 is the sample file. Channels 1 and 2 are attenuated copies with a
+ * one-sample shift -- NOT a physical model of a triaxial mount, just enough
+ * decorrelation that the three frames differ, so a test can prove the channel
+ * tag matches the channel's data rather than that three identical frames went
+ * out. The real cross-axis relationship needs a rotor rig.
+ */
+static float   s_block[APP_ACQ_SAMPLES];
+static uint8_t s_block_valid;
+static uint8_t s_channel;
+static uint32_t s_releases;
+
+void pdm_board_select_channel(uint8_t channel)
+{
+    s_channel = (uint8_t)(channel % APP_N_AXES);
+}
+
+void pdm_board_release_block(void)
+{
+    s_block_valid = 0u;
+    ++s_releases;
+}
+
+uint16_t pdm_board_extra_flags(void)
+{
+    /* The RA8D1 sets PDM_FRAME_ORDER_TRACKED here when it has resampled. The
+     * host build never resamples, so the flag must stay clear -- a frame
+     * wrongly claiming the angle domain would be compared against the wrong
+     * baseline in the cloud. */
+    return 0u;
+}
+
+uint32_t pdm_board_host_release_count(void)
+{
+    return s_releases;
+}
+#endif
+
 pdm_board_status pdm_board_acquire(float *out, size_t n, float *fs_hz_actual)
 {
     if (out == NULL || s_cfg.samples == NULL) {
         return PDM_BOARD_ERR_NOT_READY;
     }
+    if (fs_hz_actual != NULL) {
+        *fs_hz_actual = APP_FS_HZ;
+    }
+#if defined(APP_N_AXES) && APP_N_AXES > 1u
+    if (s_channel > 0u) {
+        /* Deliberately BEFORE the power gate. The shared app loop powers the
+         * sensor down the moment channel 0's burst is in RAM -- the extra axes
+         * are a memory copy and must not require a powered sensor. The first
+         * version checked power first, so axes 1 and 2 returned NOT_READY and
+         * the three-axis kit silently shipped one frame per acquisition
+         * instead of three. Found by test_multi_axis_emits_one_tagged_frame.
+         */
+        /* A RAM copy, exactly as on the real board: no bus traffic, no new
+         * acquisition, and crucially no second ++s_acq_calls -- the injected
+         * overrun and tx-failure cadences count ACQUISITIONS, and letting the
+         * extra axes advance them would make a 3-axis run fail every injected
+         * fault test for reasons that have nothing to do with the axes. */
+        if (!s_block_valid) {
+            return PDM_BOARD_ERR_NOT_READY;
+        }
+        const float att = (s_channel == 1u) ? 0.60f : 0.35f;
+        for (size_t i = 0; i < n; ++i) {
+            const size_t j = (i + s_channel) % n;
+            out[i] = s_block[j] * att;
+        }
+        return PDM_BOARD_OK;
+    }
+#endif
     if (!s_accel_on) {
         /* Acquiring from a powered-down sensor returns zeros on real hardware,
          * which looks like a perfectly smooth machine. Refusing is the only
@@ -128,9 +196,6 @@ pdm_board_status pdm_board_acquire(float *out, size_t n, float *fs_hz_actual)
         return PDM_BOARD_ERR_NOT_READY;
     }
     ++s_acq_calls;
-    if (fs_hz_actual != NULL) {
-        *fs_hz_actual = APP_FS_HZ;
-    }
     for (size_t i = 0; i < n; ++i) {
         double v = 0.0;
         if (fscanf(s_cfg.samples, "%lf", &v) != 1) {
@@ -143,6 +208,12 @@ pdm_board_status pdm_board_acquire(float *out, size_t n, float *fs_hz_actual)
         }
         out[i] = (float)v;
     }
+#if defined(APP_N_AXES) && APP_N_AXES > 1u
+    for (size_t i = 0; i < n && i < APP_ACQ_SAMPLES; ++i) {
+        s_block[i] = out[i];
+    }
+    s_block_valid = 1u;
+#endif
     if (s_cfg.overrun_every && (s_acq_calls % s_cfg.overrun_every) == 0u) {
         return PDM_BOARD_ERR_OVERRUN;
     }

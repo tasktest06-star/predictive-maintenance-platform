@@ -39,7 +39,7 @@ N_FFT   ?= 4096
 ENV_N_FFT ?= 1024
 WINDOW  ?= hann
 
-.PHONY: all lib test test-pipeline test-flash-tables virtual-device golden layout tables clean size
+.PHONY: all lib test test-pipeline test-flash-tables virtual-device virtual-device-mc golden layout tables clean size
 all: lib
 
 lib: $(LIB)
@@ -94,6 +94,20 @@ $(VDEVBIN): tests/virtual_device.c tests/board_host.c src/pdm_app.c src/pdm_pipe
 
 virtual-device: $(VDEVBIN)
 
+# The same firmware built for three sensor channels, as the Renesas RA8D1 runs
+# it. Separate binary rather than a runtime switch because APP_N_AXES changes
+# which code the preprocessor emits, and the point is to compile and exercise
+# that code -- a multi-axis path that only ever runs on a board nobody has is
+# not a feature, it is a liability.
+$(VDEVBIN)_mc: tests/virtual_device.c tests/board_host.c src/pdm_app.c src/pdm_pipeline.c \
+            $(LIB) tests/ref_config/app_config.h tests/ref_config/pdm_detector.h
+	$(CC) $(CFLAGS) $(TESTWARN) $(INCLUDE) -Itests -Itests/ref_config \
+	    -DAPP_N_AXES=3u \
+	    tests/virtual_device.c tests/board_host.c src/pdm_app.c src/pdm_pipeline.c \
+	    $(LIB) $(LDLIBS) -o $@
+
+virtual-device-mc: $(VDEVBIN)_mc
+
 $(FLASHBIN): tests/test_flash_tables.c src/pdm_pipeline.c $(GOLDEN) $(TABLES) $(LIB)
 	$(CC) $(CFLAGS) $(TESTWARN) $(INCLUDE) -Itests -Itests/ref_config \
 	    -DPDM_TABLES_IN_FLASH=1 \
@@ -102,7 +116,7 @@ $(FLASHBIN): tests/test_flash_tables.c src/pdm_pipeline.c $(GOLDEN) $(TABLES) $(
 test-flash-tables: $(FLASHBIN)
 	./$(FLASHBIN)
 
-test: $(TESTBIN) $(PIPEBIN) $(FLASHBIN) $(VDEVBIN)
+test: $(TESTBIN) $(PIPEBIN) $(FLASHBIN) $(VDEVBIN) $(VDEVBIN)_mc
 	./$(TESTBIN)
 	@echo
 	./$(PIPEBIN)

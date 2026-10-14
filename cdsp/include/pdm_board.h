@@ -84,6 +84,34 @@ uint32_t         pdm_board_accel_settle_ms(void);
  * like an impact. */
 pdm_board_status pdm_board_acquire(float *out, size_t n, float *fs_hz_actual);
 
+/* ---------------------------------------------------- multi-channel boards -
+ * Required only from a board whose app_config.h sets APP_N_AXES > 1 (the
+ * Renesas RA8D1, which analyses three axes per acquisition). Declared here
+ * unconditionally so the prototypes exist for any translation unit that
+ * implements them -- the definitions are what is conditional, not the contract.
+ *
+ * The sequencing the shared app loop relies on, and which a board MUST honour:
+ *
+ *   select_channel(0); acquire(...)   <- reads the sensor, caches the block
+ *   select_channel(1); acquire(...)   <- RAM copy out of that same block
+ *   select_channel(2); acquire(...)   <- likewise
+ *   release_block()                   <- next acquire(0) hits the sensor again
+ *
+ * The three axes must come from ONE burst. Three separate acquisitions a few
+ * hundred milliseconds apart are three different instants of the machine, and
+ * cross-axis phase -- the whole reason to have three axes -- is then noise.
+ *
+ * A board that never releases the block re-analyses the same samples forever,
+ * which presents as a perfectly flat trend on a perfectly healthy-looking
+ * dashboard. `pdm_board_host_release_count` exists to make that testable.
+ */
+void     pdm_board_select_channel(uint8_t channel);
+void     pdm_board_release_block(void);
+/* Frame flags the board contributes: the RA8D1 sets PDM_FRAME_ORDER_TRACKED
+ * here when it has resampled the record into the angle domain. Return 0 if the
+ * board adds nothing. */
+uint16_t pdm_board_extra_flags(void);
+
 /* Shaft speed. Returns PDM_BOARD_ERR_NOT_READY when neither a tacho nor a
  * configured nominal speed is available, because a feature vector computed
  * against a guessed speed is worse than no feature vector. `estimated` is set
