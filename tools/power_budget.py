@@ -204,12 +204,16 @@ KITS: Dict[str, Kit] = {
             "ISM330BX DS14387: 0.55 mA combo mode",
             "STWIN.box UM3027: 480 mAh battery",
         ],
-        notes=("The 307 ms acquisition window is 85 % of the budget -- not the radio "
-               "(6 %) and not the DSP (2.5 %). Most published vibration-node designs "
-               "optimise the latter two. Separately: the 480 mAh LiPo's 3 %/month "
-               "self-discharge is 20 uA, MORE than the circuit's 15 uA average draw, so "
-               "battery life saturates at ~1.6 years regardless of interval. A LiSOCl2 "
-               "AA takes it to 15 years with no firmware change."),
+        notes=("Acquisition dominates -- not the radio, and not the DSP. Most "
+               "published vibration-node designs optimise the latter two. "
+               "Separately: the 480 mAh LiPo's 3 %/month self-discharge is 20 uA, "
+               "MORE than the circuit's average draw, so battery life saturates "
+               "at ~1.6 years regardless of interval. A LiSOCl2 AA takes it to "
+               "~16 years with no firmware change. Shares are printed above "
+               "rather than quoted here: a percentage written into a note is a "
+               "percentage that goes stale the next time the model is "
+               "corrected, which is exactly what happened to the flat-1000 ms "
+               "acquisition window."),
     ),
     "esp32s3": Kit(
         key="esp32s3",
@@ -275,8 +279,9 @@ KITS: Dict[str, Kit] = {
             "Tadiran TL-5930 D-cell: 19 Ah nominal, derated here to 3600 mAh usable "
             "at the pulse currents LTE-M demands",
         ],
-        notes=("The LTE-M connection costs 95 mA.s against 0.36 mA.s for sense + compute: "
-               "the radio is 99.6 % of the budget. Design consequences: PSM with a long "
+        notes=("The LTE-M connection costs 95 mA.s against 1.7 mA.s for sense + compute, "
+               "so the radio is essentially the whole budget -- the share is printed "
+               "above. Design consequences: PSM with a long "
                "TAU, batch several acquisitions per connection, and never send a raw "
                "snapshot without being asked. The LiSOCl2 chemistry is chosen for its "
                "0.08 %/month self-discharge -- with a LiPo the cell would self-discharge "
