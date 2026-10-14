@@ -35,11 +35,36 @@
 #include "app_config.h"
 #include "pdm_detector.h"
 
+#ifndef PDM_TABLES_IN_FLASH
+#define PDM_TABLES_IN_FLASH 0
+#endif
+
 /* -------------------------------------------------------------- static RAM */
-/* All buffers static. No malloc anywhere -- see cdsp/README.md. */
+/* All buffers static. No malloc anywhere -- see cdsp/README.md.
+ *
+ * With PDM_TABLES_IN_FLASH the window, twiddle and bit-reversal tables come
+ * from a generated `const` header instead of RAM: 46 kB saved on a 4096-point
+ * pipeline, which on the 256 kB nRF9160 is the difference between fitting
+ * comfortably and not. Generate with cdsp/tools/gen_tables.py. */
+#if PDM_TABLES_IN_FLASH
+#include "pdm_tables.h"
+#if (PDM_TABLES_N_FFT != APP_N_FFT) || (PDM_TABLES_ENV_N_FFT != APP_ENVELOPE_N_FFT)
+#error "pdm_tables.h was generated for different FFT sizes than app_config.h asks for"
+#endif
+#if !defined(APP_WINDOW_ID)
+#error "app_config.h must define APP_WINDOW_ID alongside APP_WINDOW when using \
+PDM_TABLES_IN_FLASH: the preprocessor cannot compare C enum names"
+#endif
+#if (PDM_TABLES_WINDOW_ID != APP_WINDOW_ID)
+#error "pdm_tables.h was generated for a different window than app_config.h asks for"
+#endif
+#define s_window      pdm_table_window
+#define s_window_env  pdm_table_window_env
+#else
 static float    s_window[APP_N_FFT];
 static float    s_twiddle[PDM_RFFT_TWIDDLE_LEN(APP_N_FFT)];
 static uint16_t s_bitrev[PDM_RFFT_BITREV_LEN(APP_N_FFT)];
+#endif
 static float    s_samples[APP_N_FFT];          /* in-place FFT buffer */
 static float    s_mag[APP_N_FFT / 2u + 1u];
 static float    s_spec[APP_N_FFT / 2u + 1u];
@@ -54,11 +79,13 @@ static float    s_scratch[APP_SCRATCH_FLOATS];
 
 static pdm_rfft_ctx      s_fft;
 static pdm_rfft_ctx      s_fft_env;
+#if !PDM_TABLES_IN_FLASH
 static float             s_twiddle_env[PDM_RFFT_TWIDDLE_LEN(APP_ENVELOPE_N_FFT)];
 static uint16_t          s_bitrev_env[PDM_RFFT_BITREV_LEN(APP_ENVELOPE_N_FFT)];
+static float             s_window_env[APP_ENVELOPE_N_FFT];
+#endif
 static pdm_window_info   s_win_info;
 static pdm_window_info   s_win_info_env;
-static float             s_window_env[APP_ENVELOPE_N_FFT];
 static pdm_model_i8      s_model;
 static pdm_biquad_cascade s_bandpass;
 
@@ -96,6 +123,31 @@ pdm_status pdm_pipeline_init(void)
 {
     pdm_status st;
 
+#if PDM_TABLES_IN_FLASH
+    /* Tables are const in flash; the window info comes from the generated
+     * constants rather than being recomputed. */
+    s_win_info.kind = APP_WINDOW;
+    s_win_info.n = APP_N_FFT;
+    s_win_info.coherent_gain = PDM_TABLES_COHERENT_GAIN;
+    s_win_info.enbw_bins = PDM_TABLES_ENBW_BINS;
+    s_win_info.sum = PDM_TABLES_SUM;
+    s_win_info.sum_sq = PDM_TABLES_SUM_SQ;
+    s_win_info_env.kind = APP_WINDOW;
+    s_win_info_env.n = APP_ENVELOPE_N_FFT;
+    s_win_info_env.coherent_gain = PDM_TABLES_ENV_COHERENT_GAIN;
+    s_win_info_env.enbw_bins = PDM_TABLES_ENV_ENBW_BINS;
+    s_win_info_env.sum = PDM_TABLES_ENV_SUM;
+    s_win_info_env.sum_sq = PDM_TABLES_ENV_SUM_SQ;
+    st = pdm_rfft_attach(&s_fft, APP_N_FFT, pdm_table_twiddle, pdm_table_bitrev);
+    if (st != PDM_OK) {
+        return st;
+    }
+    st = pdm_rfft_attach(&s_fft_env, APP_ENVELOPE_N_FFT,
+                         pdm_table_twiddle_env, pdm_table_bitrev_env);
+    if (st != PDM_OK) {
+        return st;
+    }
+#else
     st = pdm_window_make(APP_WINDOW, s_window, APP_N_FFT, &s_win_info);
     if (st != PDM_OK) {
         return st;
@@ -112,6 +164,7 @@ pdm_status pdm_pipeline_init(void)
     if (st != PDM_OK) {
         return st;
     }
+#endif
     st = pdm_biquad_bandpass(&s_bandpass, APP_FS_HZ, APP_DEMOD_LO_HZ, APP_DEMOD_HI_HZ, 2u);
     if (st != PDM_OK) {
         return st;

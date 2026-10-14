@@ -33,8 +33,13 @@ LAYOUT   = include/pdm_features_layout.h
 TESTBIN  = tests/test_cdsp
 PIPEBIN  = tests/test_pipeline
 VDEVBIN  = tests/virtual_device
+FLASHBIN = tests/test_flash_tables
+TABLES   = tests/ref_config/pdm_tables.h
+N_FFT   ?= 4096
+ENV_N_FFT ?= 1024
+WINDOW  ?= hann
 
-.PHONY: all lib test test-pipeline virtual-device golden layout clean size
+.PHONY: all lib test test-pipeline test-flash-tables virtual-device golden layout tables clean size
 all: lib
 
 lib: $(LIB)
@@ -54,6 +59,16 @@ golden:
 # sides of the contract cannot drift.
 layout:
 	$(PY) tools/gen_feature_layout.py --out $(LAYOUT)
+
+# Precomputed const tables for RAM-constrained kits. 46 kB of flash buys 46 kB
+# of RAM and removes ~40 ms of boot-time transcendentals.
+tables:
+	$(PY) tools/gen_tables.py --n-fft $(N_FFT) --env-n-fft $(ENV_N_FFT) \
+	    --window $(WINDOW) --out $(TABLES)
+
+$(TABLES):
+	$(PY) tools/gen_tables.py --n-fft $(N_FFT) --env-n-fft $(ENV_N_FFT) \
+	    --window $(WINDOW) --out $(TABLES)
 
 $(GOLDEN):
 	$(PY) tools/gen_golden.py --out $(GOLDEN)
@@ -79,10 +94,20 @@ $(VDEVBIN): tests/virtual_device.c tests/board_host.c src/pdm_app.c src/pdm_pipe
 
 virtual-device: $(VDEVBIN)
 
-test: $(TESTBIN) $(PIPEBIN) $(VDEVBIN)
+$(FLASHBIN): tests/test_flash_tables.c src/pdm_pipeline.c $(GOLDEN) $(TABLES) $(LIB)
+	$(CC) $(CFLAGS) $(TESTWARN) $(INCLUDE) -Itests -Itests/ref_config \
+	    -DPDM_TABLES_IN_FLASH=1 \
+	    tests/test_flash_tables.c src/pdm_pipeline.c $(LIB) $(LDLIBS) -o $@
+
+test-flash-tables: $(FLASHBIN)
+	./$(FLASHBIN)
+
+test: $(TESTBIN) $(PIPEBIN) $(FLASHBIN) $(VDEVBIN)
 	./$(TESTBIN)
 	@echo
 	./$(PIPEBIN)
+	@echo
+	./$(FLASHBIN)
 
 test-pipeline: $(PIPEBIN)
 	./$(PIPEBIN)
@@ -93,7 +118,7 @@ size: $(OBJ)
 	@$(SIZE) -t $(OBJ) 2>/dev/null || size -t $(OBJ)
 
 clean:
-	rm -f $(OBJ) $(LIB) $(TESTBIN) $(PIPEBIN) $(VDEVBIN)
+	rm -f $(OBJ) $(LIB) $(TESTBIN) $(PIPEBIN) $(VDEVBIN) $(FLASHBIN)
 
 distclean: clean
-	rm -f $(GOLDEN)
+	rm -f $(GOLDEN) $(TABLES)

@@ -111,12 +111,25 @@ pdm_status pdm_window_make(pdm_window_kind kind, float *w, uint16_t n,
 
 typedef struct {
     uint16_t n;
-    const float *twiddle;   /* 3*n/4 floats: cos/sin table for the complex pass */
-    uint16_t *bitrev;       /* n/2 entries */
+    const float *twiddle;      /* PDM_RFFT_TWIDDLE_LEN(n) floats */
+    const uint16_t *bitrev;    /* PDM_RFFT_BITREV_LEN(n) entries */
 } pdm_rfft_ctx;
 
-/* Fill `twiddle` (3*n/4 floats) and `bitrev` (n/2 uint16) for transform size n. */
+/* Compute the tables into caller-provided RAM. */
 pdm_status pdm_rfft_init(pdm_rfft_ctx *ctx, uint16_t n, float *twiddle, uint16_t *bitrev);
+
+/* Attach PRECOMPUTED tables (cdsp/tools/gen_tables.py) without computing them.
+ *
+ * Saves PDM_RFFT_TWIDDLE_LEN(n)*4 + PDM_RFFT_BITREV_LEN(n)*2 bytes of RAM by
+ * putting the tables in flash, and removes ~n*log2(n) transcendental calls from
+ * boot. On a 256 kB part that RAM is the difference between the pipeline fitting
+ * comfortably and not fitting; on a kit whose sleep mode loses RAM, the boot
+ * cost is paid every cycle rather than once.
+ *
+ * Costs about 3 % on the transform, because flash reads are a couple of cycles
+ * slower than RAM on the Cortex-M33 bus. */
+pdm_status pdm_rfft_attach(pdm_rfft_ctx *ctx, uint16_t n,
+                           const float *twiddle, const uint16_t *bitrev);
 
 /* In-place real FFT of `n` samples in `data`.
  *

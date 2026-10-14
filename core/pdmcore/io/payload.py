@@ -83,6 +83,27 @@ class FrameFlags(IntFlag):
     SPEED_ESTIMATED = 1 << 5  # shaft_hz is tacholess, not measured
     TEMP_OUT_OF_RANGE = 1 << 6
     STORED_AND_FORWARDED = 1 << 7  # replayed from the queue, not live
+    # Channel index, bits 8-9: zero on every single-channel device, so those
+    # frames are byte-identical to before this field existed. A multi-channel
+    # device (the RA8D1's three axes, a gateway's several sensors) ships one
+    # frame per channel and these bits are the only thing distinguishing them.
+    CHANNEL_BIT0 = 1 << 8
+    CHANNEL_BIT1 = 1 << 9
+    ORDER_TRACKED = 1 << 10  # features are per-revolution orders, not hertz
+    # A tachometer measured material speed drift across the record. Features are
+    # still in hertz, so high-order content is smeared: widen the harmonic
+    # tolerance and discount orders above ~10x rather than scoring them as-is.
+    SPEED_UNSTEADY = 1 << 11
+    # The sample rate in the frame is the CONFIGURED one, not a measured one.
+    # Not cosmetic: an IIO divider or a MEMS internal oscillator can be percent
+    # wrong, and every bearing frequency scales with it. At 2 % a 106 Hz BPFO
+    # line moves 2.1 Hz, which is the whole harmonic-match tolerance.
+    RATE_NOMINAL = 1 << 12
+
+    @property
+    def channel(self) -> int:
+        """Sensor channel this frame came from, 0-3."""
+        return (int(self) >> 8) & 0x3
 
     @property
     def blocks_scoring(self) -> bool:
