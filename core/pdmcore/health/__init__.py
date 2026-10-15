@@ -20,10 +20,19 @@ from .index import (
 )
 from .rul import ParticleFilterRUL, RULEstimate, fit_exponential_trend
 from .rules import RULES, Diagnosis, RuleContext, baseline_from_vectors, diagnose, register_rule
+from .scenario_rul import (
+    BALL_BEARING_EXPONENT,
+    ROLLER_BEARING_EXPONENT,
+    LoadScenario,
+    ScenarioRUL,
+    ScenarioRULEstimate,
+)
 
 __all__ = [
     "AlarmState", "AlarmConfig", "AlarmEvent", "AlarmStateMachine",
     "EwmaTrend", "OperatingBaseline", "HealthIndex",
     "Diagnosis", "RuleContext", "RULES", "diagnose", "register_rule", "baseline_from_vectors",
     "RULEstimate", "ParticleFilterRUL", "fit_exponential_trend",
+    "LoadScenario", "ScenarioRUL", "ScenarioRULEstimate",
+    "BALL_BEARING_EXPONENT", "ROLLER_BEARING_EXPONENT",
 ]

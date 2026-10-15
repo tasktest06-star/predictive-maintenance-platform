@@ -47,6 +47,7 @@ __all__ = [
     "alarms_per_day",
     "detection_delay",
     "expected_cost",
+    "expected_cost_from_model",
     "brier_score",
     "expected_calibration_error",
     "DetectionSummary",
@@ -300,6 +301,48 @@ def expected_cost(
         "cost_always_alarm": float(baseline_always),
         "savings_vs_best_baseline": float(min(baseline_never, baseline_always) - cost[i]),
     }
+
+
+def expected_cost_from_model(
+    y_true: Sequence,
+    scores: Sequence,
+    cost_model,
+    *,
+    prevalence: Optional[float] = None,
+) -> Dict[str, object]:
+    """:func:`expected_cost` priced by a plant cost model, not by two constants.
+
+    ``cost_model`` is a :class:`pdmcore.decide.costs.MaintenanceCostModel`. The
+    threshold the detector ships with and the maintenance decisions taken on its
+    alarms are then derived from one set of assumptions, which is the only way
+    the two can be argued about together.
+
+    The substantive change this makes is to ``cost_fn``. :func:`expected_cost`
+    documents its default as "an unplanned stop on a mid-size production line",
+    which is the cost of the *event*, and that over-states the cost of the
+    *miss*: the repair, the part and the labour are paid whether or not the
+    detector saw it coming. The decision-relevant figure is
+    :meth:`~pdmcore.decide.costs.MaintenanceCostModel.avoidable_eur`, the
+    difference between the unplanned event and the planned one. Using the event
+    cost inflates the false-negative penalty and pushes the cost-optimal
+    threshold to a higher alarm rate than the plant's own numbers support --
+    an error in the flattering direction for anyone selling detection, which is
+    why it is worth naming rather than quietly fixing.
+
+    ``asymmetry_naive`` and ``asymmetry_decision_relevant`` are returned side by
+    side so the size of that correction is visible in every report.
+    """
+    cost_fp, cost_fn = cost_model.detector_costs()
+    out = expected_cost(y_true, scores, cost_fp=cost_fp, cost_fn=cost_fn,
+                        prevalence=prevalence)
+    out["cost_fp"] = float(cost_fp)
+    out["cost_fn"] = float(cost_fn)
+    out["cost_fn_event"] = float(cost_model.unplanned_event_eur())
+    out["asymmetry_decision_relevant"] = float(cost_fn / cost_fp)
+    out["asymmetry_naive"] = float(cost_model.unplanned_event_eur() / cost_fp)
+    out["cost_model_fingerprint"] = cost_model.fingerprint()
+    out["cost_model_site"] = cost_model.site
+    return out
 
 
 def brier_score(y_true: Sequence, probabilities: Sequence[float]) -> float:
