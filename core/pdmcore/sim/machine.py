@@ -42,7 +42,37 @@ fault                  signature produced here
 ``rotor_bar``          2x line-frequency vibration + current sidebands at 2sf
 ``belt``               belt-rate harmonics, non-integer order
 ``rub``                fractional subharmonics (1/2, 1/3) and clipping
+``eccentricity_*``     2x line vibration with pole-pass sidebands; current
+                       sidebands at f_line +- f_rot for the dynamic and mixed
+                       cases, none for the static case
+``stator_asymmetry``   2x line vibration; negative-sequence stator current
 =====================  ===========================================================
+
+The electrical channel
+----------------------
+``with_current=True`` produces three-phase current *and* voltage through
+:mod:`pdmcore.sim.electrical`, which derives every current signature from two
+explicit coupling paths (shaft torque, and air-gap permeance) rather than
+writing sideband amplitudes down. Read that module before trusting any number
+this one produces about current: the air-gap coupling coefficient is a
+single uncertain constant, and ``mcsa/prototype/coupling_sweep.py`` exists
+because of it.
+
+Three deliberate changes of behaviour, all opt-in or additive, documented here
+because they change what the current channel means:
+
+* **The current channel has its own random stream.** It used to draw from the
+  shared generator *before* the sensor model ran, so ``with_current=True``
+  changed the acceleration samples. Acceleration is now identical with and
+  without the current channel.
+* **The current channel responds to load.** It used to be fixed, which gave the
+  healthy class a current-RMS coefficient of variation of 0.004 % against
+  acceleration's 10.4 %.
+* **``speed_from_load=True``** ties the shaft speed to the load through the
+  slip, which is what an induction motor does. The default is ``False``, which
+  keeps the historical behaviour -- an independent +-0.5 % speed nuisance that,
+  at a rated slip of 1.1 %, varies the slip by +-45 % and can drive it to
+  exactly zero.
 """
 
 from __future__ import annotations
@@ -53,6 +83,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import numpy as np
 
 from ..dsp.bearing import BEARING_CATALOG, BearingGeometry, fault_frequencies
+from .electrical import CouplingModel, CurrentSensorSpec, SupplySpec, simulate_electrical
 
 __all__ = [
     "Resonance",
@@ -60,10 +91,14 @@ __all__ = [
     "MachineSpec",
     "SimResult",
     "FAULT_MODES",
+    "ELECTRICAL_FAULT_MODES",
     "MACHINE_LIBRARY",
     "simulate",
     "degradation_series",
     "fleet_dataset",
+    "CouplingModel",
+    "CurrentSensorSpec",
+    "SupplySpec",
 ]
 
 FAULT_MODES = (
@@ -81,6 +116,23 @@ FAULT_MODES = (
     "rotor_bar",
     "belt",
     "rub",
+    "eccentricity_static",
+    "eccentricity_dynamic",
+    "eccentricity_mixed",
+    "stator_asymmetry",
+)
+
+#: The modes whose primary signature is electrical. Appended to
+#: :data:`FAULT_MODES` rather than inserted, so an index into the old tuple
+#: still means what it meant. Kept as a separate name because the head-to-head
+#: study in ``mcsa/`` needs "the electrical ones" as a set, and a study that
+#: hard-codes that list somewhere else will drift from this one.
+ELECTRICAL_FAULT_MODES = (
+    "rotor_bar",
+    "eccentricity_static",
+    "eccentricity_dynamic",
+    "eccentricity_mixed",
+    "stator_asymmetry",
 )
 
 
@@ -147,6 +199,13 @@ class MachineSpec:
         Resonance(12800.0, q=45.0, gain=0.25),
     )
     sensor: SensorSpec = field(default_factory=SensorSpec)
+    #: The electrical side. Only consulted when ``with_current=True``, so
+    #: adding it changes nothing for a vibration-only caller.
+    supply: SupplySpec = field(default_factory=SupplySpec)
+    coupling: CouplingModel = field(default_factory=CouplingModel)
+    #: Rotor slot count, needed for the slot-harmonic family and NOT on the
+    #: nameplate -- which is why that family is rarely usable in the field.
+    rotor_slots: Optional[int] = None
     gear_teeth: Optional[int] = None
     n_blades: Optional[int] = None
     belt_ratio: Optional[float] = None
@@ -249,10 +308,23 @@ class SimResult:
     spec: MachineSpec
     faults: Dict[str, float]
     truth: Dict[str, float]
+    #: Phase A current, at ``current_fs_hz``. Kept for backward compatibility;
+    #: it is ``current_abc_a[0]``.
     current_a: Optional[np.ndarray] = None
     temperature_c: Optional[float] = None
     speed_hz_profile: Optional[np.ndarray] = None
     speed_time_s: Optional[np.ndarray] = None
+    #: Three-phase current ``(3, n)`` in amperes and voltage ``(3, n)`` in
+    #: volts phase-neutral. The voltage is here because the negative-sequence
+    #: stator indicator needs it and a current clamp alone cannot provide it --
+    #: which is itself one of this branch's findings.
+    current_abc_a: Optional[np.ndarray] = None
+    voltage_abc_v: Optional[np.ndarray] = None
+    #: Sample rate of the electrical channels. May differ from ``fs_hz``: a
+    #: panel device samples at 5-10 kHz for 10-30 s, an accelerometer at
+    #: 25.6 kHz for 1 s.
+    current_fs_hz: Optional[float] = None
+    electrical_truth: Dict[str, float] = field(default_factory=dict)
 
     @property
     def duration_s(self) -> float:
@@ -395,6 +467,8 @@ def simulate(
     with_current: bool = False,
     apply_sensor: bool = True,
     nuisance: bool = True,
+    speed_from_load: bool = False,
+    current_duration_s: Optional[float] = None,
 ) -> SimResult:
     """Generate one acquisition.
 
@@ -422,6 +496,21 @@ def simulate(
         against such data will fire on the first warm afternoon in the real
         plant. Real healthy variation comes from load, temperature, grease
         redistribution and mount relaxation, and it is 10-20 %, not 0.5 %.
+    speed_from_load
+        Derive the shaft speed from the load through the slip
+        (``s = s_rated * load_factor``) instead of perturbing it
+        independently. **Use this for any electrical work.** The default is
+        ``False`` only to keep the acceleration output of existing callers
+        bit-identical: with the independent perturbation, a +-0.5 % speed
+        nuisance moves the slip of the reference machine by +-45 % and can
+        reach exactly zero, i.e. a synchronous induction motor, which puts the
+        2sf1 sidebands on top of the fundamental for reasons that have nothing
+        to do with the machine.
+    current_duration_s
+        Length of the electrical record, if it should differ from the
+        mechanical one. A panel device is mains-powered and acquires 10-30 s;
+        a battery node acquires 1 s because the acquisition window is 63-85 %
+        of its energy budget. Defaults to ``duration_s``.
 
     Returns
     -------
@@ -446,7 +535,16 @@ def simulate(
         speed_offset = 1.0 + 0.005 * rng.standard_normal()        # +-0.5 % speed
     else:
         load_factor = resonance_gain = speed_offset = 1.0
-    spec = replace(spec, rpm=spec.rpm * speed_offset) if nuisance else spec
+    nameplate_slip = spec.slip
+    if nuisance:
+        if speed_from_load:
+            # An induction motor's slip is proportional to torque in the normal
+            # operating region, so the load nuisance IS the speed nuisance and
+            # the two cannot be drawn independently.
+            sync_rpm = 120.0 * spec.line_hz / (2 * spec.pole_pairs)
+            spec = replace(spec, rpm=sync_rpm * (1.0 - nameplate_slip * load_factor))
+        else:
+            spec = replace(spec, rpm=spec.rpm * speed_offset)
 
     speed = _speed_profile(n, fs, spec, rng)
     phase = _phase_from_speed(speed, fs)
@@ -564,6 +662,41 @@ def simulate(
             2.0 * np.pi * 2.0 * spec.line_hz * t + rng.uniform(0, 2 * np.pi)
         )
 
+    # --- air-gap asymmetry and stator asymmetry, on the VIBRATION channel ----
+    # Modelled here, and not only in the current channel, because the
+    # alternative would rig the comparison this branch exists to make: if an
+    # electrical fault had no vibration signature by construction, "current
+    # beats vibration on electrical faults" would be a property of the
+    # simulator rather than of the physics.
+    #
+    # All of these faults produce an unbalanced magnetic pull whose force
+    # pulsates at 2 f_line, so on the vibration channel they look the SAME,
+    # with pole-pass sidebands (2 p s f_line) around 2 f_line for the rotor
+    # ones. That is the real asymmetry between the modalities: vibration
+    # detects an electrical fault and cannot say which one it is, while current
+    # separates them by family.
+    f_2line = 2.0 * spec.line_hz
+    f_pole_pass = 2.0 * spec.pole_pairs * spec.slip * spec.line_hz
+    for mode, gain in (("eccentricity_static", 5.0),
+                       ("eccentricity_dynamic", 3.0),
+                       ("eccentricity_mixed", 4.0),
+                       ("stator_asymmetry", 3.5)):
+        sev = faults.get(mode, 0.0)
+        if sev <= 0:
+            continue
+        amp = sev * spec.base_2x_g * gain
+        x += amp * np.sin(2.0 * np.pi * f_2line * t + rng.uniform(0, 2 * np.pi))
+        if mode.startswith("eccentricity") and f_pole_pass > 0:
+            for sign in (-1.0, 1.0):
+                x += 0.3 * amp * np.sin(
+                    2.0 * np.pi * (f_2line + sign * f_pole_pass) * t
+                    + rng.uniform(0, 2 * np.pi)
+                )
+        if mode in ("eccentricity_dynamic", "eccentricity_mixed"):
+            # A rotating pull also adds at 1x, which is why eccentricity is so
+            # often balanced out instead of being diagnosed.
+            x += 0.8 * amp * np.sin(phase + rng.uniform(0, 2 * np.pi))
+
     # --- nuisance scaling ----------------------------------------------------
     # Load scales the whole mechanical signal; resonance gain scales only the
     # impact-driven high-frequency content, which is how a temperature change
@@ -586,7 +719,34 @@ def simulate(
     if spec.belt_ratio:
         truth["belt_hz"] = f0 / spec.belt_ratio
 
-    current = _simulate_current(spec, faults, n, fs, rng) if with_current else None
+    # --- the electrical channel ---------------------------------------------
+    # Its own random stream, derived from the same seed. Drawing from the shared
+    # one made the acceleration samples depend on whether the current channel
+    # was requested, which is a reproducibility bug of exactly the kind the
+    # golden-vector machinery exists to prevent.
+    elec = None
+    if with_current:
+        e_rng = np.random.default_rng(None if seed is None else int(seed) + 0x4D435341)
+        e_fs = float(spec.supply.current_fs_hz or fs)
+        e_dur = float(current_duration_s if current_duration_s is not None else duration_s)
+        e_n = int(round(e_dur * e_fs))
+        if e_n < 256:
+            raise ValueError("current record too short; need >= 256 samples")
+        elec = simulate_electrical(
+            n=e_n,
+            fs_hz=e_fs,
+            line_hz=spec.line_hz,
+            pole_pairs=spec.pole_pairs,
+            power_kw=spec.power_kw,
+            shaft_hz=spec.shaft_hz,
+            load_frac=load_factor,
+            faults=faults,
+            bearing_hz=ff.as_dict(),
+            supply=spec.supply,
+            coupling=spec.coupling,
+            rng=e_rng,
+            apply_sensor=apply_sensor,
+        )
 
     if apply_sensor:
         x = _apply_sensor(x, spec, fs, rng)
@@ -602,48 +762,15 @@ def simulate(
         spec=spec,
         faults=faults,
         truth=truth,
-        current_a=current,
+        current_a=None if elec is None else elec.phase_a,
         temperature_c=float(temperature),
         speed_hz_profile=speed[::step].copy(),
         speed_time_s=t[::step].copy(),
+        current_abc_a=None if elec is None else elec.current_abc_a,
+        voltage_abc_v=None if elec is None else elec.voltage_abc_v,
+        current_fs_hz=None if elec is None else elec.fs_hz,
+        electrical_truth={} if elec is None else elec.truth,
     )
-
-
-def _simulate_current(
-    spec: MachineSpec, faults: Dict[str, float], n: int, fs: float, rng: np.random.Generator
-) -> np.ndarray:
-    """Single-phase stator current with MCSA fault signatures.
-
-    Broken rotor bars and rotor eccentricity appear as sidebands around the line
-    frequency at ``(1 +- 2ks) f_line``. Current sensing is attractive because a
-    split-core CT needs no machine contact and no mounting -- the electrical
-    monitoring product in ``plans/07_electrical_monitoring.md`` is built on this.
-    """
-    t = np.arange(n, dtype=np.float64) / fs
-    f_line = spec.line_hz
-    rated_a = spec.power_kw * 1000.0 / (400.0 * np.sqrt(3) * 0.88)
-    i = rated_a * np.sqrt(2.0) * np.sin(2.0 * np.pi * f_line * t)
-    # Normal harmonic content of an induction motor on a stiff supply.
-    for h, rel in ((3, 0.02), (5, 0.035), (7, 0.018), (11, 0.008)):
-        i += rated_a * np.sqrt(2.0) * rel * np.sin(2.0 * np.pi * f_line * h * t + rng.uniform(0, 2 * np.pi))
-    s = max(spec.slip, 1e-3)
-    sev_bar = faults.get("rotor_bar", 0.0)
-    if sev_bar > 0:
-        for k in (1, 2, 3):
-            amp = rated_a * np.sqrt(2.0) * 0.02 * sev_bar / k
-            for sign in (-1.0, 1.0):
-                f_sb = f_line * (1.0 + sign * 2.0 * k * s)
-                i += amp * np.sin(2.0 * np.pi * f_sb * t + rng.uniform(0, 2 * np.pi))
-    # Mechanical unbalance and misalignment modulate the load torque at 1x.
-    mech = faults.get("unbalance", 0.0) + faults.get("misalignment", 0.0)
-    if mech > 0:
-        for sign in (-1.0, 1.0):
-            f_sb = f_line + sign * spec.shaft_hz
-            i += rated_a * np.sqrt(2.0) * 0.012 * mech * np.sin(
-                2.0 * np.pi * f_sb * t + rng.uniform(0, 2 * np.pi)
-            )
-    i += rated_a * 0.004 * rng.standard_normal(n)
-    return i
 
 
 def _apply_sensor(x: np.ndarray, spec: MachineSpec, fs: float, rng: np.random.Generator) -> np.ndarray:
@@ -690,6 +817,9 @@ def degradation_series(
     knee_fraction: float = 0.55,
     final_severity: float = 0.95,
     seed: Optional[int] = 0,
+    with_current: bool = False,
+    speed_from_load: bool = False,
+    current_duration_s: Optional[float] = None,
 ) -> List[SimResult]:
     """A run-to-failure series for trending, alarm and RUL testing.
 
@@ -721,6 +851,9 @@ def degradation_series(
             {mode: float(sev)} if sev > 0 else None,
             duration_s=duration_s,
             seed=None if seed is None else seed + i,
+            with_current=with_current,
+            speed_from_load=speed_from_load,
+            current_duration_s=current_duration_s,
         )
         res.truth["t_days"] = float(t_days)
         res.truth["severity"] = float(sev)
@@ -739,6 +872,9 @@ def fleet_dataset(
     duration_s: float = 0.5,
     seed: int = 0,
     rpm_jitter_pct: float = 3.0,
+    with_current: bool = False,
+    speed_from_load: bool = False,
+    current_duration_s: Optional[float] = None,
 ) -> List[SimResult]:
     """A labelled multi-asset dataset for classifier training and evaluation.
 
@@ -765,7 +901,9 @@ def fleet_dataset(
             unit_id = f"{mk}_u{unit}"
             for _ in range(n_healthy_per_machine):
                 counter += 1
-                r = simulate(unit_spec, None, duration_s=duration_s, seed=seed + counter)
+                r = simulate(unit_spec, None, duration_s=duration_s, seed=seed + counter,
+                             with_current=with_current, speed_from_load=speed_from_load,
+                             current_duration_s=current_duration_s)
                 r.truth["unit_id"] = unit_id
                 r.truth["machine_class"] = mk
                 out.append(r)
@@ -778,7 +916,10 @@ def fleet_dataset(
                     for _ in range(max(1, n_per_fault // len(severities))):
                         counter += 1
                         r = simulate(
-                            unit_spec, {mode: float(sev)}, duration_s=duration_s, seed=seed + counter
+                            unit_spec, {mode: float(sev)}, duration_s=duration_s,
+                            seed=seed + counter, with_current=with_current,
+                            speed_from_load=speed_from_load,
+                            current_duration_s=current_duration_s,
                         )
                         r.truth["unit_id"] = unit_id
                         r.truth["machine_class"] = mk

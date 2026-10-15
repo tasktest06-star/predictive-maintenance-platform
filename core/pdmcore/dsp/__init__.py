@@ -19,6 +19,7 @@ from .bearing import (
     fault_frequencies,
     gear_mesh_frequency,
     harmonic_energy_ratio,
+    line_snr,
     match_tones,
     sideband_ratio,
 )
@@ -80,7 +81,7 @@ __all__ = [
     "select_demodulation_band", "kurtogram", "cepstrum", "cepstrum_prewhiten",
     # bearing
     "BearingGeometry", "FaultFrequencies", "BEARING_CATALOG", "fault_frequencies",
-    "gear_mesh_frequency", "harmonic_energy_ratio", "sideband_ratio", "match_tones",
+    "gear_mesh_frequency", "harmonic_energy_ratio", "line_snr", "sideband_ratio", "match_tones",
     "bearing_evidence",
     # integrate
     "accel_g_to_velocity_mm_s", "accel_g_to_displacement_um", "velocity_rms_mm_s",

@@ -42,6 +42,7 @@ __all__ = [
     "fault_frequencies",
     "gear_mesh_frequency",
     "harmonic_energy_ratio",
+    "line_snr",
     "sideband_ratio",
     "match_tones",
     "bearing_evidence",
@@ -171,6 +172,45 @@ def _local_floor(spec: Spectrum, amp: np.ndarray, f_hz: float, half_width_hz: fl
     if not np.any(m):
         return float(np.median(amp)) if amp.size else 0.0
     return float(np.median(amp[m]))
+
+
+def line_snr(
+    spec: Spectrum,
+    f_hz: float,
+    *,
+    tol_hz: Optional[float] = None,
+    floor_width_hz: float = 20.0,
+) -> Dict[str, float]:
+    """One spectral line against its own local floor.
+
+    The single-line case of :func:`harmonic_energy_ratio`, exposed because the
+    current-domain analysis in :mod:`pdmcore.mcsa` needs each sideband
+    *separately* -- the asymmetry between the lower and upper rotor-bar
+    sideband is diagnostic, and a function that sums them discards it.
+
+    Same two guards as the harmonic version, for the same reasons: the search
+    window is kept narrow because the maximum of *k* noise bins is biased
+    upward, and the floor excludes the line's own window so that a strong line
+    does not depress its own SNR.
+
+    Returns ``amplitude``, ``floor``, ``snr``, ``snr_db``, ``freq_hz`` (the
+    nominal target) and ``n_bins`` (the width of the search window in bins,
+    which is the bias term a reader needs in order to judge the SNR).
+    """
+    amp = _amp(spec)
+    tol = tol_hz if tol_hz is not None else 1.5 * spec.df_hz
+    tol = max(float(tol), 1.0 * spec.df_hz)
+    a = _peak_near(spec, amp, f_hz, tol)
+    fl = _local_floor(spec, amp, f_hz, floor_width_hz, tol)
+    snr = a / fl if fl > 0 else 0.0
+    return {
+        "freq_hz": float(f_hz),
+        "amplitude": float(a),
+        "floor": float(fl),
+        "snr": float(snr),
+        "snr_db": float(20.0 * np.log10(snr)) if snr > 0 else -120.0,
+        "n_bins": float(2.0 * tol / spec.df_hz + 1.0),
+    }
 
 
 def harmonic_energy_ratio(
