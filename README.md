@@ -23,8 +23,10 @@ PYTHONPATH=core:edge python3 -m pdmedge --self-test
 
 ## Branches
 
-Full per-branch detail — what is in each file, what each branch measured, and
-what it did not run — is in
+A one-page guide to all sixteen branches — a table plus contents and
+significance for each — is in
+**[`BRANCH_SUMMARY.md`](BRANCH_SUMMARY.md)**. Full per-branch detail, file by
+file, with what each branch measured and what it did not run, is in
 **[`docs/08_branch_catalogue.md`](docs/08_branch_catalogue.md)**.
 
 Two further programmes are in flight — six branches applying published models to
