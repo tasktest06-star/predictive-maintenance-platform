@@ -1,0 +1,535 @@
+{
+  "coupling": {
+    "coupling_model": {
+      "airgap_mm": 0.6,
+      "broken_bars_at_full": 4.0,
+      "disp_um": {
+        "bearing_ball": 15.0,
+        "bearing_cage": 10.0,
+        "bearing_inner": 25.0,
+        "bearing_outer": 25.0,
+        "looseness": 80.0,
+        "misalignment": 60.0,
+        "unbalance": 120.0
+      },
+      "inertia_kg_m2": 0.3,
+      "k_winding": 0.1,
+      "mag_current_frac": 0.3,
+      "residual_ecc_frac": 0.06,
+      "rotor_bars": 40,
+      "shorted_turn_frac_at_full": 0.02,
+      "torque_frac": {
+        "bearing_ball": 0.003,
+        "bearing_cage": 0.002,
+        "bearing_inner": 0.005,
+        "bearing_outer": 0.005,
+        "belt": 0.02,
+        "cavitation": 0.02,
+        "gear_tooth": 0.03,
+        "gear_wear": 0.01,
+        "looseness": 0.015,
+        "misalignment": 0.02,
+        "rub": 0.03,
+        "unbalance": 0.01
+      }
+    },
+    "modes": [
+      {
+        "disp_um_at_sev1": 120.0,
+        "dominant_path": "torque",
+        "ecc_frac": 0.2,
+        "h_mech": 0.8612572882742267,
+        "mode": "unbalance",
+        "modulation_hz": 29.666666666666668,
+        "sideband_airgap_db": -50.5,
+        "sideband_torque_db": -47.7,
+        "sideband_total_db": -45.9,
+        "torque_frac_at_sev1": 0.01
+      },
+      {
+        "disp_um_at_sev1": 60.0,
+        "dominant_path": "torque",
+        "ecc_frac": 0.1,
+        "h_mech": 0.6465014442163144,
+        "mode": "misalignment",
+        "modulation_hz": 59.333333333333336,
+        "sideband_airgap_db": -56.5,
+        "sideband_torque_db": -44.2,
+        "sideband_total_db": -43.9,
+        "torque_frac_at_sev1": 0.02
+      },
+      {
+        "disp_um_at_sev1": 80.0,
+        "dominant_path": "torque",
+        "ecc_frac": 0.13333333333333333,
+        "h_mech": 0.8612572882742267,
+        "mode": "looseness",
+        "modulation_hz": 29.666666666666668,
+        "sideband_airgap_db": -54.0,
+        "sideband_torque_db": -44.2,
+        "sideband_total_db": -43.8,
+        "torque_frac_at_sev1": 0.015
+      },
+      {
+        "disp_um_at_sev1": 25.0,
+        "dominant_path": "torque",
+        "ecc_frac": 0.04166666666666667,
+        "h_mech": 0.42742143485732514,
+        "mode": "bearing_outer",
+        "modulation_hz": 106.34834092387769,
+        "sideband_airgap_db": -64.1,
+        "sideband_torque_db": -59.8,
+        "sideband_total_db": -58.4,
+        "torque_frac_at_sev1": 0.005
+      },
+      {
+        "disp_um_at_sev1": 25.0,
+        "dominant_path": "torque",
+        "ecc_frac": 0.04166666666666667,
+        "h_mech": 0.29868701412345167,
+        "mode": "bearing_inner",
+        "modulation_hz": 160.65165907612231,
+        "sideband_airgap_db": -64.1,
+        "sideband_torque_db": -62.9,
+        "sideband_total_db": -60.5,
+        "torque_frac_at_sev1": 0.005
+      },
+      {
+        "disp_um_at_sev1": 15.0,
+        "dominant_path": "torque",
+        "ecc_frac": 0.025,
+        "h_mech": 0.5838473450168893,
+        "mode": "bearing_ball",
+        "modulation_hz": 69.91607712120715,
+        "sideband_airgap_db": -68.5,
+        "sideband_torque_db": -61.6,
+        "sideband_total_db": -60.8,
+        "torque_frac_at_sev1": 0.003
+      },
+      {
+        "disp_um_at_sev1": 10.0,
+        "dominant_path": "torque",
+        "ecc_frac": 0.016666666666666666,
+        "h_mech": 0.9734778001078547,
+        "mode": "bearing_cage",
+        "modulation_hz": 11.816482324875299,
+        "sideband_airgap_db": -72.0,
+        "sideband_torque_db": -60.6,
+        "sideband_total_db": -60.3,
+        "torque_frac_at_sev1": 0.002
+      },
+      {
+        "disp_um_at_sev1": 0.0,
+        "dominant_path": "torque",
+        "ecc_frac": 0.0,
+        "h_mech": 0.8612572882742267,
+        "mode": "gear_tooth",
+        "modulation_hz": 29.666666666666668,
+        "sideband_airgap_db": -200.0,
+        "sideband_torque_db": -38.2,
+        "sideband_total_db": -38.2,
+        "torque_frac_at_sev1": 0.03
+      },
+      {
+        "disp_um_at_sev1": 0.0,
+        "dominant_path": "torque",
+        "ecc_frac": 0.0,
+        "h_mech": 0.8612572882742267,
+        "mode": "gear_wear",
+        "modulation_hz": 29.666666666666668,
+        "sideband_airgap_db": -200.0,
+        "sideband_torque_db": -47.7,
+        "sideband_total_db": -47.7,
+        "torque_frac_at_sev1": 0.01
+      },
+      {
+        "disp_um_at_sev1": 0.0,
+        "dominant_path": "torque",
+        "ecc_frac": 0.0,
+        "h_mech": 0.8612572882742267,
+        "mode": "belt",
+        "modulation_hz": 29.666666666666668,
+        "sideband_airgap_db": -200.0,
+        "sideband_torque_db": -41.7,
+        "sideband_total_db": -41.7,
+        "torque_frac_at_sev1": 0.02
+      }
+    ],
+    "note": "sideband levels are PER SIDEBAND, dB relative to the fundamental, at severity 1.0 and full load",
+    "operating_point": {
+      "bearing_hz": {
+        "bpfi_hz": 160.65165907612231,
+        "bpfo_hz": 106.34834092387769,
+        "bsf_hz": 69.91607712120715,
+        "ftf_hz": 11.816482324875299,
+        "shaft_hz": 29.666666666666668
+      },
+      "i1_a": 60.68738625004589,
+      "i_mag_a": 18.206215875013765,
+      "i_rated_a": 60.68738625004589,
+      "i_torque_a": 57.892076775450505,
+      "mech_corner_hz": 50.27977980456681,
+      "shaft_hz": 29.666666666666668,
+      "slip": 0.011111111111111072,
+      "t_rated_nm": 198.49661441798182,
+      "torque_slope_nm_s_per_rad": 94.77515211488371
+    },
+    "rotor_bar_closed_form": [
+      {
+        "lsb_db_full_load": -44.5,
+        "lsb_db_half_load": -45.5,
+        "lsb_db_quarter_load": -48.2,
+        "n_broken": 1,
+        "of_bars": 40
+      },
+      {
+        "lsb_db_full_load": -38.5,
+        "lsb_db_half_load": -39.5,
+        "lsb_db_quarter_load": -42.2,
+        "n_broken": 2,
+        "of_bars": 40
+      },
+      {
+        "lsb_db_full_load": -32.5,
+        "lsb_db_half_load": -33.5,
+        "lsb_db_quarter_load": -36.2,
+        "n_broken": 4,
+        "of_bars": 40
+      }
+    ]
+  },
+  "frequencies": {
+    "collisions": [
+      {
+        "a": "rotor_bar",
+        "b": "load_oscillation",
+        "f_a_hz": 57.33333333333334,
+        "f_b_hz": 57.33333333333334
+      },
+      {
+        "a": "rotor_bar",
+        "b": "load_oscillation",
+        "f_a_hz": 58.66666666666667,
+        "f_b_hz": 58.66666666666667
+      },
+      {
+        "a": "rotor_bar",
+        "b": "load_oscillation",
+        "f_a_hz": 61.33333333333333,
+        "f_b_hz": 61.33333333333333
+      },
+      {
+        "a": "rotor_bar",
+        "b": "load_oscillation",
+        "f_a_hz": 62.66666666666666,
+        "f_b_hz": 62.66666666666666
+      },
+      {
+        "a": "eccentricity",
+        "b": "stator_turn",
+        "f_a_hz": 0.6666666666666643,
+        "f_b_hz": 0.6666666666666643
+      },
+      {
+        "a": "eccentricity",
+        "b": "stator_turn",
+        "f_a_hz": 30.333333333333332,
+        "f_b_hz": 30.333333333333332
+      },
+      {
+        "a": "eccentricity",
+        "b": "stator_turn",
+        "f_a_hz": 89.66666666666667,
+        "f_b_hz": 89.66666666666667
+      },
+      {
+        "a": "eccentricity",
+        "b": "stator_turn",
+        "f_a_hz": 119.33333333333334,
+        "f_b_hz": 119.33333333333334
+      }
+    ],
+    "families": {
+      "bearing_bpfi_hz": [
+        100.65165907612231,
+        220.65165907612231,
+        261.30331815224463,
+        381.30331815224463
+      ],
+      "bearing_bpfo_hz": [
+        46.348340923877686,
+        152.69668184775537,
+        166.34834092387769,
+        272.69668184775537
+      ],
+      "bearing_bsf_hz": [
+        9.916077121207152,
+        79.8321542424143,
+        129.91607712120714,
+        199.8321542424143
+      ],
+      "bearing_ftf_hz": [
+        36.3670353502494,
+        48.183517675124705,
+        71.8164823248753,
+        83.63296464975059
+      ],
+      "eccentricity": [
+        0.6666666666666643,
+        30.333333333333332,
+        89.66666666666667,
+        119.33333333333334
+      ],
+      "load_oscillation": [
+        57.33333333333334,
+        58.66666666666667,
+        61.33333333333333,
+        62.66666666666666
+      ],
+      "rotor_bar": [
+        56.000000000000014,
+        57.33333333333334,
+        58.66666666666667,
+        61.33333333333333,
+        62.66666666666666,
+        63.999999999999986
+      ],
+      "rotor_slot": [
+        711.3333333333334,
+        741.0000000000001,
+        770.6666666666667,
+        800.3333333333333,
+        830.0,
+        831.3333333333334,
+        861.0000000000001,
+        890.6666666666667,
+        920.3333333333333,
+        950.0
+      ],
+      "stator_turn": [
+        0.6666666666666643,
+        30.333333333333332,
+        60.666666666666664,
+        89.66666666666667,
+        90.33333333333333,
+        119.33333333333334,
+        149.66666666666666,
+        179.33333333333334
+      ],
+      "supply_harmonic": [
+        180.0,
+        300.0,
+        420.0,
+        660.0,
+        780.0
+      ]
+    },
+    "line_hz": 60.0,
+    "min_duration_s": 3.006529407325582,
+    "pole_pairs": 2,
+    "shaft_hz": 29.666666666666668,
+    "sideband_position_error_hz": 0.5933333333333334,
+    "slip": 0.011111111111111072
+  },
+  "leakage": {
+    "note": "df = 1 Hz for a 1 s record and 0.1 Hz for a 10 s one; the offset in bins is 2 s f1 / df",
+    "offsets_in_bins": {
+      "10s_record_2sf1": 13.33,
+      "10s_record_2sf1_quarter_load": 3.33,
+      "10s_record_fr": 296.7,
+      "1s_record_2sf1": 1.33
+    },
+    "rows": [
+      {
+        "enbw_bins": 1.0,
+        "leak_db@10s_record_2sf1": -32.5,
+        "leak_db@10s_record_2sf1_quarter_load": -20.8,
+        "leak_db@10s_record_fr": -58.2,
+        "leak_db@1s_record_2sf1": -13.3,
+        "scallop_loss_db": 3.9223973276994966,
+        "window": "rect"
+      },
+      {
+        "enbw_bins": 1.5,
+        "leak_db@10s_record_2sf1": -77.7,
+        "leak_db@10s_record_2sf1_quarter_load": -41.5,
+        "leak_db@10s_record_fr": -158.8,
+        "leak_db@1s_record_2sf1": -4.0,
+        "scallop_loss_db": 1.4236228084370162,
+        "window": "hann"
+      },
+      {
+        "enbw_bins": 1.3628257887517148,
+        "leak_db@10s_record_2sf1": -49.4,
+        "leak_db@10s_record_2sf1_quarter_load": -43.6,
+        "leak_db@10s_record_fr": -74.7,
+        "leak_db@1s_record_2sf1": -5.0,
+        "scallop_loss_db": 1.7514311728284537,
+        "window": "hamming"
+      },
+      {
+        "enbw_bins": 1.7267573696145129,
+        "leak_db@10s_record_2sf1": -85.3,
+        "leak_db@10s_record_2sf1_quarter_load": -58.1,
+        "leak_db@10s_record_fr": -166.2,
+        "leak_db@1s_record_2sf1": -3.1,
+        "scallop_loss_db": 1.0988788310233266,
+        "window": "blackman"
+      },
+      {
+        "enbw_bins": 2.0043529382170475,
+        "leak_db@10s_record_2sf1": -106.6,
+        "leak_db@10s_record_2sf1_quarter_load": -30.9,
+        "leak_db@10s_record_fr": -133.7,
+        "leak_db@1s_record_2sf1": -2.3,
+        "scallop_loss_db": 0.8255722309154755,
+        "window": "blackman_harris"
+      },
+      {
+        "enbw_bins": 3.770246447443429,
+        "leak_db@10s_record_2sf1": -94.5,
+        "leak_db@10s_record_2sf1_quarter_load": -11.8,
+        "leak_db@10s_record_fr": -112.3,
+        "leak_db@1s_record_2sf1": -0.1,
+        "scallop_loss_db": 0.009778058428316371,
+        "window": "flattop"
+      }
+    ]
+  },
+  "line_hz": 60.0,
+  "machine": "motor_pump_37kw",
+  "negative_sequence": {
+    "ct_class": "100:5 split-core class 1 + 0.22 ohm burden",
+    "neg_seq_impedance_pu": 0.17,
+    "note": "a 1 % supply unbalance and a 1 % shorted-turn fraction produce IDENTICAL negative-sequence current, which is why the indicator needs the voltage channel and the Z- ratio",
+    "rows": [
+      {
+        "cause": "supply voltage unbalance",
+        "i_neg_pct": 2.941176470588235,
+        "level_pct": 0.5
+      },
+      {
+        "cause": "supply voltage unbalance",
+        "i_neg_pct": 5.88235294117647,
+        "level_pct": 1.0
+      },
+      {
+        "cause": "supply voltage unbalance",
+        "i_neg_pct": 11.76470588235294,
+        "level_pct": 2.0
+      },
+      {
+        "cause": "supply voltage unbalance",
+        "i_neg_pct": 17.64705882352941,
+        "level_pct": 3.0
+      },
+      {
+        "cause": "shorted turns, fraction of one phase",
+        "i_neg_pct": 2.941176470588235,
+        "level_pct": 0.5
+      },
+      {
+        "cause": "shorted turns, fraction of one phase",
+        "i_neg_pct": 5.88235294117647,
+        "level_pct": 1.0
+      },
+      {
+        "cause": "shorted turns, fraction of one phase",
+        "i_neg_pct": 11.76470588235294,
+        "level_pct": 2.0
+      },
+      {
+        "cause": "CT channel gain mismatch (one phase)",
+        "i_neg_pct": 0.16666666666666666,
+        "level_pct": 0.5
+      },
+      {
+        "cause": "CT channel gain mismatch (one phase)",
+        "i_neg_pct": 0.3333333333333333,
+        "level_pct": 1.0
+      },
+      {
+        "cause": "CT channel gain mismatch (one phase)",
+        "i_neg_pct": 0.6666666666666666,
+        "level_pct": 2.0
+      }
+    ]
+  },
+  "pole_pairs": 2,
+  "resolution": {
+    "note": "the sideband is only usable where offset_over_position_error > 1: below that the predicted sideband position is less certain than its distance from the fundamental",
+    "rows": [
+      {
+        "load_frac": 1.0,
+        "min_duration_s_bh": 3.006529407325582,
+        "min_duration_s_hann": 2.250000000000008,
+        "offset_2sf1_hz": 1.3333333333333286,
+        "offset_over_position_error": 2.247191011235947,
+        "position_error_hz_at_0p5pct_speed": 0.5933333333333334,
+        "slip": 0.011111111111111072,
+        "slip_rel_error_at_0p5pct_speed": 0.4450000000000016
+      },
+      {
+        "load_frac": 0.75,
+        "min_duration_s_bh": 4.008705876434109,
+        "min_duration_s_hann": 3.0000000000000107,
+        "offset_2sf1_hz": 0.9999999999999964,
+        "offset_over_position_error": 1.6806722689075568,
+        "position_error_hz_at_0p5pct_speed": 0.5950000000000001,
+        "slip": 0.008333333333333304,
+        "slip_rel_error_at_0p5pct_speed": 0.5950000000000022
+      },
+      {
+        "load_frac": 0.5,
+        "min_duration_s_bh": 6.013058814651164,
+        "min_duration_s_hann": 4.500000000000016,
+        "offset_2sf1_hz": 0.6666666666666643,
+        "offset_over_position_error": 1.1173184357541859,
+        "position_error_hz_at_0p5pct_speed": 0.5966666666666667,
+        "slip": 0.005555555555555536,
+        "slip_rel_error_at_0p5pct_speed": 0.8950000000000032
+      },
+      {
+        "load_frac": 0.25,
+        "min_duration_s_bh": 12.026117629302329,
+        "min_duration_s_hann": 9.000000000000032,
+        "offset_2sf1_hz": 0.33333333333333215,
+        "offset_over_position_error": 0.5571030640668504,
+        "position_error_hz_at_0p5pct_speed": 0.5983333333333334,
+        "slip": 0.002777777777777768,
+        "slip_rel_error_at_0p5pct_speed": 1.7950000000000064
+      },
+      {
+        "load_frac": 0.1,
+        "min_duration_s_bh": 30.06529407325582,
+        "min_duration_s_hann": 22.50000000000008,
+        "offset_2sf1_hz": 0.13333333333333286,
+        "offset_over_position_error": 0.22246941045606147,
+        "position_error_hz_at_0p5pct_speed": 0.5993333333333334,
+        "slip": 0.0011111111111111072,
+        "slip_rel_error_at_0p5pct_speed": 4.495000000000016
+      },
+      {
+        "load_frac": 0.05,
+        "min_duration_s_bh": 60.13058814651164,
+        "min_duration_s_hann": 45.00000000000016,
+        "offset_2sf1_hz": 0.06666666666666643,
+        "offset_over_position_error": 0.11117287381878783,
+        "position_error_hz_at_0p5pct_speed": 0.5996666666666666,
+        "slip": 0.0005555555555555536,
+        "slip_rel_error_at_0p5pct_speed": 8.995000000000031
+      }
+    ]
+  },
+  "slip_rated": 0.011111111111111072,
+  "windows_available": [
+    "rect",
+    "hann",
+    "hamming",
+    "blackman",
+    "blackman_harris",
+    "flattop",
+    "kaiser",
+    "tukey"
+  ]
+}
