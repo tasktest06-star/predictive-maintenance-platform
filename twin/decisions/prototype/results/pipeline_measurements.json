@@ -1,0 +1,211 @@
+{
+ "n_lives": 64,
+ "never_detected": 8,
+ "detection": {
+  "n": 56,
+  "lead_time_days_p10": 7.085,
+  "lead_time_days_median": 36.739999999999995,
+  "lead_time_days_p90": 66.02000000000001,
+  "lead_fraction_median": 0.43439025460226943,
+  "per_mode_median_lead_days": {
+   "bearing_ball": 43.605000000000004,
+   "bearing_inner": 40.879999999999995,
+   "bearing_outer": 37.58,
+   "looseness": 5.045
+  }
+ },
+ "abstention": {
+  "abstained_observation_share": 0.3262,
+  "n_lives_with_an_answer": 49,
+  "true_rul_at_first_answer_days_median": 28.2,
+  "true_rul_at_first_answer_days_p10": 8.096,
+  "lead_time_lost_to_abstention_days_median": 8.54
+ },
+ "rul_quality": {
+  "n_scored": 945,
+  "p10_p90_coverage": 0.0667,
+  "p10_p90_coverage_target": 0.8,
+  "median_log_ratio": 1.6277,
+  "median_relative_error": 4.0923,
+  "interval_width_at_first_answer_days_median": 4.913317773540889,
+  "interval_width_at_first_answer_days_p90": 14.628142695567412
+ },
+ "nuisance": {
+  "rate": {
+   "label": "confirmed nuisance alarms",
+   "count": 0,
+   "exposure": 85.3541,
+   "unit": "asset-year",
+   "rate": 0.0,
+   "ci_lo": 0.0,
+   "ci_hi": 0.043219,
+   "conf": 0.95,
+   "relative_width": null
+  },
+  "healthy_frame_exceedance": {
+   "n_above_threshold": 47,
+   "n_scored": 3840,
+   "share": 0.01224,
+   "target_fpr": 0.01,
+   "note": "per-frame exceedance against the held-out 1 % threshold; the confirmed-alarm rate above is much lower because the n-of-m rule and the dwell time in pdmcore.health.index reject most single-frame excursions. The gap between the two is what debouncing buys."
+  },
+  "commissioning_frames_per_life": 60,
+  "exposure_note": "Nuisance alarms are counted on the simulated commissioning frames but the exposure is the whole drawn healthy stage of each life, so this rate EXTRAPOLATES from 60 frames per life to hundreds of healthy days. It is the weakest measurement on this branch and the sensitivity analysis treats it as the pivotal assumption rather than as data."
+ },
+ "voi_inputs": {
+  "true_life_median_days": 36.74,
+  "true_life_log_sd": 0.8783,
+  "measured_interval_width_days": 4.913317773540889,
+  "note": "the VoI study is driven by these, so its numbers are about the lives this pipeline produced, not about a plant"
+ },
+ "scenario_conditional": {
+  "examples": [
+   {
+    "life_id": "life_0001",
+    "preset": "fan_7kw_belt",
+    "mode": "bearing_outer",
+    "observed_duty": 0.974,
+    "unconditional_median_days": 730.0,
+    "scenarios": {
+     "0.70": {
+      "status": "ok",
+      "median_days": 730.0,
+      "p10_days": 730.0,
+      "p90_days": 730.0,
+      "load_model_width_share": 0.0,
+      "note": "100% of the posterior exceeds the 730-day horizon; the upper bound is censored, not estimated"
+     },
+     "0.85": {
+      "status": "ok",
+      "median_days": 730.0,
+      "p10_days": 730.0,
+      "p90_days": 730.0,
+      "load_model_width_share": 0.0,
+      "note": "100% of the posterior exceeds the 730-day horizon; the upper bound is censored, not estimated"
+     },
+     "1.00": {
+      "status": "ok",
+      "median_days": 674.9489016216833,
+      "p10_days": 662.0331985177829,
+      "p90_days": 688.1177303262612,
+      "load_model_width_share": 1.0,
+      "note": "100% of the interval width comes from the assumed load-life exponent, not from the degradation evidence -- this is a statement about ISO 281, not about this bea"
+     }
+    },
+    "p_failure_before_42d": 0.0
+   },
+   {
+    "life_id": "life_0002",
+    "preset": "gearbox_132kw",
+    "mode": "bearing_outer",
+    "observed_duty": 0.863,
+    "unconditional_median_days": 730.0,
+    "scenarios": {
+     "0.70": {
+      "status": "ok",
+      "median_days": 730.0,
+      "p10_days": 730.0,
+      "p90_days": 730.0,
+      "load_model_width_share": 0.0,
+      "note": "100% of the posterior exceeds the 730-day horizon; the upper bound is censored, not estimated"
+     },
+     "0.85": {
+      "status": "ok",
+      "median_days": 730.0,
+      "p10_days": 730.0,
+      "p90_days": 730.0,
+      "load_model_width_share": 0.0,
+      "note": "100% of the posterior exceeds the 730-day horizon; the upper bound is censored, not estimated"
+     },
+     "1.00": {
+      "status": "ok",
+      "median_days": 472.140485140392,
+      "p10_days": 424.5980600478912,
+      "p90_days": 525.989098815949,
+      "load_model_width_share": 1.0,
+      "note": "100% of the interval width comes from the assumed load-life exponent, not from the degradation evidence -- this is a statement about ISO 281, not about this bea"
+     }
+    },
+    "p_failure_before_42d": 0.0
+   },
+   {
+    "life_id": "life_0005",
+    "preset": "fan_7kw_belt",
+    "mode": "bearing_inner",
+    "observed_duty": 0.862,
+    "unconditional_median_days": 0.0,
+    "scenarios": {
+     "0.70": {
+      "status": "ok",
+      "median_days": 0.0,
+      "p10_days": 0.0,
+      "p90_days": 4.779035570840717,
+      "load_model_width_share": 0.0,
+      "note": ""
+     },
+     "0.85": {
+      "status": "ok",
+      "median_days": 0.0,
+      "p10_days": 0.0,
+      "p90_days": 2.6818792635262168,
+      "load_model_width_share": 0.001424555641350923,
+      "note": ""
+     },
+     "1.00": {
+      "status": "ok",
+      "median_days": 0.0,
+      "p10_days": 0.0,
+      "p90_days": 1.7151720597991076,
+      "load_model_width_share": 0.04110911951478197,
+      "note": ""
+     }
+    },
+    "p_failure_before_42d": 0.9999999999999993
+   }
+  ],
+  "caveat": "pdmcore.sim has NO load-dependent damage model. These conditional answers exercise the damage-clock arithmetic and the abstention gates; they do not validate the ISO 281 load-life exponent, and no measurement in this repository does."
+ },
+ "pool_caveats": [
+  "The healthy stage of each life beyond the commissioning window is not simulated acquisition-by-acquisition: pdmcore.sim's healthy output is stationary, so it would cost DSP runs and add no information. The healthy duration is drawn as a number.",
+  "pdmcore.sim has no load-dependent damage model. The declared duty per life gives the scenario-conditional estimator a reference load, and the conditional arithmetic is exercised, but the ISO 281 load-life exponent is NOT validated by anything here.",
+  "The detector is fitted and calibrated on simulated healthy data from the same generator that produced the faults, so some of the detection performance is self-fulfilling -- the platform-wide caveat in docs/07_production_readiness.md applies unchanged."
+ ],
+ "detectors": {
+  "motor_pump_37kw": {
+   "preset": "motor_pump_37kw",
+   "threshold": 7.912556067315917,
+   "threshold_heldout": 7.912556067315917,
+   "threshold_in_sample": 7.53787892059892,
+   "calibration_ratio": 1.0497059120561234,
+   "n_fit": 120,
+   "n_calibration": 60
+  },
+  "fan_7kw_belt": {
+   "preset": "fan_7kw_belt",
+   "threshold": 10.813737406634957,
+   "threshold_heldout": 10.813737406634957,
+   "threshold_in_sample": 7.474890054175073,
+   "calibration_ratio": 1.4466751120432846,
+   "n_fit": 120,
+   "n_calibration": 60
+  },
+  "gearbox_132kw": {
+   "preset": "gearbox_132kw",
+   "threshold": 9.456546639588806,
+   "threshold_heldout": 9.456546639588806,
+   "threshold_in_sample": 7.315668471043367,
+   "calibration_ratio": 1.292642863330862,
+   "n_fit": 120,
+   "n_calibration": 60
+  },
+  "vfd_compressor_75kw": {
+   "preset": "vfd_compressor_75kw",
+   "threshold": 8.146972005117874,
+   "threshold_heldout": 8.146972005117874,
+   "threshold_in_sample": 7.074532713795467,
+   "calibration_ratio": 1.1515915375203696,
+   "n_fit": 120,
+   "n_calibration": 60
+  }
+ }
+}
