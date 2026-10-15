@@ -152,6 +152,9 @@ class KernelRidgeResidual:
     edf: float = field(default=0.0, init=False)
     n_train: int = field(default=0, init=False)
     gamma_used: float = field(default=0.0, init=False)
+    _xfit: np.ndarray = field(default_factory=lambda: np.zeros((0, 0)), init=False, repr=False)
+    _dual: np.ndarray = field(default_factory=lambda: np.zeros((0, 0)), init=False, repr=False)
+    _sqfit: np.ndarray = field(default_factory=lambda: np.zeros(0), init=False, repr=False)
 
     def fit(self, U: np.ndarray, Rlog: np.ndarray) -> "KernelRidgeResidual":
         U = np.atleast_2d(np.asarray(U, dtype=np.float64))
@@ -184,9 +187,30 @@ class KernelRidgeResidual:
         ev = np.clip(ev, 0.0, None)
         self.edf = float(np.sum(ev / (ev + self.alpha)))
         self.n_train = int(Us.shape[0])
+        # Keep the fitted dual form for a fast prediction path. sklearn fits
+        # the model; sklearn's `predict` is not used in the filter loop because
+        # 70 % of its cost is input validation and kernel dispatch, measured:
+        # 3.79 ms per filter step with it, 1.2 ms without, for a kernel
+        # evaluation that is one matrix product. The same code is what the
+        # production variant would ship, so the latency budget in
+        # `twin/production/` is a budget for code that exists.
+        self._xfit = np.asarray(self._model.X_fit_, dtype=np.float64)
+        self._dual = np.atleast_2d(np.asarray(self._model.dual_coef_, dtype=np.float64))
+        if self._dual.shape[0] != self._xfit.shape[0]:
+            self._dual = self._dual.T
+        self._sqfit = np.sum(self._xfit**2, axis=1)
         return self
 
     def predict(self, U: np.ndarray) -> np.ndarray:
+        if self._model is None:
+            raise RuntimeError("residual model is not fitted")
+        U = np.atleast_2d(np.asarray(U, dtype=np.float64))
+        Q = (U - self._mu) / self._sd
+        d2 = np.sum(Q**2, axis=1)[:, None] + self._sqfit[None, :] - 2.0 * (Q @ self._xfit.T)
+        return np.exp(-self.gamma_used * np.maximum(d2, 0.0)) @ self._dual
+
+    def predict_sklearn(self, U: np.ndarray) -> np.ndarray:
+        """The reference path, kept so the fast one can be tested against it."""
         if self._model is None:
             raise RuntimeError("residual model is not fitted")
         U = np.atleast_2d(np.asarray(U, dtype=np.float64))

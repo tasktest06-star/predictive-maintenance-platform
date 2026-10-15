@@ -102,19 +102,14 @@ class BaselineArm:
         self.detector.fit(self._X(ds_fit))
         s_cal = self.detector.score(self._X(ds_cal))
         self.q_centre, self.q_scale = robust_centre_scale(s_cal)
-        base = (CusumTest(drift=self.cusum_drift, consecutive_required=self.consecutive_required)
-                if self.sequential else
-                ThresholdTest(consecutive_required=self.consecutive_required))
-        q_cal = self._by_trajectory(ds_cal)
-        h, rep = threshold_for_arl0(q_cal, base, target_arl0_frames)
-        import dataclasses
-        self.test = dataclasses.replace(base, threshold=float(h))
-        self.reports["calibration"] = {
-            **rep, "q_centre": self.q_centre, "q_scale": self.q_scale,
+        self.q_cal = self._by_trajectory(ds_cal)
+        self._cal_meta = {
+            "q_centre": self.q_centre, "q_scale": self.q_scale,
             "n_fit_frames": int(ds_fit.n), "n_cal_frames": int(ds_cal.n),
             "n_features": int(self._X(ds_fit).shape[1]),
             "sequential": self.sequential,
         }
+        self.set_target(target_arl0_frames)
         extra: Dict[str, float] = {}
         for attr in ("shrinkage_used_", "samples_per_feature_", "n_components_"):
             if hasattr(self.detector, attr):
@@ -122,8 +117,29 @@ class BaselineArm:
         self.reports["detector"] = {"kind": self.kind, **extra}
         return self
 
-    def verify(self, ds_ver: Dataset) -> Dict[str, float]:
-        meas = measure_arl0(self._by_trajectory(ds_ver), self.test)
+    def set_target(self, target_arl0_frames: float) -> "BaselineArm":
+        """Threshold for a target ARL0 on the cached calibration stream.
+
+        Same separation as :meth:`pdmtwin.twin.HybridTwin.set_target`, and for
+        the same reason: the detector score is a property of the window, the
+        threshold is the operating point.
+        """
+        import dataclasses
+        base = (CusumTest(drift=self.cusum_drift, consecutive_required=self.consecutive_required)
+                if self.sequential else
+                ThresholdTest(consecutive_required=self.consecutive_required))
+        h, rep = threshold_for_arl0(self.q_cal, base, target_arl0_frames)
+        self.test = dataclasses.replace(base, threshold=float(h))
+        self.reports["calibration"] = {**rep, **self._cal_meta}
+        return self
+
+    def verify(self, ds_ver: Optional[Dataset] = None,
+               q_ver: Optional[Sequence[np.ndarray]] = None) -> Dict[str, float]:
+        if q_ver is None:
+            if ds_ver is None:
+                raise ValueError("verify needs ds_ver or q_ver")
+            q_ver = self._by_trajectory(ds_ver)
+        meas = measure_arl0(q_ver, self.test)
         expected = meas["n_frames"] / max(1e-9, self.reports["calibration"]["arl0_frames"])
         allowed = poisson_allowance(expected)
         out = {

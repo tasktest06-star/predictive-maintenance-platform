@@ -45,7 +45,7 @@ from .detect import (
     robust_centre_scale,
     threshold_for_arl0,
 )
-from .filters import ProcessModel, UnscentedTwinFilter
+from .filters import FilterTrace, ProcessModel, UnscentedTwinFilter
 from .physics import ObservationModel, PhysicsCore, identify
 from .residual import NullResidual, ResidualInputs, design_matrix
 
@@ -175,10 +175,9 @@ class HybridTwin:
                 J[:, :, j] = (self.core.predict_log(xp, shaft_hz) - h0) / eps
             r = (Z - h0) * w
             Jw = J * w[None, :, None]
-            for i in range(n):
-                A = Jw[i].T @ Jw[i] + 1e-8 * np.eye(ns)
-                x[i] += np.linalg.solve(A, Jw[i].T @ r[i])
-            x = np.clip(x, -3.0, 3.0)
+            A = np.einsum("ncj,nck->njk", Jw, Jw) + 1e-8 * np.eye(ns)[None]
+            b = np.einsum("ncj,nc->nj", Jw, r)
+            x = np.clip(x + np.linalg.solve(A, b[:, :, None])[:, :, 0], -3.0, 3.0)
         return x
 
     # -- process identification --------------------------------------------
@@ -341,6 +340,67 @@ class HybridTwin:
             "diagnostics": ukf.diagnostics(trace),
         }
 
+    def run_trajectory_online(
+        self, Y: np.ndarray, shaft_hz: np.ndarray, *, window: int, stride: int = 10
+    ) -> Dict[str, np.ndarray]:
+        """Absorption mechanism 1: refit the residual as the trajectory runs.
+
+        "The twin keeps learning, so it tracks ageing" is a selling point and a
+        self-inflicted wound. Every ``stride`` frames the residual model is
+        refitted on the trailing ``window`` frames of *this* trajectory, which
+        on a degrading asset means training on the fault. Anything slower than
+        the window is learned as normal and vanishes from the innovation.
+
+        The filter state is carried across blocks, so the only difference from
+        :meth:`run_trajectory` is which data the residual saw. That is the point
+        of measuring it this way: the mechanism is isolated.
+        """
+        assert self.core is not None
+        from .residual import build_residual
+
+        Y = np.atleast_2d(np.asarray(Y, dtype=np.float64))
+        Z = np.log(np.maximum(Y, 1e-12))
+        n = Z.shape[0]
+        process = self.process
+        ukf = UnscentedTwinFilter(self._h, self.R, process)
+        saved = self.residual
+        q_raw = np.zeros(n)
+        wht = np.zeros_like(Z)
+        xs = np.zeros((n, self.core.n_state))
+        nis = np.zeros(n)
+        n_refits = 0
+        try:
+            for k in range(n):
+                if window > 0 and k >= window and k % stride == 0:
+                    lo = k - window
+                    Yw, fw = Y[lo:k], shaft_hz[lo:k]
+                    xw = self.point_estimate(Yw, fw)
+                    Rw = np.log(np.maximum(Yw, 1e-12)) - self.core.predict_log(xw, fw)
+                    kwargs: Dict = {"inputs": self.config.residual_inputs}
+                    if self.config.residual_kind in ("kernel_ridge", "krr"):
+                        kwargs["alpha"] = self.config.residual_alpha
+                    new = build_residual(self.config.residual_kind, len(self.obs), **kwargs)
+                    if not isinstance(new, NullResidual):
+                        U = design_matrix(self.config.residual_inputs, shaft_hz=fw, state=xw,
+                                          z=np.log(np.maximum(Yw, 1e-12)), f_nom=self.spec.shaft_hz)
+                        new.fit(U, Rw)
+                    self.residual = new
+                    n_refits += 1
+                inn, w, q = ukf.step(Z[k], {"shaft_hz": float(shaft_hz[k]), "z": Z[k]})
+                wht[k] = w
+                nis[k] = q
+                xs[k] = ukf.x
+            q_raw = energy_deviation(wht)
+        finally:
+            self.residual = saved
+        return {
+            "q": (q_raw - self.q_centre) / self.q_scale, "q_raw": q_raw,
+            "state": xs, "nis": nis, "innovation": wht,
+            "diagnostics": {**ukf.diagnostics(FilterTrace(
+                x=xs, P=np.zeros((n, 1, 1)), innovation=wht, whitened=wht, nis=nis)),
+                "n_refits": n_refits, "mode": "ukf_online"},
+        }
+
     def _h_rows(self, x: np.ndarray, shaft_hz: np.ndarray, Z: np.ndarray) -> np.ndarray:
         """Row-wise measurement prediction (one state per frame)."""
         assert self.core is not None
@@ -437,12 +497,8 @@ class HybridTwin:
         self.q_centre, self.q_scale = 0.0, 1.0
         q_cal = self._by_trajectory(ds_cal)
         self.q_centre, self.q_scale = robust_centre_scale(np.concatenate(q_cal))
-        q_cal = [(q - self.q_centre) / self.q_scale for q in q_cal]
-        h, rep = threshold_for_arl0(q_cal, self.test, target_arl0_frames)
-        self.test = CusumTest(drift=self.config.cusum_drift, threshold=h,
-                              consecutive_required=self.config.consecutive_required)
-        self.reports["calibration"] = {
-            **rep,
+        self.q_cal = [(q - self.q_centre) / self.q_scale for q in q_cal]
+        self._cal_meta = {
             "q_centre": self.q_centre, "q_scale": self.q_scale,
             "R_cond": float(np.linalg.cond(self.R)),
             "R_inflation_from_nis": float(nis_ratio),
@@ -451,12 +507,42 @@ class HybridTwin:
             "n_cal_frames": int(ds_cal.n),
             "filter_mode": self.config.filter_mode,
         }
+        return self.set_target(target_arl0_frames)
+
+    def set_target(self, target_arl0_frames: float) -> "HybridTwin":
+        """Set the threshold for a target ARL0 on the cached calibration stream.
+
+        Separated from :meth:`calibrate` because the matching target changes
+        only the threshold: the innovation covariance, the standardisation and
+        therefore the entire deviation stream are properties of the calibration
+        window, not of the operating point. Recomputing them per target would
+        cost three filter passes and would also let the two differ, which is the
+        kind of coupling that makes an operating-point sweep quietly
+        inconsistent.
+        """
+        if not hasattr(self, "q_cal"):
+            raise RuntimeError("calibrate() must run before set_target()")
+        base = CusumTest(drift=self.config.cusum_drift,
+                         consecutive_required=self.config.consecutive_required)
+        h, rep = threshold_for_arl0(self.q_cal, base, target_arl0_frames)
+        self.test = CusumTest(drift=self.config.cusum_drift, threshold=h,
+                              consecutive_required=self.config.consecutive_required)
+        self.reports["calibration"] = {**rep, **self._cal_meta}
         return self
 
     # ------------------------------------------------------------------ 4 --
-    def verify(self, ds_ver: Dataset) -> Dict[str, float]:
-        """Realised alarm count on held-out healthy data vs a Poisson band."""
-        q_ver = self._by_trajectory(ds_ver)
+    def verify(self, ds_ver: Optional[Dataset] = None,
+               q_ver: Optional[Sequence[np.ndarray]] = None) -> Dict[str, float]:
+        """Realised alarm count on held-out healthy data vs a Poisson band.
+
+        Accepts a precomputed deviation stream so an operating-point sweep does
+        not re-filter the verification window once per threshold. The stream is
+        a property of the window; only the count depends on the threshold.
+        """
+        if q_ver is None:
+            if ds_ver is None:
+                raise ValueError("verify needs ds_ver or q_ver")
+            q_ver = self._by_trajectory(ds_ver)
         meas = measure_arl0(q_ver, self.test)
         expected = meas["n_frames"] / max(1e-9, self.reports["calibration"]["arl0_frames"])
         allowed = poisson_allowance(expected)
