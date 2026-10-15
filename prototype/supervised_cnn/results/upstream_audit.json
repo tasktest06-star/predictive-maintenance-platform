@@ -1,0 +1,175 @@
+{
+ "branches": {
+  "impl/ml-supervised-1dcnn": "33b3c1954822df467bf08bd369be00899ae3bff5",
+  "impl/ml-transformer-faultformer": "b88964567dee9df42eec462ee13cd2e0f0d521bb"
+ },
+ "checks": {
+  "99_mat": {
+   "finding": "_load_cwru_mat returns the first variable ending '_DE_time'; 99.mat as published holds X098_DE_time and X099_DE_time",
+   "n_samples_X098": 483903,
+   "n_samples_X099": 485063,
+   "ok": false,
+   "returned_is_X098": true,
+   "returned_is_X099": false,
+   "returned_n_samples": 483903,
+   "variables_in_99_mat": [
+    "X098_DE_time",
+    "X098_FE_time",
+    "X099_DE_time",
+    "X099_FE_time",
+    "ans"
+   ]
+  },
+  "bearing_id_is_a_file": {
+   "audit_against_physical_unit": {
+    "ok": false,
+    "violations": [
+     "5 group(s) appear in both folds: ball_0.021, healthy, inner_0.014, outer_0.007, outer_0.021"
+    ]
+   },
+   "audit_against_their_own_key": {
+    "ok": true,
+    "violations": []
+   },
+   "finding": "bearing_id is one per .mat file. CWRU has 40 files and 10 physical bearings (the four files per bearing are the same bearing at 0/1/2/3 hp), so a 'bearing-wise' split puts the same physical bearing on both sides",
+   "n_bearing_ids_upstream": 40,
+   "n_physical_units": 10,
+   "ok": false,
+   "physical_units_on_both_sides": [
+    "ball_0.021",
+    "healthy",
+    "inner_0.014",
+    "outer_0.007",
+    "outer_0.021"
+   ]
+  },
+  "flat_directory_labels": {
+   "accuracy_of_always_predicting_the_majority": 1.0,
+   "finding": "label is derived from directory names; CWRU is published as flat numbered .mat files, so every record falls through to ('normal','0')",
+   "label_counts": {
+    "Normal": 5886
+   },
+   "n_bearing_ids": 40,
+   "n_distinct_labels": 1,
+   "n_windows": 5886,
+   "ok": false
+  },
+  "model_selection_on_test": {
+   "finding": "the loader passed to evaluate() each epoch is test_loader, and the checkpoint kept is the one with the best macro F1 on it. Early stopping and model selection therefore read the test fold, so the reported figure is a best-of-N over epochs",
+   "no_separate_validation_loader": true,
+   "note": "a separate validation fold is not actually available in CWRU: every fold that is not the test fold shares a physical bearing with it, which is the same structural limit this branch reports. The honest options are a fixed epoch budget or nested cross-validation over units, not selection on the test fold.",
+   "ok": false,
+   "quoted_lines": [
+    "62: parser.add_argument(\"--patience\", default=15, type=int, help=\"Early stopping patience (val F1 epochs)\")",
+    "236: \"patience\": args.patience,",
+    "246: best_val_f1 = -1.0",
+    "247: patience_counter = 0",
+    "254: val_loss, val_acc, val_f1, val_preds, val_labels = evaluate(model, test_loader, criterion, device)",
+    "284: if val_f1 > best_val_f1:",
+    "285: best_val_f1 = val_f1",
+    "286: patience_counter = 0",
+    "301: patience_counter += 1",
+    "302: if patience_counter >= args.patience:",
+    "303: logger.info(\"Early stopping at epoch %d (patience=%d)\", epoch, args.patience)",
+    "339: \"best_val_macro_f1\": best_val_f1,"
+   ]
+  },
+  "split_can_drop_classes": {
+   "examples": [
+    {
+     "classes_absent_from_test": [
+      0
+     ],
+     "seed": 2
+    },
+    {
+     "classes_absent_from_test": [
+      0
+     ],
+     "seed": 4
+    },
+    {
+     "classes_absent_from_test": [
+      0
+     ],
+     "seed": 5
+    },
+    {
+     "classes_absent_from_test": [
+      0
+     ],
+     "seed": 6
+    },
+    {
+     "classes_absent_from_test": [
+      0
+     ],
+     "seed": 7
+    }
+   ],
+   "finding": "split_by_bearing shuffles ids and takes a fraction; nothing keeps every class on both sides, and a class absent from the test fold is simply not evaluated",
+   "n_classes": 4,
+   "n_seeds_tried": 40,
+   "n_seeds_with_a_class_missing_from_test": 22,
+   "n_seeds_with_a_class_missing_from_train": 0,
+   "ok": false,
+   "pdmcore_stratified_group_split_on_the_same_input": {
+    "raised": null,
+    "sizes": [
+     4470,
+     1416
+    ],
+    "test_class_counts": {
+     "0": 473,
+     "1": 352,
+     "2": 355,
+     "3": 236
+    }
+   }
+  },
+  "synthetic_fallback": {
+   "accuracy_of_a_4_bin_argmax_on_the_fallback_data": 1.0,
+   "finding": "cross_domain.py's MFPT and MIMII loaders fall back to _make_synthetic_labeled_dataset when the data directory is absent, print one line saying so, and then run and log the cross-domain transfer experiment as if it were a measurement",
+   "note": "a transcription of their generator, not their code running: finetune.py imports mlflow, which is not installed here. The control flow was read from the committed source and is quoted above. 500 windows, 1024 samples, 4 classes, 20 bearing ids, and label = i %% num_classes with 20 ids means each id carries exactly one class, so the bearing-wise split applied to it is also class-degenerate",
+   "ok": false,
+   "quoted_lines": [
+    "57: _make_synthetic_labeled_dataset,",
+    "99: print(f\"  MFPT dir not found: {data_dir} \u2014 using synthetic data\")",
+    "100: return _make_synthetic_labeled_dataset(",
+    "153: print(\"  No MFPT data found \u2014 using synthetic\")",
+    "154: return _make_synthetic_labeled_dataset(",
+    "190: print(f\"  MIMII dir not found: {data_dir} \u2014 using synthetic data\")",
+    "191: return _make_synthetic_labeled_dataset(n_samples=500, window_length=window_length, num_classes=2)",
+    "196: print(\"  scipy not available for .wav loading \u2014 using synthetic\")",
+    "197: return _make_synthetic_labeled_dataset(n_samples=500, window_length=window_length, num_classes=2)",
+    "233: print(\"  No MIMII data found \u2014 using synthetic\")"
+   ],
+   "synthetic_signal": "sin(2*pi*(50 + 30*label)*t) + 0.5*N(0,1)"
+  }
+ },
+ "n_checks": 6,
+ "n_checks_the_upstream_code_passes": 0,
+ "torch": "2.3.1",
+ "upstream_classes_reachable_from_cwru_and_mfpt": [
+  0,
+  1,
+  2,
+  3
+ ],
+ "upstream_fault_classes": [
+  "Normal",
+  "BPFO",
+  "BPFI",
+  "BSF",
+  "FTF",
+  "Unbalance",
+  "Misalignment",
+  "Lubrication",
+  "Looseness",
+  "Cavitation",
+  "Gearbox",
+  "Electrical"
+ ],
+ "upstream_num_classes": 12,
+ "upstream_unreachable_class_count": 8
+}
