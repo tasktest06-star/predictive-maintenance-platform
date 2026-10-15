@@ -1,0 +1,702 @@
+{
+ "aggregate": {
+  "features63|mahalanobis": {
+   "alarms_per_day_per_100": {
+    "mean": 41.95804195804196,
+    "per_fold": [
+     92.3076923076923,
+     16.783216783216783,
+     16.783216783216783
+    ],
+    "std": 35.60257919260938
+   },
+   "arm": "features63",
+   "auc": {
+    "mean": 0.9861362413809965,
+    "per_fold": [
+     0.9859854597616836,
+     0.992350889204036,
+     0.9800723751772702
+    ],
+    "std": 0.005013816111434037
+   },
+   "average_precision": {
+    "mean": 0.9892219487206617,
+    "per_fold": [
+     0.9898342728780039,
+     0.9948140415279062,
+     0.9830175317560749
+    ],
+    "std": 0.004835329451338806
+   },
+   "folds": [
+    "mfpt_record=mfpt_baseline_1",
+    "mfpt_record=mfpt_baseline_2",
+    "mfpt_record=mfpt_baseline_3"
+   ],
+   "fpr_at_threshold": {
+    "mean": 0.017482517482517484,
+    "per_fold": [
+     0.038461538461538464,
+     0.006993006993006993,
+     0.006993006993006993
+    ],
+    "std": 0.014834407996920578
+   },
+   "head": "mahalanobis",
+   "n_folds": 3,
+   "pauc_01": {
+    "mean": 0.5992317530076253,
+    "per_fold": [
+     0.5999280147292938,
+     0.6812227142198678,
+     0.5165445300737145
+    ],
+    "std": 0.06723138983494437
+   },
+   "pauc_10": {
+    "mean": 0.9297024490252316,
+    "per_fold": [
+     0.9267840489776449,
+     0.9600804054245351,
+     0.9022428926735147
+    ],
+    "std": 0.023702071139240534
+   },
+   "tpr_at_threshold": {
+    "mean": 0.4825174825174825,
+    "per_fold": [
+     0.9825174825174825,
+     0.4125874125874126,
+     0.05244755244755245
+    ],
+    "std": 0.3829057148658483
+   }
+  },
+  "features63|pca_residual": {
+   "alarms_per_day_per_100": {
+    "mean": 53.14685314685315,
+    "per_fold": [
+     142.65734265734267,
+     0.0,
+     16.783216783216783
+    ],
+    "std": 63.663254135614224
+   },
+   "arm": "features63",
+   "auc": {
+    "mean": 0.9527116240402954,
+    "per_fold": [
+     0.9382590020701909,
+     0.9761072261072261,
+     0.9437686439434692
+    ],
+    "std": 0.016695402270257436
+   },
+   "average_precision": {
+    "mean": 0.9753125181526604,
+    "per_fold": [
+     0.9700763901505872,
+     0.9906571756145824,
+     0.9652039886928113
+    ],
+    "std": 0.01103113649204607
+   },
+   "folds": [
+    "mfpt_record=mfpt_baseline_1",
+    "mfpt_record=mfpt_baseline_2",
+    "mfpt_record=mfpt_baseline_3"
+   ],
+   "fpr_at_threshold": {
+    "mean": 0.022144522144522144,
+    "per_fold": [
+     0.05944055944055944,
+     0.0,
+     0.006993006993006993
+    ],
+    "std": 0.02652635588983926
+   },
+   "head": "pca_residual",
+   "n_folds": 3,
+   "pauc_01": {
+    "mean": 0.579634033371251,
+    "per_fold": [
+     0.5389641575114393,
+     0.6970360466161147,
+     0.5029018959861986
+    ],
+    "std": 0.08431111517089192
+   },
+   "pauc_10": {
+    "mean": 0.8481945813561566,
+    "per_fold": [
+     0.8246364725937784,
+     0.9056403049778097,
+     0.8143069664968818
+    ],
+    "std": 0.04083856874624743
+   },
+   "tpr_at_threshold": {
+    "mean": 0.27972027972027974,
+    "per_fold": [
+     0.7738927738927739,
+     0.054778554778554776,
+     0.01048951048951049
+    ],
+    "std": 0.3499001956353717
+   }
+  },
+  "features63|robust_threshold": {
+   "alarms_per_day_per_100": {
+    "mean": 41.95804195804196,
+    "per_fold": [
+     92.3076923076923,
+     16.783216783216783,
+     16.783216783216783
+    ],
+    "std": 35.60257919260938
+   },
+   "arm": "features63",
+   "auc": {
+    "mean": 0.9690143772311605,
+    "per_fold": [
+     0.9739901706684924,
+     0.9815353644024972,
+     0.9515175966224918
+    ],
+    "std": 0.012749783942530929
+   },
+   "average_precision": {
+    "mean": 0.9777956794518469,
+    "per_fold": [
+     0.9820071071553176,
+     0.9822829673879462,
+     0.9690969638122773
+    ],
+    "std": 0.0061519517255668715
+   },
+   "folds": [
+    "mfpt_record=mfpt_baseline_1",
+    "mfpt_record=mfpt_baseline_2",
+    "mfpt_record=mfpt_baseline_3"
+   ],
+   "fpr_at_threshold": {
+    "mean": 0.017482517482517484,
+    "per_fold": [
+     0.038461538461538464,
+     0.006993006993006993,
+     0.006993006993006993
+    ],
+    "std": 0.014834407996920578
+   },
+   "head": "robust_threshold",
+   "n_folds": 3,
+   "pauc_01": {
+    "mean": 0.5318861656318169,
+    "per_fold": [
+     0.5144946126954069,
+     0.5686945330266833,
+     0.5124693511733607
+    ],
+    "std": 0.02604057543865937
+   },
+   "pauc_10": {
+    "mean": 0.8769813750184258,
+    "per_fold": [
+     0.8719192719928825,
+     0.9083072355063523,
+     0.8507176175560422
+    ],
+    "std": 0.023781781391036542
+   },
+   "tpr_at_threshold": {
+    "mean": 0.3811188811188811,
+    "per_fold": [
+     0.8414918414918415,
+     0.26456876456876455,
+     0.037296037296037296
+    ],
+    "std": 0.3384973363976132
+   }
+  }
+ },
+ "baseline_eval_seconds": 1.84,
+ "cache_meta": {
+  "demod_fraction_of_nyquist": [
+   0.25,
+   0.9
+  ],
+  "feature_configs": {
+   "NICE_MFPT_verified@97656Hz": {
+    "band_f_lo_hz": 5.0,
+    "bearing": {
+     "ball_d": 0.235,
+     "contact_angle_deg": 0.0,
+     "n_balls": 8,
+     "name": "NICE_MFPT_verified",
+     "pitch_d": 1.245
+    },
+    "demod_band_hz": [
+     12207.0,
+     43945.200000000004
+    ],
+    "envelope_decimate_to_hz": 24414.0,
+    "envelope_n_fft": 256,
+    "fs_hz": 97656.0,
+    "include_bearing": true,
+    "include_orders": true,
+    "include_shape": true,
+    "iso_class": "group2_rigid",
+    "n_bands": 12,
+    "n_bearing_harmonics": 5,
+    "n_fft": 2048,
+    "spec_version": 2,
+    "velocity_band_hz": [
+     10.0,
+     1000.0
+    ],
+    "window_name": "hann"
+   }
+  },
+  "feature_spec_version": 2,
+  "geometries": {
+   "NICE_MFPT_verified": {
+    "ball_d": 0.235,
+    "contact_angle_deg": 0.0,
+    "n_balls": 8,
+    "pitch_d": 1.245
+   }
+  },
+  "per_window_ms": {
+   "feature_extraction": 32.186,
+   "presentations_all5": 36.294
+  },
+  "provenance": {
+   "dataset": "MFPT bearing fault dataset, via the MathWorks redistribution (CC BY-NC-SA 4.0, data owner Eric Bechhoefer)",
+   "download_utc": "2026-10-14T19:07:23Z",
+   "hop_samples": 2048,
+   "licence_note": "CC BY-NC-SA 4.0; not redistributed in this repository.",
+   "records_used": [
+    "mfpt_baseline_1",
+    "mfpt_baseline_2",
+    "mfpt_baseline_3",
+    "mfpt_outer_270lb_1",
+    "mfpt_outer_270lb_2",
+    "mfpt_outer_270lb_3"
+   ],
+   "source_base_url": {
+    "RollingElementBearingFaultDiagnosis-Data-master.zip": "https://codeload.github.com/mathworks/RollingElementBearingFaultDiagnosis-Data/zip/refs/heads/master"
+   },
+   "window_samples": 2048
+  },
+  "seq_len": 512,
+  "summary": {
+   "conditions": [
+    "270lb"
+   ],
+   "fs_hz": [
+    97656.0
+   ],
+   "label_counts": {
+    "normal": 858,
+    "outer_race": 858
+   },
+   "n_faulty": 858,
+   "n_groups": 6,
+   "n_healthy": 858,
+   "n_windows": 1716,
+   "name": "mfpt_97656",
+   "window_samples": 2048
+  }
+ },
+ "dataset": "mfpt_97k",
+ "fm_meta": null,
+ "fm_ms_per_window": {},
+ "fold_audits": [
+  {
+   "fold": "mfpt_record=mfpt_baseline_1",
+   "group_audit": {
+    "n_test_groups": 4,
+    "n_train_groups": 2,
+    "ok": true,
+    "sizes": [
+     544,
+     1144
+    ],
+    "violations": [],
+    "warnings": []
+   },
+   "oneclass_audit": {
+    "calib_all_healthy": true,
+    "note": "leakage_report was called without labels= on purpose; see the comment in _make_fold. These three conditions replace its label rule for a one-class protocol.",
+    "ok": true,
+    "test_fault_labels": [
+     "outer_race"
+    ],
+    "test_has_both_classes": true,
+    "test_healthy_recordings": [
+     "mfpt_baseline_1"
+    ],
+    "train_all_healthy": true,
+    "violations": []
+   },
+   "sizes": {
+    "calib": 172,
+    "test": 1144,
+    "train": 372
+   },
+   "time_audit": {
+    "n_calib_recordings": 2,
+    "ok": true,
+    "violations": []
+   }
+  },
+  {
+   "fold": "mfpt_record=mfpt_baseline_2",
+   "group_audit": {
+    "n_test_groups": 4,
+    "n_train_groups": 2,
+    "ok": true,
+    "sizes": [
+     544,
+     1144
+    ],
+    "violations": [],
+    "warnings": []
+   },
+   "oneclass_audit": {
+    "calib_all_healthy": true,
+    "note": "leakage_report was called without labels= on purpose; see the comment in _make_fold. These three conditions replace its label rule for a one-class protocol.",
+    "ok": true,
+    "test_fault_labels": [
+     "outer_race"
+    ],
+    "test_has_both_classes": true,
+    "test_healthy_recordings": [
+     "mfpt_baseline_2"
+    ],
+    "train_all_healthy": true,
+    "violations": []
+   },
+   "sizes": {
+    "calib": 172,
+    "test": 1144,
+    "train": 372
+   },
+   "time_audit": {
+    "n_calib_recordings": 2,
+    "ok": true,
+    "violations": []
+   }
+  },
+  {
+   "fold": "mfpt_record=mfpt_baseline_3",
+   "group_audit": {
+    "n_test_groups": 4,
+    "n_train_groups": 2,
+    "ok": true,
+    "sizes": [
+     544,
+     1144
+    ],
+    "violations": [],
+    "warnings": []
+   },
+   "oneclass_audit": {
+    "calib_all_healthy": true,
+    "note": "leakage_report was called without labels= on purpose; see the comment in _make_fold. These three conditions replace its label rule for a one-class protocol.",
+    "ok": true,
+    "test_fault_labels": [
+     "outer_race"
+    ],
+    "test_has_both_classes": true,
+    "test_healthy_recordings": [
+     "mfpt_baseline_3"
+    ],
+    "train_all_healthy": true,
+    "violations": []
+   },
+   "sizes": {
+    "calib": 172,
+    "test": 1144,
+    "train": 372
+   },
+   "time_audit": {
+    "n_calib_recordings": 2,
+    "ok": true,
+    "violations": []
+   }
+  }
+ ],
+ "fold_scheme": "mfpt_record",
+ "leaky_control": {
+  "features63_LEAKY|mahalanobis": {
+   "alarms_per_day_per_100": {
+    "mean": 74.4186046511628,
+    "per_fold": [
+     74.4186046511628
+    ],
+    "std": 0.0
+   },
+   "arm": "features63_LEAKY",
+   "auc": {
+    "mean": 0.9847219963499034,
+    "per_fold": [
+     0.9847219963499034
+    ],
+    "std": 0.0
+   },
+   "average_precision": {
+    "mean": 0.9884286482696503,
+    "per_fold": [
+     0.9884286482696503
+    ],
+    "std": 0.0
+   },
+   "folds": [
+    "leaky_random_windows"
+   ],
+   "fpr_at_threshold": {
+    "mean": 0.031007751937984496,
+    "per_fold": [
+     0.031007751937984496
+    ],
+    "std": 0.0
+   },
+   "head": "mahalanobis",
+   "n_folds": 1,
+   "pauc_01": {
+    "mean": 0.5589610291024338,
+    "per_fold": [
+     0.5589610291024338
+    ],
+    "std": 0.0
+   },
+   "pauc_10": {
+    "mean": 0.9199793814236898,
+    "per_fold": [
+     0.9199793814236898
+    ],
+    "std": 0.0
+   },
+   "tpr_at_threshold": {
+    "mean": 0.9906759906759907,
+    "per_fold": [
+     0.9906759906759907
+    ],
+    "std": 0.0
+   }
+  }
+ },
+ "leaky_control_note": "A random window-level split, ignoring recordings. For a ONE-CLASS detector the familiar random-split inflation does not show up in AUC -- the model never sees a fault either way -- it shows up in the realised false-alarm rate, because the test healthy windows come from the same recordings and the same operating points the threshold was calibrated on. Compare leaky_control[..].fpr_at_threshold with aggregate[features63|mahalanobis].fpr_at_threshold.",
+ "measured_data": true,
+ "n_folds": 3,
+ "per_fold": [
+  {
+   "alarms_per_day_per_100": 92.3076923076923,
+   "arm": "features63",
+   "auc": 0.9859854597616836,
+   "average_precision": 0.9898342728780039,
+   "extra": {
+    "samples_per_feature": 5.904761904761905,
+    "shrinkage": 0.07447619903746504
+   },
+   "fold": "mfpt_record=mfpt_baseline_1",
+   "fpr_at_threshold": 0.038461538461538464,
+   "head": "mahalanobis",
+   "n_calib": 172,
+   "n_test_faulty": 858,
+   "n_test_healthy": 286,
+   "n_train": 372,
+   "pauc_01": 0.5999280147292938,
+   "pauc_10": 0.9267840489776449,
+   "threshold": 8.431090158960371,
+   "tpr_at_threshold": 0.9825174825174825
+  },
+  {
+   "alarms_per_day_per_100": 142.65734265734267,
+   "arm": "features63",
+   "auc": 0.9382590020701909,
+   "average_precision": 0.9700763901505872,
+   "extra": {
+    "n_components": 22.0
+   },
+   "fold": "mfpt_record=mfpt_baseline_1",
+   "fpr_at_threshold": 0.05944055944055944,
+   "head": "pca_residual",
+   "n_calib": 172,
+   "n_test_faulty": 858,
+   "n_test_healthy": 286,
+   "n_train": 372,
+   "pauc_01": 0.5389641575114393,
+   "pauc_10": 0.8246364725937784,
+   "threshold": 2.5783689336905624,
+   "tpr_at_threshold": 0.7738927738927739
+  },
+  {
+   "alarms_per_day_per_100": 92.3076923076923,
+   "arm": "features63",
+   "auc": 0.9739901706684924,
+   "average_precision": 0.9820071071553176,
+   "extra": {},
+   "fold": "mfpt_record=mfpt_baseline_1",
+   "fpr_at_threshold": 0.038461538461538464,
+   "head": "robust_threshold",
+   "n_calib": 172,
+   "n_test_faulty": 858,
+   "n_test_healthy": 286,
+   "n_train": 372,
+   "pauc_01": 0.5144946126954069,
+   "pauc_10": 0.8719192719928825,
+   "threshold": 4.953683864364968,
+   "tpr_at_threshold": 0.8414918414918415
+  },
+  {
+   "alarms_per_day_per_100": 16.783216783216783,
+   "arm": "features63",
+   "auc": 0.992350889204036,
+   "average_precision": 0.9948140415279062,
+   "extra": {
+    "samples_per_feature": 5.904761904761905,
+    "shrinkage": 0.07335289015630164
+   },
+   "fold": "mfpt_record=mfpt_baseline_2",
+   "fpr_at_threshold": 0.006993006993006993,
+   "head": "mahalanobis",
+   "n_calib": 172,
+   "n_test_faulty": 858,
+   "n_test_healthy": 286,
+   "n_train": 372,
+   "pauc_01": 0.6812227142198678,
+   "pauc_10": 0.9600804054245351,
+   "threshold": 13.712193296801514,
+   "tpr_at_threshold": 0.4125874125874126
+  },
+  {
+   "alarms_per_day_per_100": 0.0,
+   "arm": "features63",
+   "auc": 0.9761072261072261,
+   "average_precision": 0.9906571756145824,
+   "extra": {
+    "n_components": 22.0
+   },
+   "fold": "mfpt_record=mfpt_baseline_2",
+   "fpr_at_threshold": 0.0,
+   "head": "pca_residual",
+   "n_calib": 172,
+   "n_test_faulty": 858,
+   "n_test_healthy": 286,
+   "n_train": 372,
+   "pauc_01": 0.6970360466161147,
+   "pauc_10": 0.9056403049778097,
+   "threshold": 6.37357547224983,
+   "tpr_at_threshold": 0.054778554778554776
+  },
+  {
+   "alarms_per_day_per_100": 16.783216783216783,
+   "arm": "features63",
+   "auc": 0.9815353644024972,
+   "average_precision": 0.9822829673879462,
+   "extra": {},
+   "fold": "mfpt_record=mfpt_baseline_2",
+   "fpr_at_threshold": 0.006993006993006993,
+   "head": "robust_threshold",
+   "n_calib": 172,
+   "n_test_faulty": 858,
+   "n_test_healthy": 286,
+   "n_train": 372,
+   "pauc_01": 0.5686945330266833,
+   "pauc_10": 0.9083072355063523,
+   "threshold": 9.170247441161836,
+   "tpr_at_threshold": 0.26456876456876455
+  },
+  {
+   "alarms_per_day_per_100": 16.783216783216783,
+   "arm": "features63",
+   "auc": 0.9800723751772702,
+   "average_precision": 0.9830175317560749,
+   "extra": {
+    "samples_per_feature": 5.904761904761905,
+    "shrinkage": 0.08682731514516594
+   },
+   "fold": "mfpt_record=mfpt_baseline_3",
+   "fpr_at_threshold": 0.006993006993006993,
+   "head": "mahalanobis",
+   "n_calib": 172,
+   "n_test_faulty": 858,
+   "n_test_healthy": 286,
+   "n_train": 372,
+   "pauc_01": 0.5165445300737145,
+   "pauc_10": 0.9022428926735147,
+   "threshold": 23.61565855644301,
+   "tpr_at_threshold": 0.05244755244755245
+  },
+  {
+   "alarms_per_day_per_100": 16.783216783216783,
+   "arm": "features63",
+   "auc": 0.9437686439434692,
+   "average_precision": 0.9652039886928113,
+   "extra": {
+    "n_components": 22.0
+   },
+   "fold": "mfpt_record=mfpt_baseline_3",
+   "fpr_at_threshold": 0.006993006993006993,
+   "head": "pca_residual",
+   "n_calib": 172,
+   "n_test_faulty": 858,
+   "n_test_healthy": 286,
+   "n_train": 372,
+   "pauc_01": 0.5029018959861986,
+   "pauc_10": 0.8143069664968818,
+   "threshold": 7.096281711649775,
+   "tpr_at_threshold": 0.01048951048951049
+  },
+  {
+   "alarms_per_day_per_100": 16.783216783216783,
+   "arm": "features63",
+   "auc": 0.9515175966224918,
+   "average_precision": 0.9690969638122773,
+   "extra": {},
+   "fold": "mfpt_record=mfpt_baseline_3",
+   "fpr_at_threshold": 0.006993006993006993,
+   "head": "robust_threshold",
+   "n_calib": 172,
+   "n_test_faulty": 858,
+   "n_test_healthy": 286,
+   "n_train": 372,
+   "pauc_01": 0.5124693511733607,
+   "pauc_10": 0.8507176175560422,
+   "threshold": 14.228251838655455,
+   "tpr_at_threshold": 0.037296037296037296
+  }
+ ],
+ "saturation": {
+  "auc_level_alone": 0.34833406686553536,
+  "auc_level_alone_note": "20*log10(window RMS), no model, no fitting",
+  "best_single_features": [
+   {
+    "auc": 0.9251865073543396,
+    "feature": "time.kurtosis"
+   },
+   {
+    "auc": 0.8960089056242901,
+    "feature": "time.shape"
+   },
+   {
+    "auc": 0.8642408485065827,
+    "feature": "time.clearance"
+   },
+   {
+    "auc": 0.8618867534951451,
+    "feature": "shape.spread_hz"
+   },
+   {
+    "auc": 0.8581484560505539,
+    "feature": "time.impulse"
+   }
+  ],
+  "n_features_above_auc_099": 0,
+  "trivial": false
+ },
+ "target_fpr": 0.01
+}

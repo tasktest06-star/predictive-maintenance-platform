@@ -1,0 +1,348 @@
+{
+ "datasets": {
+  "cwru_de": {
+   "baseline": {
+    "alarms_per_day_per_100": {
+     "mean": 1212.1218622613173,
+     "per_fold": [
+      2400.0,
+      1840.677966101695,
+      50.847457627118644,
+      556.9620253164557
+     ],
+     "std": 946.5635082492678
+    },
+    "auc": {
+     "mean": 1.0,
+     "per_fold": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "std": 0.0
+    },
+    "fpr_at_threshold": {
+     "mean": 0.5050507759422155,
+     "per_fold": [
+      1.0,
+      0.7669491525423728,
+      0.0211864406779661,
+      0.2320675105485232
+     ],
+     "std": 0.39440146177052826
+    },
+    "key": "features63|mahalanobis",
+    "ms_per_window": 25.357,
+    "pauc_10": {
+     "mean": 1.0,
+     "per_fold": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "std": 0.0
+    },
+    "tpr_at_threshold": {
+     "mean": 1.0,
+     "per_fold": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "std": 0.0
+    }
+   },
+   "baseline_other_heads": {
+    "features63|pca_residual": {
+     "auc": 1.0,
+     "pauc_10": 1.0
+    },
+    "features63|robust_threshold": {
+     "auc": 0.9133292181923187,
+     "pauc_10": 0.8697351134676344
+    }
+   },
+   "fold_scheme": "cwru_load",
+   "leaky_control": {
+    "features63_LEAKY|mahalanobis": {
+     "alarms_per_day_per_100": 19.277108433734938,
+     "auc": 1.0,
+     "fpr_at_threshold": 0.008032128514056224,
+     "pauc_10": 1.0
+    }
+   },
+   "measured_data": true,
+   "n_challengers": 0,
+   "n_folds": 4,
+   "saturation": {
+    "auc_level_alone": 0.9999974430568767,
+    "auc_level_alone_note": "20*log10(window RMS), no model, no fitting",
+    "best_single_features": [
+     {
+      "auc": 1.0,
+      "feature": "shape.rolloff95_hz"
+     },
+     {
+      "auc": 1.0,
+      "feature": "shape.flatness"
+     },
+     {
+      "auc": 1.0,
+      "feature": "shape.centroid_hz"
+     },
+     {
+      "auc": 1.0,
+      "feature": "band.11_rms"
+     },
+     {
+      "auc": 0.9999999999999999,
+      "feature": "time.zcr"
+     }
+    ],
+    "n_features_above_auc_099": 10,
+    "trivial": true
+   }
+  },
+  "mfpt_97k": {
+   "baseline": {
+    "alarms_per_day_per_100": {
+     "mean": 41.95804195804196,
+     "per_fold": [
+      92.3076923076923,
+      16.783216783216783,
+      16.783216783216783
+     ],
+     "std": 35.60257919260938
+    },
+    "auc": {
+     "mean": 0.9861362413809965,
+     "per_fold": [
+      0.9859854597616836,
+      0.992350889204036,
+      0.9800723751772702
+     ],
+     "std": 0.005013816111434037
+    },
+    "fpr_at_threshold": {
+     "mean": 0.017482517482517484,
+     "per_fold": [
+      0.038461538461538464,
+      0.006993006993006993,
+      0.006993006993006993
+     ],
+     "std": 0.014834407996920578
+    },
+    "key": "features63|mahalanobis",
+    "ms_per_window": 32.186,
+    "pauc_10": {
+     "mean": 0.9297024490252316,
+     "per_fold": [
+      0.9267840489776449,
+      0.9600804054245351,
+      0.9022428926735147
+     ],
+     "std": 0.023702071139240534
+    },
+    "tpr_at_threshold": {
+     "mean": 0.4825174825174825,
+     "per_fold": [
+      0.9825174825174825,
+      0.4125874125874126,
+      0.05244755244755245
+     ],
+     "std": 0.3829057148658483
+    }
+   },
+   "baseline_other_heads": {
+    "features63|pca_residual": {
+     "auc": 0.9527116240402954,
+     "pauc_10": 0.8481945813561566
+    },
+    "features63|robust_threshold": {
+     "auc": 0.9690143772311605,
+     "pauc_10": 0.8769813750184258
+    }
+   },
+   "fold_scheme": "mfpt_record",
+   "leaky_control": {
+    "features63_LEAKY|mahalanobis": {
+     "alarms_per_day_per_100": 74.4186046511628,
+     "auc": 0.9847219963499034,
+     "fpr_at_threshold": 0.031007751937984496,
+     "pauc_10": 0.9199793814236898
+    }
+   },
+   "measured_data": true,
+   "n_challengers": 0,
+   "n_folds": 3,
+   "saturation": {
+    "auc_level_alone": 0.34833406686553536,
+    "auc_level_alone_note": "20*log10(window RMS), no model, no fitting",
+    "best_single_features": [
+     {
+      "auc": 0.9251865073543396,
+      "feature": "time.kurtosis"
+     },
+     {
+      "auc": 0.8960089056242901,
+      "feature": "time.shape"
+     },
+     {
+      "auc": 0.8642408485065827,
+      "feature": "time.clearance"
+     },
+     {
+      "auc": 0.8618867534951451,
+      "feature": "shape.spread_hz"
+     },
+     {
+      "auc": 0.8581484560505539,
+      "feature": "time.impulse"
+     }
+    ],
+    "n_features_above_auc_099": 0,
+    "trivial": false
+   }
+  },
+  "sim_fleet": {
+   "baseline": {
+    "alarms_per_day_per_100": {
+     "mean": 60.0,
+     "per_fold": [
+      0.0,
+      66.66666666666666,
+      33.33333333333333,
+      166.66666666666669,
+      33.33333333333333
+     ],
+     "std": 57.34883511361751
+    },
+    "auc": {
+     "mean": 0.9176752645502646,
+     "per_fold": [
+      0.9076554232804234,
+      0.9143518518518519,
+      0.9427910052910052,
+      0.8821097883597885,
+      0.941468253968254
+     ],
+     "std": 0.022685908252008606
+    },
+    "fpr_at_threshold": {
+     "mean": 0.025,
+     "per_fold": [
+      0.0,
+      0.027777777777777776,
+      0.013888888888888888,
+      0.06944444444444445,
+      0.013888888888888888
+     ],
+     "std": 0.0238953479640073
+    },
+    "key": "features63|mahalanobis",
+    "ms_per_window": 24.477,
+    "pauc_10": {
+     "mean": 0.8943017265385687,
+     "per_fold": [
+      0.8812134502923976,
+      0.8719019771651351,
+      0.9250730994152048,
+      0.865636313004734,
+      0.9276837928153718
+     ],
+     "std": 0.026668323598517896
+    },
+    "tpr_at_threshold": {
+     "mean": 0.7821428571428573,
+     "per_fold": [
+      0.7261904761904762,
+      0.7559523809523809,
+      0.8214285714285714,
+      0.7619047619047619,
+      0.8452380952380952
+     ],
+     "std": 0.04416008807378907
+    }
+   },
+   "baseline_other_heads": {
+    "features63|pca_residual": {
+     "auc": 0.9216104497354497,
+     "pauc_10": 0.8859126984126984
+    },
+    "features63|robust_threshold": {
+     "auc": 0.789616402116402,
+     "pauc_10": 0.7451260094681148
+    }
+   },
+   "fold_scheme": "sim_unit",
+   "leaky_control": {
+    "features63_LEAKY|mahalanobis": {
+     "alarms_per_day_per_100": 0.0,
+     "auc": 0.8982914462081129,
+     "fpr_at_threshold": 0.0,
+     "pauc_10": 0.885523995173118
+    }
+   },
+   "measured_data": false,
+   "n_challengers": 0,
+   "n_folds": 5,
+   "saturation": {
+    "auc_level_alone": 0.7970304232804233,
+    "auc_level_alone_note": "20*log10(window RMS), no model, no fitting",
+    "best_single_features": [
+     {
+      "auc": 0.8254034391534392,
+      "feature": "time.peak"
+     },
+     {
+      "auc": 0.8242576058201058,
+      "feature": "time.peak_to_peak"
+     },
+     {
+      "auc": 0.7970304232804233,
+      "feature": "time.std"
+     },
+     {
+      "auc": 0.7970304232804233,
+      "feature": "time.rms"
+     },
+     {
+      "auc": 0.7621957671957672,
+      "feature": "band.09_rms"
+     }
+    ],
+    "n_features_above_auc_099": 0,
+    "trivial": false
+   }
+  }
+ },
+ "degradation": {
+  "arms": {
+   "features63": {
+    "delay_days": 1.5,
+    "delay_h": 36.0,
+    "onset_index": 75,
+    "pre_onset_alarm_fraction": 0.013333333333333334,
+    "sample_interval_h": 18.0,
+    "threshold": 24.545836726402634
+   }
+  },
+  "dataset": "sim_degradation",
+  "days": 90.0,
+  "measured_data": false,
+  "n_calib": 22,
+  "n_fit": 45,
+  "onset_index": 75
+ },
+ "gate_latency_multiple": 10.0,
+ "host": {
+  "bogomips": "2000.00",
+  "cpu_count": 2,
+  "machine": "aarch64",
+  "numpy": "2.0.2",
+  "python": "3.9.25"
+ }
+}

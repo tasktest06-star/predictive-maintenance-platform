@@ -1,0 +1,18 @@
+{
+ "arms": {
+  "features63": {
+   "delay_days": 1.5,
+   "delay_h": 36.0,
+   "onset_index": 75,
+   "pre_onset_alarm_fraction": 0.013333333333333334,
+   "sample_interval_h": 18.0,
+   "threshold": 24.545836726402634
+  }
+ },
+ "dataset": "sim_degradation",
+ "days": 90.0,
+ "measured_data": false,
+ "n_calib": 22,
+ "n_fit": 45,
+ "onset_index": 75
+}

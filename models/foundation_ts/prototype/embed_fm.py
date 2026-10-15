@@ -69,6 +69,7 @@ than as an exact inequality.
 from __future__ import annotations
 
 import argparse
+import gc
 import json
 import os
 import platform
@@ -87,6 +88,37 @@ MOMENT_MODELS = {"moment_small": "AutonLab/MOMENT-1-small"}
 #: Forecast split for the zero-shot residual score. 448 + 64 = 512, i.e. the
 #: whole context, so the forecast arm and the embedding arm see the same window.
 FCAST_CONTEXT, FCAST_HORIZON = 448, 64
+
+#: Presentations run per model, and why not all of them everywhere.
+#:
+#: This host has two cores and no GPU, and a forward pass costs 100-500 ms per
+#: window per model per presentation. The full 3 models x 5 presentations x
+#: (embed + native score) grid over CWRU + MFPT + the simulator is about nine
+#: hours of wall time, which would not finish. So the budget is spent where it
+#: can change the answer:
+#:
+#: * ``bolt_small`` and ``moment_small`` get all five presentations. They are
+#:   the two patch-transformer architectures, i.e. the family the brief is
+#:   about, and the presentation sweep is the actual experiment.
+#: * ``t5_small`` gets ``raw_crop`` and ``envelope`` only. It emits one token
+#:   per time step instead of one per patch, so its encoder runs 512 tokens
+#:   instead of 33 and costs ~4x the others. Two presentations is enough to
+#:   establish whether the tokenised-LM formulation behaves differently in kind
+#:   from the patch formulation; if it had, the sweep would have been extended.
+#: * the native forecast-residual score is computed for ``raw_crop`` and
+#:   ``envelope`` only, because "forecast the next 64 points" is a coherent
+#:   operation on a waveform and an envelope and is not a coherent operation on
+#:   a spectrum, where the x axis is frequency and the 64 held-back points are
+#:   simply the top of the band.
+#:
+#: Every one of these restrictions is a limit on the experiment, not a result,
+#: and they are listed again in research/02_protocol.md under "weaknesses".
+MODEL_PRESENTATIONS: Dict[str, Tuple[str, ...]] = {
+    "bolt_small": ("raw_crop", "raw_decim", "envelope", "logspec", "envelope_spec"),
+    "t5_small": ("raw_crop", "envelope"),
+    "moment_small": ("raw_crop", "raw_decim", "envelope", "logspec", "envelope_spec"),
+}
+FCAST_PRESENTATIONS: Tuple[str, ...] = ("raw_crop", "envelope")
 
 
 def _host_info() -> Dict[str, object]:
@@ -123,13 +155,14 @@ def _batches(n: int, size: int):
 # ---------------------------------------------------------------------------
 # Chronos
 # ---------------------------------------------------------------------------
-def chronos_arm(pipeline, seqs: np.ndarray, batch: int) -> Tuple[np.ndarray, np.ndarray, Dict[str, float]]:
-    """``(embeddings (n,d), zero-shot forecast residual (n,), timings)``."""
+def chronos_arm(pipeline, seqs: np.ndarray, batch: int, *, with_forecast: bool
+                ) -> Tuple[np.ndarray, Optional[np.ndarray], Dict[str, float]]:
+    """``(embeddings (n,d), zero-shot forecast residual or None, timings)``."""
     import torch
 
     n = seqs.shape[0]
     emb_out: List[np.ndarray] = []
-    res_out = np.empty(n, dtype=np.float64)
+    res_out = np.empty(n, dtype=np.float64) if with_forecast else None
     t_emb = t_fc = 0.0
     with torch.no_grad():
         for lo, hi in _batches(n, batch):
@@ -143,7 +176,10 @@ def chronos_arm(pipeline, seqs: np.ndarray, batch: int) -> Tuple[np.ndarray, np.
             # encoder produced is the standard way these embeddings are used
             # downstream and keeps the two comparable at (n, 512).
             emb_out.append(emb.to(torch.float32).mean(dim=1).cpu().numpy())
+            del emb
 
+            if res_out is None:
+                continue
             t0 = time.perf_counter()
             q, _mean = pipeline.predict_quantiles(
                 ctx[:, :FCAST_CONTEXT], prediction_length=FCAST_HORIZON,
@@ -158,39 +194,50 @@ def chronos_arm(pipeline, seqs: np.ndarray, batch: int) -> Tuple[np.ndarray, np.
             naive = np.mean(np.abs(np.diff(seqs[lo:hi, :FCAST_CONTEXT], axis=1)), axis=1)
             res_out[lo:hi] = (np.mean(np.abs(median - truth), axis=1)
                               / np.maximum(naive, 1e-12))
-    return (np.vstack(emb_out).astype(np.float32), res_out,
-            {"embed_ms_per_window": 1e3 * t_emb / n,
-             "forecast_ms_per_window": 1e3 * t_fc / n})
+    timings = {"embed_ms_per_window": 1e3 * t_emb / n}
+    if res_out is not None:
+        timings["forecast_ms_per_window"] = 1e3 * t_fc / n
+    return np.vstack(emb_out).astype(np.float32), res_out, timings
 
 
 # ---------------------------------------------------------------------------
 # MOMENT
 # ---------------------------------------------------------------------------
-def moment_arm(model_id: str, seqs: np.ndarray, batch: int
-               ) -> Tuple[np.ndarray, np.ndarray, Dict[str, float]]:
-    """``(embeddings (n,d), zero-shot reconstruction error (n,), timings)``.
+def load_moment(model_id: str):
+    """The two MOMENT pipelines, loaded once.
 
     Two separate pipelines because ``task_name`` is fixed at construction:
     ``embedding`` returns the pooled encoder state, ``reconstruction`` runs the
     pretrained masked-reconstruction head. Only the reconstruction head is
     pretrained (the library warns about it on load); classification and
     forecasting heads would need fine-tuning and are not used here.
+
+    Loaded once and reused across presentations. The first version of this
+    script reloaded both per presentation and the process was OOM-killed on
+    this 7 GB host while a Chronos pipeline was still resident -- so this is
+    not tidiness, it is the difference between the experiment running and not.
     """
-    import torch
     from momentfm import MOMENTPipeline
+
+    out = []
+    for task in ("embedding", "reconstruction"):
+        m = MOMENTPipeline.from_pretrained(model_id, model_kwargs={"task_name": task})
+        m.init()
+        m.eval()
+        out.append(m)
+    return out[0], out[1]
+
+
+def moment_arm(emb_model, rec_model, seqs: np.ndarray, batch: int
+               ) -> Tuple[np.ndarray, np.ndarray, Dict[str, float]]:
+    """``(embeddings (n,d), zero-shot reconstruction error (n,), timings)``."""
+    import torch
 
     n = seqs.shape[0]
     mask = torch.ones(1, seqs.shape[1], dtype=torch.float32)
     emb_out: List[np.ndarray] = []
     rec_out = np.empty(n, dtype=np.float64)
     t_emb = t_rec = 0.0
-
-    emb_model = MOMENTPipeline.from_pretrained(model_id, model_kwargs={"task_name": "embedding"})
-    emb_model.init()
-    emb_model.eval()
-    rec_model = MOMENTPipeline.from_pretrained(model_id, model_kwargs={"task_name": "reconstruction"})
-    rec_model.init()
-    rec_model.eval()
 
     with torch.no_grad():
         for lo, hi in _batches(n, batch):
@@ -259,6 +306,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "batch": args.batch,
     }
 
+    def presentations_for(key: str) -> List[str]:
+        allowed = MODEL_PRESENTATIONS.get(key, tuple(wanted_pres))
+        return [p for p in wanted_pres if p in allowed]
+
     for key in [m for m in args.models.split(",") if m in CHRONOS_MODELS]:
         from chronos import BaseChronosPipeline
 
@@ -269,46 +320,52 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         load_s = time.time() - t0
         n_params = int(sum(p.numel() for p in pipe.model.parameters()))
         timings: Dict[str, Dict[str, float]] = {}
-        for pres in wanted_pres:
-            emb, res, t = chronos_arm(pipe, seqs[pres], args.batch)
+        pres_list = presentations_for(key)
+        for pres in pres_list:
+            do_fc = pres in FCAST_PRESENTATIONS
+            emb, res, t = chronos_arm(pipe, seqs[pres], args.batch, with_forecast=do_fc)
             out[f"emb_{key}_{pres}"] = emb
-            out[f"score_{key}_fcast_{pres}"] = res.astype(np.float64)
+            if res is not None:
+                out[f"score_{key}_fcast_{pres}"] = res.astype(np.float64)
             timings[pres] = {k: round(v, 3) for k, v in t.items()}
             print(f"  {key:12s} {pres:14s} emb {emb.shape} "
-                  f"{t['embed_ms_per_window']:.1f} ms/win", flush=True)
+                  f"{t['embed_ms_per_window']:.1f} ms/win"
+                  f"{'' if not do_fc else ' + forecast'}", flush=True)
         meta["models"][key] = {"hf_id": model_id, "parameters": n_params,
                                "load_s": round(load_s, 2),
                                "pipeline_class": type(pipe).__name__,
+                               "presentations": pres_list,
                                "timings_ms_per_window": timings,
-                               "embedding_dim": int(out[f"emb_{key}_{wanted_pres[0]}"].shape[1])}
+                               "embedding_dim": int(out[f"emb_{key}_{pres_list[0]}"].shape[1])}
         del pipe
+        gc.collect()
 
     for key in [m for m in args.models.split(",") if m in MOMENT_MODELS]:
         model_id = MOMENT_MODELS[key]
         timings = {}
-        for pres in wanted_pres:
-            t0 = time.time()
-            emb, rec, t = moment_arm(model_id, seqs[pres], args.batch)
+        t0 = time.time()
+        emb_model, rec_model = load_moment(model_id)
+        load_s = time.time() - t0
+        n_params = int(sum(p.numel() for p in emb_model.parameters()))
+        pres_list = presentations_for(key)
+        for pres in pres_list:
+            emb, rec, t = moment_arm(emb_model, rec_model, seqs[pres], args.batch)
             out[f"emb_{key}_{pres}"] = emb
             out[f"score_{key}_recon_{pres}"] = rec.astype(np.float64)
             timings[pres] = {k: round(v, 3) for k, v in t.items()}
             print(f"  {key:12s} {pres:14s} emb {emb.shape} "
-                  f"{t['embed_ms_per_window']:.1f} ms/win "
-                  f"(incl. {time.time() - t0:.0f}s load)", flush=True)
-        import torch as _t
-        from momentfm import MOMENTPipeline
-        probe = MOMENTPipeline.from_pretrained(model_id, model_kwargs={"task_name": "embedding"})
-        probe.init()
+                  f"{t['embed_ms_per_window']:.1f} ms/win + reconstruct", flush=True)
         meta["models"][key] = {
-            "hf_id": model_id,
-            "parameters": int(sum(p.numel() for p in probe.parameters())),
+            "hf_id": model_id, "parameters": n_params, "load_s": round(load_s, 2),
+            "presentations": pres_list,
             "timings_ms_per_window": timings,
-            "embedding_dim": int(out[f"emb_{key}_{wanted_pres[0]}"].shape[1]),
+            "embedding_dim": int(out[f"emb_{key}_{pres_list[0]}"].shape[1]),
             "note": "only the reconstruction head is pretrained; the library "
                     "warns on load that classification and forecasting heads "
                     "require fine-tuning.",
         }
-        del probe, _t
+        del emb_model, rec_model
+        gc.collect()
 
     os.makedirs(args.out, exist_ok=True)
     npz_path = os.path.join(args.out, f"fm_{name}.npz")
