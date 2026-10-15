@@ -282,18 +282,30 @@ def estimate_slip_from_sidebands(
 ) -> SlipEstimate:
     """Slip from the rotation sidebands ``f1 +- fr``, with its error bound.
 
-    The search runs over the slip bracket, scores the *symmetric pair* (the
-    geometric mean of the two sideband SNRs, so a single noise peak on one side
-    cannot win), and takes the best. Returning the geometric mean rather than
-    the sum is what makes the estimate robust: an asymmetric pair is evidence of
-    something, but it is not evidence of a rotation rate.
+    Two stages, and the second one is not optional:
+
+    1. **Coarse scan** over the slip bracket, scoring the *symmetric pair* by
+       the geometric mean of the two sideband SNRs, so that a single noise peak
+       on one side cannot win. An asymmetric pair is evidence of something, but
+       it is not evidence of a rotation rate.
+    2. **Refine on the lines themselves.** The scan alone is far coarser than it
+       looks: the peak search inside each candidate uses a window of
+       ``+-1.5 df``, so every candidate within 1.5 bins of the true rate finds
+       the same peak and scores the same. Measured on the reference machine, the
+       score was flat to 0.1 % across a slip range of 0.007-0.015 -- a 66 %
+       spread -- and the first version of this function returned whichever end
+       of that plateau the scan reached first, which was the bracket edge and
+       an 83 % error. The refinement takes the *interpolated peak frequency* of
+       each sideband and converts each one to a rotation rate.
+
+    The error bound is then the **disagreement between the two sidebands**,
+    floored at a quarter of a bin. That is a self-check rather than a formula:
+    the lower and upper sideband are two independent measurements of the same
+    rate, so their difference is an empirical error bar, and it grows on its own
+    when the lines are weak or smeared.
 
     ``family="rotor_bar"`` is refused. See the module docstring: estimating slip
     from the family that is then used as evidence is a check that cannot fail.
-
-    The error bound is the half-width of the slip interval that the frequency
-    resolution cannot distinguish:
-    ``d_slip = (df/2) * p / f1`` from ``fr = (1-s) f1/p``.
     """
     if family == "rotor_bar":
         raise ValueError(
@@ -318,26 +330,50 @@ def estimate_slip_from_sidebands(
     # One candidate per half-bin of fr, so the search cannot skip a line.
     step = 0.5 * sp.df_hz * pole_pairs / f1
     cands = np.arange(s_lo, s_hi + step, max(step, 1e-6))
-    best = (0.0, 0.0)
     tol = 1.5 * sp.df_hz
+    best_s, best_score = 0.0, 0.0
     for s in cands:
         fr = ns * (1.0 - s)
         lo = line_snr(sp, f1 - fr, tol_hz=tol, floor_width_hz=10.0)["snr"]
         hi = line_snr(sp, f1 + fr, tol_hz=tol, floor_width_hz=10.0)["snr"]
         score = float(np.sqrt(max(lo, 0.0) * max(hi, 0.0)))
-        if score > best[1]:
-            best = (float(s), score)
-    slip, snr = best
-    d_slip = 0.5 * sp.df_hz * pole_pairs / f1
+        if score > best_score:
+            best_s, best_score = float(s), score
+
+    fr_coarse = ns * (1.0 - best_s)
+    fr_lo = _refine_rate(sp, f1 - fr_coarse, tol, f1, below=True)
+    fr_hi = _refine_rate(sp, f1 + fr_coarse, tol, f1, below=False)
+    rates = [r for r in (fr_lo, fr_hi) if r is not None]
+    if not rates:                                      # pragma: no cover - empty band
+        return SlipEstimate(slip=0.0, rel_error=float("inf"),
+                            method="rotation_sidebands(no line)", valid=False,
+                            independent_of=("rotor_bar", "bearing", "stator_turn"))
+    fr_est = float(np.mean(rates))
+    slip = float(1.0 - fr_est / ns)
+    disagree = abs(rates[0] - rates[1]) / 2.0 if len(rates) == 2 else sp.df_hz
+    d_fr = max(disagree, 0.25 * sp.df_hz)
+    d_slip = d_fr / ns
     rel = float(d_slip / slip) if slip > 0 else float("inf")
     return SlipEstimate(
         slip=slip,
         rel_error=rel,
-        method=f"rotation_sidebands(df={sp.df_hz:.4f}Hz)",
-        valid=bool(snr >= min_snr and slip > 0),
+        method=f"rotation_sidebands(df={sp.df_hz:.4f}Hz,n={len(rates)})",
+        valid=bool(best_score >= min_snr and slip > 0),
         independent_of=("rotor_bar", "bearing", "stator_turn"),
-        snr=float(snr),
+        snr=float(best_score),
     )
+
+
+def _refine_rate(sp: Spectrum, f_target: float, tol_hz: float, f1: float,
+                 *, below: bool) -> Optional[float]:
+    """Rotation rate implied by the interpolated peak nearest ``f_target``."""
+    m = np.abs(sp.freq_hz - f_target) <= tol_hz
+    if not np.any(m):
+        return None
+    idx = int(np.flatnonzero(m)[int(np.argmax(np.asarray(sp.value)[m]))])
+    f_peak, _v = interpolate_peak(sp, idx)
+    rate = (f1 - f_peak) if below else (f_peak - f1)
+    return float(rate) if rate > 0 else None
 
 
 def mcsa_admissible(
