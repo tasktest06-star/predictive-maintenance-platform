@@ -67,7 +67,7 @@ from math import isfinite as _isfinite
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
-from scipy.optimize import minimize
+from scipy.optimize import least_squares
 
 from .catalogue import PU_BANDS
 from .electrical import locked_rotor_current, steady_state
@@ -95,6 +95,13 @@ __all__ = [
     "coast_down_availability",
     "coast_down_ridge",
 ]
+
+#: Objective value returned for a parameter set that is rejected outright
+#: (unphysical, overflowing, or non-finite). Large enough never to compete for
+#: the minimum, finite so that a simplex can still walk away from it.
+_REJECT = 1e12
+#: Per-residual rejection magnitude, so that ``0.5*||r||^2 >= _REJECT``.
+_REJECT_R = 1.5e6
 
 #: Free parameters, in the order the vector uses. All are identified in **log**
 #: space: they are positive, they span orders of magnitude across machine sizes,
@@ -155,13 +162,26 @@ class BoxPrior:
         if not self.lo < self.hi:
             raise ValueError(f"box prior {self.name!r} needs lo < hi")
 
-    def penalty(self, x: float) -> float:
+    def residual(self, x: float) -> float:
+        """Signed residual: zero inside the box, linear outside."""
         w = (self.hi - self.lo) * self.softness
         if x < self.lo:
-            return float(((self.lo - x) / w) ** 2)
+            return float((x - self.lo) / w)
         if x > self.hi:
-            return float(((x - self.hi) / w) ** 2)
+            return float((x - self.hi) / w)
         return 0.0
+
+    def penalty(self, x: float) -> float:
+        """``residual**2``, saturated.
+
+        Saturated rather than squared outright: the optimiser does probe
+        parameter values of order 1e200 and squaring the resulting residual
+        raises ``OverflowError``, killing a whole profile sweep on one bad
+        trial point. The cap is far above anything that competes for the
+        minimum, so it changes no result.
+        """
+        z = self.residual(x)
+        return _REJECT if abs(z) > 1e5 else float(z * z)
 
 
 @dataclass
@@ -194,32 +214,62 @@ class IdentificationProblem:
         return {k: _exp(float(v)) for k, v in zip(self.param_names, theta)}
 
     # -- posterior ---------------------------------------------------------
-    def neg_log_posterior(self, theta: Sequence[float]) -> float:
-        """``-log p(theta | data)`` up to a constant. Lower is better."""
+    @property
+    def residual_names(self) -> Tuple[str, ...]:
+        return tuple([f"obs:{o.name}" for o in self.observations]
+                     + [f"prior:{b.name}" for b in self.box_priors])
+
+    def residuals(self, theta: Sequence[float]) -> np.ndarray:
+        r"""Signed, scaled residual vector; ``0.5 * ||r||^2`` is the objective.
+
+        Returned as a vector rather than a scalar because the posterior has
+        **exactly flat directions by construction** (more parameters than
+        observations), and a derivative-free scalar minimiser cannot track a flat
+        manifold: Nelder-Mead's simplex collapses onto it and reports that the
+        objective rose, which turns an unbounded profile into a narrow interval.
+        A Gauss-Newton trust region with a pseudo-inverse step moves *along* the
+        manifold instead, which is why ``scipy.optimize.least_squares`` is used
+        throughout and why this method exists.
+
+        Box priors contribute a residual that is zero inside the box and linear
+        outside, i.e. the signed square root of
+        :meth:`BoxPrior.penalty`. The kink at the wall is the price of a prior
+        that is genuinely flat inside; a smooth Gaussian stand-in would put
+        curvature where there is none and would make an unidentifiable parameter
+        look identified.
+        """
+        n = len(self.observations) + len(self.box_priors)
         try:
             p = self.to_params(theta)
             d = self.derived(p)
         except (ValueError, ZeroDivisionError, FloatingPointError, OverflowError):
-            # An unphysical parameter set (negative slip, a degenerate circuit,
-            # a log-parameter the simplex has pushed to exp(800)) is rejected
-            # rather than clipped: clipping creates a plateau that an optimiser
-            # settles on and a sampler mixes across.
-            return 1e12
+            # An unphysical parameter set (negative slip, a degenerate circuit, a
+            # log-parameter a step has pushed to exp(800)) is rejected rather
+            # than clipped: clipping creates a plateau an optimiser settles on.
+            return np.full(n, _REJECT_R)
         if not all(_isfinite(v) for v in d.values()):
-            return 1e12
-        chi2 = 0.0
-        for obs in self.observations:
+            return np.full(n, _REJECT_R)
+        out = np.empty(n)
+        for i, obs in enumerate(self.observations):
             if obs.name not in d:
                 raise KeyError(
                     f"observation {obs.name!r} has no matching derived quantity; "
                     f"derived produces {sorted(d)}"
                 )
-            chi2 += ((d[obs.name] - obs.value) / obs.sigma) ** 2
-        for bp in self.box_priors:
+            z = (d[obs.name] - obs.value) / obs.sigma
+            out[i] = float(np.clip(z, -_REJECT_R, _REJECT_R))
+        k = len(self.observations)
+        for i, bp in enumerate(self.box_priors):
             if bp.name not in d and bp.name not in p:
                 raise KeyError(f"box prior {bp.name!r} matches no parameter or derived value")
-            chi2 += bp.penalty(d.get(bp.name, p.get(bp.name, 0.0)))
-        return 0.5 * float(chi2)
+            out[k + i] = float(np.clip(bp.residual(d.get(bp.name, p.get(bp.name, 0.0))),
+                                      -_REJECT_R, _REJECT_R))
+        return out
+
+    def neg_log_posterior(self, theta: Sequence[float]) -> float:
+        """``-log p(theta | data)`` up to a constant. Lower is better."""
+        r = self.residuals(theta)
+        return 0.5 * float(r @ r)
 
     @property
     def n_params(self) -> int:
@@ -288,13 +338,23 @@ def _pu_box_priors(plate: Nameplate) -> List[BoxPrior]:
         BoxPrior("rr_pu", *PU_BANDS["rr_pu"]),
         BoxPrior("x_leakage_pu", *PU_BANDS["x_leakage_pu"]),
         BoxPrior("xm_pu", *PU_BANDS["xm_pu"]),
-        # Core loss and friction as fractions of rated output. Both are
-        # well-bounded by machine-design practice and neither is visible on a
-        # nameplate: core loss is 0.5-3 % of rated output, friction and windage
-        # 0.2-2 %, and their sum is most of the gap between the copper-only and
-        # the real efficiency.
-        BoxPrior("core_loss_frac", 0.003, 0.030),
-        BoxPrior("friction_frac", 0.002, 0.020),
+        # Core loss and friction as fractions of rated output. Neither is
+        # visible on a nameplate; both are bounded by machine-design practice,
+        # and their sum is most of the gap between the copper-only and the real
+        # efficiency.
+        #
+        # The bands are wider than the textbook ranges (core 0.5-3 %, friction
+        # 0.2-2 %) on purpose, and the reason is a finding rather than
+        # slack: the Chapman reference motor publishes 1100 W of "rotational
+        # loss, core loss lumped in" on an 18.65 kW rating, which is 5.9 % and
+        # sits outside the textbook band for either term alone. A prior that
+        # excludes a reference machine's published value turns the reported
+        # recovery error into a measure of the prior rather than of the
+        # nameplate's information content. The results JSON records
+        # ``prior_contains_truth`` per parameter per motor so that this stays
+        # checkable instead of being a comment.
+        BoxPrior("core_loss_frac", 0.003, 0.045),
+        BoxPrior("friction_frac", 0.002, 0.040),
         BoxPrior("rated_slip", *plate.slip_bounds()),
     ]
 
@@ -501,6 +561,35 @@ def _printed_rounding(value: float, sig: int = 3) -> float:
 # ---------------------------------------------------------------------------
 # Fitting
 # ---------------------------------------------------------------------------
+def _fit(
+    problem: IdentificationProblem,
+    start: np.ndarray,
+    *,
+    extra_residual: Optional[Callable[[np.ndarray], float]] = None,
+    max_nfev: int = 400,
+) -> Tuple[float, np.ndarray, str]:
+    """One Gauss-Newton trust-region solve. ``(objective, theta, message)``.
+
+    ``extra_residual`` appends one more scaled residual, used by the derived-
+    combination profiles to tether a function of the parameters to a value. The
+    returned objective **excludes** the tether, so a profile value is always the
+    posterior and never the posterior plus a constraint artefact.
+    """
+
+    def fun(th: np.ndarray) -> np.ndarray:
+        r = problem.residuals(th)
+        if extra_residual is not None:
+            r = np.concatenate([r, [extra_residual(th)]])
+        return r
+
+    res = least_squares(
+        fun, np.asarray(start, dtype=np.float64), method="trf",
+        x_scale=1.0, max_nfev=max_nfev, ftol=1e-12, xtol=1e-12, gtol=1e-12,
+    )
+    th = np.asarray(res.x, dtype=np.float64)
+    return problem.neg_log_posterior(th), th, str(res.message)
+
+
 def identify(
     problem: IdentificationProblem,
     *,
@@ -511,35 +600,44 @@ def identify(
 ) -> IdentificationResult:
     """MAP fit with restarts, then profile-likelihood intervals.
 
-    Nelder-Mead rather than a gradient method. The box priors have a
-    discontinuous second derivative at the wall and the posterior has flat
-    directions by construction; a quasi-Newton method spends its time
-    rediscovering that the Hessian is singular. With 8-10 parameters and a 15 us
-    objective, a few thousand simplex evaluations cost milliseconds.
+    Gauss-Newton trust region (:func:`scipy.optimize.least_squares`, ``trf``),
+    not a derivative-free scalar minimiser. The posterior has more parameters
+    than observations, so it has **exactly flat directions by construction**;
+    Nelder-Mead's simplex collapses onto a flat manifold and then reports that
+    the objective rose when it is asked to move along it, which silently turns
+    an unbounded profile into a narrow interval. ``trf`` takes a pseudo-inverse
+    step and moves along the manifold. This was not a style choice: the first
+    implementation used Nelder-Mead and reported a 0.3 % interval on the rated
+    slip, which is impossible given a 5 rpm nameplate rounding, and that
+    impossible number is what exposed it.
 
     ``n_restarts`` perturbs the start point in log space by 30 %. Multiple
-    restarts landing at different parameter values with the *same* posterior is
-    not a failure to converge -- it is the flat direction showing up, and
-    ``fisher["null_directions"]`` names it.
+    restarts landing at **different parameter values with the same posterior**
+    is not a failure to converge -- it is the flat manifold showing up, and
+    ``fisher["null_directions"]`` names which combinations it runs along.
+    ``restart_spread`` in the Fisher dict records how far apart the restarts
+    landed, which is the cheapest direct evidence that the MAP is not unique.
     """
     rng = np.random.default_rng(seed)
     theta0 = problem.to_vector(problem.start)
-    best: Optional[Tuple[float, np.ndarray, str]] = None
+    sols: List[Tuple[float, np.ndarray, str]] = []
     for k in range(max(1, n_restarts)):
         start = theta0 if k == 0 else theta0 + rng.normal(0.0, 0.30, theta0.size)
-        res = minimize(
-            problem.neg_log_posterior,
-            start,
-            method="Nelder-Mead",
-            options={"maxiter": 20000, "maxfev": 20000, "xatol": 1e-8, "fatol": 1e-10},
-        )
-        if best is None or res.fun < best[0]:
-            best = (float(res.fun), np.asarray(res.x, dtype=np.float64), str(res.message))
-    assert best is not None
-    f_map, theta_map, message = best
+        res = _fit(problem, start)
+        sols.append(res)
+    sols.sort(key=lambda s: s[0])
+    f_map, theta_map, message = sols[0]
     params = problem.to_params(theta_map)
 
     fisher = fisher_analysis(problem, theta_map)
+    # Spread among restarts that reached essentially the same objective: direct
+    # evidence of non-uniqueness, in relative terms per parameter.
+    near = np.array([s[1] for s in sols if s[0] <= f_map + 0.05])
+    fisher["n_restarts_at_optimum"] = int(near.shape[0])
+    fisher["restart_spread_log"] = (
+        [float(x) for x in (near.max(axis=0) - near.min(axis=0))] if near.shape[0] > 1
+        else [0.0] * theta_map.size
+    )
     intervals: Tuple[ParameterInterval, ...] = ()
     if profile:
         intervals = profile_likelihood(problem, theta_map, f_map, n=n_profile)
@@ -550,7 +648,7 @@ def identify(
         neg_log_posterior=f_map,
         intervals=intervals,
         fisher=fisher,
-        success=f_map < 1e11,
+        success=f_map < 0.5 * _REJECT,
         message=message,
     )
 
@@ -567,6 +665,7 @@ def profile_likelihood(
     *,
     n: int = 21,
     span: float = 2.5,
+    maxfev: int = 1200,
     extra: Sequence[Tuple[str, Callable[[Dict[str, float]], float]]] = (),
 ) -> Tuple[ParameterInterval, ...]:
     """95 % profile-likelihood intervals for every parameter.
@@ -587,25 +686,63 @@ def profile_likelihood(
     the leakage split are the important ones, because the individual leakages are
     unidentifiable while their sum is not, and reporting only the individuals
     would hide that.
+
+    The grid is walked **outward from the MAP in both directions, warm-starting
+    each point from the previous one.** That is not only ~5x cheaper than
+    restarting from the MAP every time; it is more reliable, because the nuisance
+    minimiser is following a continuous ridge and a cold restart at the far end
+    of the grid routinely lands in a different local basin and reports a
+    spuriously *high* profile -- i.e. a spuriously narrow interval. A profile
+    that is too narrow is the dangerous direction of error here.
     """
     out: List[ParameterInterval] = []
+    boxed = {bp.name: bp for bp in problem.box_priors}
     for j, name in enumerate(problem.param_names):
-        grid = theta_map[j] + np.linspace(-span, span, n)
-        nll = np.empty(n)
+        # Grid span, per parameter. A parameter that carries a box prior
+        # DIRECTLY (rated_slip, r_th) is confined to an interval much narrower
+        # than the default factor of 12, and a log grid of 15 points over a
+        # factor of 12 would place every point except the centre outside the box
+        # -- which collapses the reported interval onto the point estimate and
+        # makes a bounded parameter look exactly determined. So a boxed
+        # parameter gets a grid matched to its box, widened by a quarter of the
+        # box width either side so that the wall itself is resolved. Using a
+        # fixed absolute widening here was the first attempt and it was wrong:
+        # the rated-slip box spans 6.7 % in log, a +-0.4 widening made the grid
+        # step 6.4 %, and exactly one grid point landed inside the box -- which
+        # reported a 0.24 % interval on a quantity whose nameplate rounding
+        # alone is +-3.3 %. An interval narrower than the rounding of its own
+        # input is the kind of impossible number that exposes a method error.
+        bp = boxed.get(name)
+        if bp is not None and bp.lo > 0:
+            w = np.log(bp.hi) - np.log(bp.lo)
+            grid = np.linspace(np.log(bp.lo) - 0.25 * w, np.log(bp.hi) + 0.25 * w, n)
+        else:
+            grid = theta_map[j] + np.linspace(-span, span, n)
+        nll = np.full(n, np.nan)
         free = [i for i in range(theta_map.size) if i != j]
-        for k, val in enumerate(grid):
+        k_map = int(np.argmin(np.abs(grid - theta_map[j])))
 
-            def obj(sub: np.ndarray, _val: float = float(val)) -> float:
+        def profile_at(val: float, start: np.ndarray) -> Tuple[float, np.ndarray]:
+            def fun(sub: np.ndarray) -> np.ndarray:
                 th = np.empty(theta_map.size)
-                th[j] = _val
+                th[j] = val
                 th[free] = sub
-                return problem.neg_log_posterior(th)
+                return problem.residuals(th)
 
-            r = minimize(
-                obj, theta_map[free], method="Nelder-Mead",
-                options={"maxiter": 4000, "maxfev": 4000, "xatol": 1e-7, "fatol": 1e-9},
+            r = least_squares(
+                fun, start, method="trf", max_nfev=maxfev,
+                ftol=1e-12, xtol=1e-12, gtol=1e-12,
             )
-            nll[k] = float(r.fun)
+            return float(0.5 * float(r.fun @ r.fun)), np.asarray(r.x, dtype=np.float64)
+
+        warm = theta_map[free].copy()
+        nll[k_map], warm_up = profile_at(float(grid[k_map]), warm)
+        w = warm_up
+        for k in range(k_map + 1, n):
+            nll[k], w = profile_at(float(grid[k]), w)
+        w = warm_up
+        for k in range(k_map - 1, -1, -1):
+            nll[k], w = profile_at(float(grid[k]), w)
         out.append(_interval_from_profile(name, np.exp(grid), nll, f_map, float(np.exp(theta_map[j]))))
 
     for name, fn in extra:
@@ -616,22 +753,31 @@ def profile_likelihood(
         grid = np.exp(np.log(v_map) + np.linspace(-span, span, n)) if v_map > 0 else None
         if grid is None:
             continue
-        nll = np.empty(n)
-        for k, val in enumerate(grid):
+        nll = np.full(n, np.nan)
+        k_map = int(np.argmin(np.abs(np.log(grid) - np.log(v_map))))
 
-            def obj(th: np.ndarray, _val: float = float(val)) -> float:
-                p = problem.to_params(th)
+        def constrained_at(val: float, start: np.ndarray) -> Tuple[float, np.ndarray]:
+            # A tight linear tether, not a substitution: the parameterisation
+            # stays the same, so the profile of a derived combination is directly
+            # comparable with the profiles of the individual parameters. 1e-5
+            # relative makes the tether residual negligible at the solution, and
+            # _fit excludes it from the reported objective anyway.
+            def tether(th: np.ndarray) -> float:
                 try:
-                    pen = ((fn(p) - _val) / (1e-4 * _val)) ** 2
-                except (ValueError, ZeroDivisionError):
-                    return 1e12
-                return problem.neg_log_posterior(th) + 0.5 * pen
+                    return float((fn(problem.to_params(th)) - val) / (1e-5 * abs(val)))
+                except (ValueError, ZeroDivisionError, OverflowError):
+                    return _REJECT_R
 
-            r = minimize(
-                obj, theta_map, method="Nelder-Mead",
-                options={"maxiter": 8000, "maxfev": 8000, "xatol": 1e-7, "fatol": 1e-9},
-            )
-            nll[k] = float(r.fun)
+            f, th, _ = _fit(problem, start, extra_residual=tether, max_nfev=maxfev)
+            return f, th
+
+        nll[k_map], warm_mid = constrained_at(float(grid[k_map]), theta_map.copy())
+        w = warm_mid
+        for k in range(k_map + 1, n):
+            nll[k], w = constrained_at(float(grid[k]), w)
+        w = warm_mid
+        for k in range(k_map - 1, -1, -1):
+            nll[k], w = constrained_at(float(grid[k]), w)
         out.append(_interval_from_profile(name, grid, nll, f_map, float(v_map)))
     return tuple(out)
 
@@ -639,30 +785,59 @@ def profile_likelihood(
 def _interval_from_profile(
     name: str, grid: np.ndarray, nll: np.ndarray, f_map: float, value: float
 ) -> ParameterInterval:
-    d = 2.0 * (nll - f_map)
-    # Numerical floor: the re-minimised profile can dip a hair below the global
-    # MAP when the global fit stopped early. Clamp at zero rather than letting a
-    # -1e-9 widen the interval.
-    d = np.maximum(d, 0.0)
-    i_map = int(np.argmin(np.abs(grid - value)))
-    lo, hi = grid[0], grid[-1]
-    below = np.where((d >= CHI2_95_1DF) & (np.arange(d.size) < i_map))[0]
-    above = np.where((d >= CHI2_95_1DF) & (np.arange(d.size) > i_map))[0]
+    """Turn a sampled profile into a 95 % interval.
+
+    Referenced to the profile's **own minimum**, not to the global MAP. Two
+    reasons, and the second is why this is not a shortcut:
+
+    1. That is the textbook definition -- the profile likelihood ratio is taken
+       against the unrestricted maximum, and along a one-parameter profile the
+       warm-started nuisance minimisation finds that maximum at least as well as
+       the global fit did.
+    2. Referencing to a stale global value makes ``2*dNLL`` negative near the
+       optimum; clamped at zero, that collapses the interval onto the point
+       estimate and reports a flat parameter as exactly determined. It is the
+       one failure mode here that errs towards *over*-confidence, which is the
+       direction this branch exists to argue against.
+
+    ``value`` (the MAP) is reported unchanged, but the interval is centred on
+    the profile minimum, so a visible gap between them means the global fit did
+    not converge and is recorded in ``note``.
+    """
+    f_prof = float(np.nanmin(nll))
+    d = np.maximum(2.0 * (nll - f_prof), 0.0)
+    i_min = int(np.nanargmin(nll))
+    idx = np.arange(d.size)
+    lo, hi = float(grid[0]), float(grid[-1])
+    below = np.where((d >= CHI2_95_1DF) & (idx < i_min))[0]
+    above = np.where((d >= CHI2_95_1DF) & (idx > i_min))[0]
     if below.size:
         k = int(below[-1])
-        lo = float(np.interp(CHI2_95_1DF, [d[k], d[k + 1]][::-1], [grid[k], grid[k + 1]][::-1]))
+        lo = float(np.interp(CHI2_95_1DF, [d[k + 1], d[k]], [grid[k + 1], grid[k]]))
     if above.size:
         k = int(above[0])
         hi = float(np.interp(CHI2_95_1DF, [d[k - 1], d[k]], [grid[k - 1], grid[k]]))
     identifiable = bool(below.size and above.size)
-    note = "" if identifiable else "profile flat across a factor of 12: unbounded"
+    notes = []
+    if not identifiable:
+        side = "both sides" if not (below.size or above.size) else (
+            "below" if not below.size else "above")
+        notes.append(
+            f"profile does not cross the 95 % threshold {side} within the grid "
+            f"[{grid[0]:.4g}, {grid[-1]:.4g}]: unbounded"
+        )
+    if f_prof < f_map - 1e-6:
+        notes.append(
+            f"profile minimum {f_prof:.6g} is below the global MAP {f_map:.6g}: "
+            "the global fit under-converged"
+        )
     return ParameterInterval(
         name=name,
         value=float(value),
-        lo=float(lo) if below.size else 0.0,
-        hi=float(hi) if above.size else float("inf"),
+        lo=lo if below.size else 0.0,
+        hi=hi if above.size else float("inf"),
         identifiable=identifiable,
-        note=note,
+        note="; ".join(notes),
     )
 
 
