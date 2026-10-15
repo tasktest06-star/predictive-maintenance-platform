@@ -26,3 +26,9 @@ cdsp/tests/virtual_device_mc
 hardware/*/tests/test_order
 # Agent worktrees live inside the repo; they are checkouts, not content.
 .claude/worktrees/
+# Measured datasets live outside the repo and are not ours to redistribute.
+# See docs/10_dataset_provenance.md -- one of them is CC BY-NC-SA.
+*.mat
+data_raw/
+dl_cwru*/
+dl_mfpt/

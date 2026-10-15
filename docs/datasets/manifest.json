@@ -1,0 +1,437 @@
+{
+ "schema": 1,
+ "note": "Checksums of datasets held OUTSIDE this repository. The data is not committed; this manifest is. Quote a root's `digest` alongside any result computed from it.",
+ "data_root": "/workshop/predictive_maintaince",
+ "datasets": {
+  "data_raw/cwru": {
+   "dataset": "CWRU Bearing Data Center",
+   "owner": "Case Western Reserve University",
+   "source": "https://engineering.case.edu/sites/default/files/ (official)",
+   "canonical": "https://engineering.case.edu/bearingdatacenter",
+   "licence": "No formal licence published; the Data Center asks for acknowledgement of Case Western Reserve University when the data is used. Treat as permission-to-use-with-attribution, not as public domain.",
+   "citation": "Case Western Reserve University Bearing Data Center, https://engineering.case.edu/bearingdatacenter",
+   "commercial_use": "unclear -- no licence grant is published, so a commercial deployment trained on it needs its own legal review",
+   "notes": "Fetched from the official university host rather than a third-party mirror, which is the point: mirrors differ.",
+   "present": true,
+   "root": "data_raw/cwru",
+   "absolute_path_when_scanned": "/workshop/predictive_maintaince/data_raw/cwru",
+   "n_files": 29,
+   "total_bytes": 153911010,
+   "digest": "c63bb9f0ffbdc147ba370f414d261a81c4895bf898edc3b508d2b6e0d35de11f",
+   "files": [
+    {
+     "path": "100.mat",
+     "bytes": 7770624,
+     "sha256": "88a5990cb541320e91505a1d72139e1993500ffe6e292a451011667f4138ca78"
+    },
+    {
+     "path": "105.mat",
+     "bytes": 2910768,
+     "sha256": "f80b0ea04fd06b372a0eaec7c056543ea37e4bb4727a5b173d2a5bacd2aa9cab"
+    },
+    {
+     "path": "106.mat",
+     "bytes": 2928192,
+     "sha256": "e5cec7cdd138e6cd1deb9ed8634e5aaa9bc1bd7094ddc075bff606580eb6e883"
+    },
+    {
+     "path": "107.mat",
+     "bytes": 2931672,
+     "sha256": "111ba8996a115684661a13c913bd74d8029a59294492f88aec7b03e175fdd388"
+    },
+    {
+     "path": "108.mat",
+     "bytes": 2950416,
+     "sha256": "d415f0e65128bfa0b118c2051c988fb0dc6ce3e4c8aa45fdc5ad1d0967462e7d"
+    },
+    {
+     "path": "118.mat",
+     "bytes": 2942112,
+     "sha256": "b00628f8dd8d1d930af77fa465d1e5cdb385fe259489053f91f3680bda7f640e"
+    },
+    {
+     "path": "119.mat",
+     "bytes": 2914248,
+     "sha256": "bc72d9df7668219e004a0f711232b23ec0aed393eb9bd8f9f5483426f6b51330"
+    },
+    {
+     "path": "120.mat",
+     "bytes": 2917752,
+     "sha256": "e0b7a584c49af52335ff0904a97d4afcf02d045625c582de63a7c85ce10b489c"
+    },
+    {
+     "path": "121.mat",
+     "bytes": 2917752,
+     "sha256": "52f686e984ba8e9b04a047a57416271cdb322cee57ee105dce58926a24b966cb"
+    },
+    {
+     "path": "130.mat",
+     "bytes": 2928192,
+     "sha256": "35a095307d0971477049b343a1b5981dde465a58fb7f233ad89b035068c1717d"
+    },
+    {
+     "path": "131.mat",
+     "bytes": 2938632,
+     "sha256": "7883f7b83beadc54b2f301767f9145ce07055707182fb0278fdf0a6bb53ce3cb"
+    },
+    {
+     "path": "132.mat",
+     "bytes": 2914248,
+     "sha256": "17a69ed5d2270b42532e678e35bbe2fa04a2cc413cf2bf9e88c7692de8662d18"
+    },
+    {
+     "path": "133.mat",
+     "bytes": 2942112,
+     "sha256": "53f076cb0d905cf46bffaee7736abce8224ffed777deed03c0c863d762a90c71"
+    },
+    {
+     "path": "169.mat",
+     "bytes": 2924712,
+     "sha256": "f5448673725c4ea2735fe7d3fe4b16ad82b217eac6b62c4bf351c4549b0a5229"
+    },
+    {
+     "path": "170.mat",
+     "bytes": 2924712,
+     "sha256": "bcb73a5208b67265468232a2e342f53719850901671d0ee28494f3af97621f46"
+    },
+    {
+     "path": "171.mat",
+     "bytes": 2924712,
+     "sha256": "63d0fdc1a68e64610ddfaf56a9c224d6137ab7b5c0d318eea1d542b9e5ffc029"
+    },
+    {
+     "path": "172.mat",
+     "bytes": 2921232,
+     "sha256": "f75170ceef70d5da475671de0d2e52a0acd9b3883ad422b6deaf2907d888ba24"
+    },
+    {
+     "path": "185.mat",
+     "bytes": 2924712,
+     "sha256": "5bea2c60f177215ba3ec4ae287faf745d7e14aed1a12efe9e37b27c27044bafc"
+    },
+    {
+     "path": "186.mat",
+     "bytes": 2931672,
+     "sha256": "1b3b6f3ad38e891feaa8026fe957b34f62f9082785089cc74f6878acdfe88ec5"
+    },
+    {
+     "path": "187.mat",
+     "bytes": 2928192,
+     "sha256": "0f1338cce89beb5c8d8e5e154579bc576354e7c7d1617ebd1759662c6f3100b2"
+    },
+    {
+     "path": "188.mat",
+     "bytes": 2931672,
+     "sha256": "1981614324d653c2522bea68fd4fd87e337495b117d12596db67abd1e10e7443"
+    },
+    {
+     "path": "197.mat",
+     "bytes": 2924712,
+     "sha256": "fa571b47cd942f9514a920b403fb7c053cd442bb2963a360a96d0f61432f03e9"
+    },
+    {
+     "path": "198.mat",
+     "bytes": 2931672,
+     "sha256": "dbd58e4585ca8f8332c708b15936987ec0990ca701359fd2483dae2719df5b49"
+    },
+    {
+     "path": "199.mat",
+     "bytes": 2924712,
+     "sha256": "ca4e6407fdb68845a6973da6028477911a62d018580063749fe956441be95cf2"
+    },
+    {
+     "path": "200.mat",
+     "bytes": 2928192,
+     "sha256": "2526483d2701220a700df8e6c9db0c527641b0887225907f4096610dd7120f4b"
+    },
+    {
+     "path": "97.mat",
+     "bytes": 3903344,
+     "sha256": "16bf48babcf1c7ac224bc1a81cd9eafdb27e42d5cf559761907e067e8eeadf3c"
+    },
+    {
+     "path": "98.mat",
+     "bytes": 7742720,
+     "sha256": "37e6612c05e65c415dcfa2ab27a3fda648a5863160fa898b884a14743044e045"
+    },
+    {
+     "path": "99.mat",
+     "bytes": 15503928,
+     "sha256": "4b97e6b5361f45efb6951dc3b1aebcdb3b89cb69d0f96d6f5c297dd9f45eee75"
+    },
+    {
+     "path": "converted/cwru_12kDE.npz",
+     "bytes": 48733394,
+     "sha256": "25b9bccfd62cd02d2a312b0ceda8405c32fe2443d97f10862faad0d50ffe522f"
+    }
+   ]
+  },
+  "data_raw/mfpt": {
+   "dataset": "MFPT bearing fault data, as redistributed by MathWorks",
+   "owner": "Eric Bechhoefer (data owner); Society for Machinery Failure Prevention Technology (original publication)",
+   "source": "https://github.com/mathworks/RollingElementBearingFaultDiagnosis-Data",
+   "canonical": "http://data-acoustics.com/measurements/bearing-faults/bearing-2/",
+   "licence": "CC BY-NC-SA 4.0, per the license.txt and README.md shipped in the source repository",
+   "citation": "Bechhoefer, Eric. 'Condition Based Maintenance Fault Database for Testing Diagnostics and Prognostic Algorithms.' 2013.",
+   "commercial_use": "PROHIBITED without permission from the data owner. MathWorks obtained permission for its own commercial use; that grant does not transfer. See docs/10_dataset_provenance.md.",
+   "notes": "This is a MODIFICATION of the original MFPT set -- the MathWorks README says so explicitly. It is not interchangeable with the full MFPT distribution, and a result should say which one it used.",
+   "present": true,
+   "root": "data_raw/mfpt",
+   "absolute_path_when_scanned": "/workshop/predictive_maintaince/data_raw/mfpt",
+   "n_files": 47,
+   "total_bytes": 159244950,
+   "digest": "b938712fdc9fa6a69aa7f84ef5e3ce355b5d37dc87ec4fc89101299e35d65a24",
+   "files": [
+    {
+     "path": "InnerRaceFault_vload_1.mat",
+     "bytes": 1124675,
+     "sha256": "2fd8456317ba45bb054f622b8cb4a401f937d6e830564f85efd41bf81ba8d7aa"
+    },
+    {
+     "path": "InnerRaceFault_vload_2.mat",
+     "bytes": 1124485,
+     "sha256": "08251ffd88c956dcd9f52a04f66d02f6618107110a90ec46d7f114fba2a3277c"
+    },
+    {
+     "path": "InnerRaceFault_vload_3.mat",
+     "bytes": 1124405,
+     "sha256": "5f63f72f6ee173a3a9620db7acb37a9fadae107ffdfd77598ca90d67dd00d066"
+    },
+    {
+     "path": "InnerRaceFault_vload_4.mat",
+     "bytes": 1123771,
+     "sha256": "7c2e753cae90a52de4d430c5fa723ec8a57980cff3521890343b181c2fdfcf75"
+    },
+    {
+     "path": "InnerRaceFault_vload_5.mat",
+     "bytes": 1124033,
+     "sha256": "427053478152e9d259e8c4ae9ec18932ab538fd808a26611e98168fa989e7860"
+    },
+    {
+     "path": "InnerRaceFault_vload_6.mat",
+     "bytes": 1124274,
+     "sha256": "97136f3135115faf25d12719aa57fb22f2bd521e98447b804be0dbe21161168c"
+    },
+    {
+     "path": "InnerRaceFault_vload_7.mat",
+     "bytes": 1124276,
+     "sha256": "e6545bb0414c58d159ef0188ac258c983cd3696fd44662d2dea9898513309651"
+    },
+    {
+     "path": "IntermediateSpeedBearing.mat",
+     "bytes": 3672485,
+     "sha256": "cd543048e1f7ebf96ca195d605c9b7caa7c73738d697d15a9ee08f50f52022e0"
+    },
+    {
+     "path": "OilPumpBearing.mat",
+     "bytes": 3706114,
+     "sha256": "4db509e6a74012d4887a2d7184561689123cf3dfd91b413d897574bac3c5dd92"
+    },
+    {
+     "path": "OuterRaceFault_1.mat",
+     "bytes": 4471135,
+     "sha256": "c3907e7ecb5cb98f37d5f5faebfd8ed3467875d83a3c6505c6e4a365272cdc83"
+    },
+    {
+     "path": "OuterRaceFault_2.mat",
+     "bytes": 4476088,
+     "sha256": "40d11431b262d75062fa66574ef1e441897df359452324964ea62697e43a70bc"
+    },
+    {
+     "path": "OuterRaceFault_3.mat",
+     "bytes": 4484411,
+     "sha256": "16d3c33ae3135281705877ca4aa824cf10d7705104ec4a626385aef5ecdce194"
+    },
+    {
+     "path": "OuterRaceFault_vload_1.mat",
+     "bytes": 1121390,
+     "sha256": "5651c292924ff97b1384d7a81006d4a224a052c4b97a4524c5d5ffdf6a9ce1c9"
+    },
+    {
+     "path": "OuterRaceFault_vload_2.mat",
+     "bytes": 1121626,
+     "sha256": "348a4e2750d339f6f9101f5c74ea631486cc11098d9f282d30840dfb0e59f4cd"
+    },
+    {
+     "path": "OuterRaceFault_vload_3.mat",
+     "bytes": 1119967,
+     "sha256": "0fbc3b01ceb373cc656ce6fc7cc945df0a2f6afbae1f3a2efa9c598020cd0685"
+    },
+    {
+     "path": "OuterRaceFault_vload_4.mat",
+     "bytes": 1120125,
+     "sha256": "e814bbb6e5741e1254595819a70d7f62d1f9a795588e452eeb9bfc8e50d15e61"
+    },
+    {
+     "path": "OuterRaceFault_vload_5.mat",
+     "bytes": 1120987,
+     "sha256": "93531915d0d2c8d6a9933d2541f43b3eb48a20fe9fecbf5a872f68566f5a53ad"
+    },
+    {
+     "path": "OuterRaceFault_vload_6.mat",
+     "bytes": 1121159,
+     "sha256": "4126cff4a1c21d253741144e9e608f8bb3475e7343676c60fef2249179569fd9"
+    },
+    {
+     "path": "OuterRaceFault_vload_7.mat",
+     "bytes": 1124373,
+     "sha256": "82ab4d7df2785e430a817180a541e741bc0ab633d7e2434dc363620ea1b1a5ee"
+    },
+    {
+     "path": "PlanetBearing.mat",
+     "bytes": 1829170,
+     "sha256": "73bcc10921ad642142141bc4fdfd5a4c0afca8da0c49ad2841346d2da44be6e2"
+    },
+    {
+     "path": "RollingElementBearingFaultDiagnosis-Data-master.zip",
+     "bytes": 42594255,
+     "sha256": "f2e415ad51f38d2c6f79c746b4a95e0fb72386fde8e240ed425167e9b0d6ee2c"
+    },
+    {
+     "path": "baseline_1.mat",
+     "bytes": 4477795,
+     "sha256": "540e5f4fcc127d3ddb65c42465cdf7d29696e2906ff8fe52ef980470469d066a"
+    },
+    {
+     "path": "baseline_2.mat",
+     "bytes": 4477483,
+     "sha256": "4374ae7f04607474e55b00d19a2ed48bdaa46d699624ff34d4a46ba4c7ca478b"
+    },
+    {
+     "path": "baseline_3.mat",
+     "bytes": 4476846,
+     "sha256": "f03f63313760ef5f01b977db6b1fee12b3ba76a2f32562f3d4fcfc75e963b4a9"
+    },
+    {
+     "path": "converted/mfpt.npz",
+     "bytes": 22270932,
+     "sha256": "0461f23ba07b8a365256a68283c401f0bfae9ef43a14f1102ce04b8d325cf3fa"
+    },
+    {
+     "path": "extracted/README.md",
+     "bytes": 1342,
+     "sha256": "10e8a37645483cb03d78de826363b8b5fa693aa9404cd90318733b153923bfe2"
+    },
+    {
+     "path": "extracted/license.txt",
+     "bytes": 124,
+     "sha256": "c0caba14aed81b8346e4fd2b06d68416652da9d4c27aecb9fd12031ec30c5ff5"
+    },
+    {
+     "path": "extracted/test_data__InnerRaceFault_vload_6.mat",
+     "bytes": 1124470,
+     "sha256": "51ace00de918012668beae944442588004655f40447497944ac63d71b3aa9e64"
+    },
+    {
+     "path": "extracted/test_data__InnerRaceFault_vload_7.mat",
+     "bytes": 1124472,
+     "sha256": "f9b0131045d8b05cd410fb72e8c2db06ee2eab16177cbc09657a63fef3110ef6"
+    },
+    {
+     "path": "extracted/test_data__OuterRaceFault_3.mat",
+     "bytes": 4484607,
+     "sha256": "48fdf58ae0717fed02fbfe44773c15bbd96f3ceab9387fcfbf52b8260fdc3d97"
+    },
+    {
+     "path": "extracted/test_data__OuterRaceFault_vload_6.mat",
+     "bytes": 1121355,
+     "sha256": "ea167417e39b7481a9ea422fdc5f5b67b96d8521f27cf703e46c4f8cbb8cd995"
+    },
+    {
+     "path": "extracted/test_data__OuterRaceFault_vload_7.mat",
+     "bytes": 1124569,
+     "sha256": "38ef59f7fea41d4839d89dd9aa7ad3cab783f2e5f10960e34c81c83d3328105e"
+    },
+    {
+     "path": "extracted/test_data__baseline_3.mat",
+     "bytes": 4477042,
+     "sha256": "d4b7c69d9f9ef4e9e7b4f5e9964c2dd58bc09a2787b3e3d89877ec27400eb003"
+    },
+    {
+     "path": "extracted/train_data__InnerRaceFault_vload_1.mat",
+     "bytes": 1124871,
+     "sha256": "943e1f0ecef2496ee5233063765d40b8a3aab480044b36a9feaa3483e5331db9"
+    },
+    {
+     "path": "extracted/train_data__InnerRaceFault_vload_2.mat",
+     "bytes": 1124681,
+     "sha256": "4e85dc145f230db5b687d032ba94e849d58adb85fd1c00e605efba0bc14edc92"
+    },
+    {
+     "path": "extracted/train_data__InnerRaceFault_vload_3.mat",
+     "bytes": 1124601,
+     "sha256": "f4b100c59db948212f1603112952af332967497db66c6ebe5b4f799ac62dd4bf"
+    },
+    {
+     "path": "extracted/train_data__InnerRaceFault_vload_4.mat",
+     "bytes": 1123967,
+     "sha256": "3826a49dcac630176b82569a0b923ef16fa13db5a667171066ffac62949d498b"
+    },
+    {
+     "path": "extracted/train_data__InnerRaceFault_vload_5.mat",
+     "bytes": 1124229,
+     "sha256": "5eb0c3b88f4abab2d00f17f12170a25e51946adf05ff95ee79844360ccce2e92"
+    },
+    {
+     "path": "extracted/train_data__OuterRaceFault_1.mat",
+     "bytes": 4471331,
+     "sha256": "1a54a9d9ebb95b6ef1f72c4edd347358eedca979cce47992fcf6147b009bb290"
+    },
+    {
+     "path": "extracted/train_data__OuterRaceFault_2.mat",
+     "bytes": 4476284,
+     "sha256": "c177a4092ff22d0a568ee591fbef43b0d07ac57c8527f2ab45cd352313fb712c"
+    },
+    {
+     "path": "extracted/train_data__OuterRaceFault_vload_1.mat",
+     "bytes": 1121586,
+     "sha256": "8a1977da6f1c8dd74c7826b66e75cf9d52e1cdcf6000c1348d1b356a06781af0"
+    },
+    {
+     "path": "extracted/train_data__OuterRaceFault_vload_2.mat",
+     "bytes": 1121822,
+     "sha256": "1883793fc865e10c6ddebe8a8241dd4924bfd4b4fd0ba6284affc697d2b29e6d"
+    },
+    {
+     "path": "extracted/train_data__OuterRaceFault_vload_3.mat",
+     "bytes": 1120163,
+     "sha256": "52410e466c71413e70b9da800d8c1fa4d74ada9bfcf14e45bbe455e1a073296d"
+    },
+    {
+     "path": "extracted/train_data__OuterRaceFault_vload_4.mat",
+     "bytes": 1120321,
+     "sha256": "81b4b1dde9340774c9170633d564fdc08b8a55e38676c3033a8088a0121c6191"
+    },
+    {
+     "path": "extracted/train_data__OuterRaceFault_vload_5.mat",
+     "bytes": 1121183,
+     "sha256": "8f5b43ae668518165cd65fcb3cf30cd9e32e6f69b3c5192b4ebb93ff42c47689"
+    },
+    {
+     "path": "extracted/train_data__baseline_1.mat",
+     "bytes": 4477991,
+     "sha256": "23f63a29f61c398e930fc69221beb729bd931656508fdda41aa63a0809cf4d8f"
+    },
+    {
+     "path": "extracted/train_data__baseline_2.mat",
+     "bytes": 4477679,
+     "sha256": "5949a1330d7846c3052853d6f8248f78398713de43c250e1c978dbf9bdef11b8"
+    }
+   ]
+  }
+ },
+ "additional_fetches": {
+  "dl_cwru_12kDE": {
+   "n_files": 40,
+   "total_bytes": 140322880,
+   "digest": "2dd807ebaeef93112096454acc0fc575cd543cb3c2020ae399d5aba62e0eb97d",
+   "notes": "An additional fetch of the same dataset family. Recorded so two copies cannot be mixed without noticing -- compare digests before assuming they are the same bytes."
+  },
+  "dl_mfpt": {
+   "n_files": 49,
+   "total_bytes": 298519984,
+   "digest": "fbe19f4d7146ddba557761ac86ec8177a6ca024a731263f44e37f37493247986",
+   "notes": "An additional fetch of the same dataset family. Recorded so two copies cannot be mixed without noticing -- compare digests before assuming they are the same bytes."
+  }
+ }
+}

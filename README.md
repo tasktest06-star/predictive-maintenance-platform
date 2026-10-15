@@ -74,9 +74,12 @@ produced it.
   FSP so its driver at least compiles under `-Werror -Wconversion
   -Wdouble-promotion`; the others are review-quality.
 - **No Docker**, so the compose stack has never started.
-- **No model has passed validation on measured data.** CWRU, MFPT and MIMII are
-  the gate; every detection number in this repository is a number about a
-  simulator.
+- **No model has passed validation on measured data** *in the branches listed
+  above*. CWRU and MFPT are now on disk and the `models/*` branches are working
+  against them; see [`docs/10_dataset_provenance.md`](docs/10_dataset_provenance.md)
+  for provenance, checksums, and the **CC BY-NC-SA NonCommercial restriction on
+  MFPT** that decides what may be shipped. Every detection number in the
+  branches above is still a number about a simulator.
 - **Timing and current are datasheet arithmetic**, except the gateway benchmark,
   which is measured on the wrong machine and says so.
 - **CI workflows live in [`ci/github/`](ci/README.md)**, not `.github/workflows/`,
